@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 - 游戏记录</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <h1>📊 游戏记录</h1>
+            </div>
+        </header>
+        
+        <main class="records-main">
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCompleted">0</div>
+                    <div class="stat-label">已完成题目</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAttempts">0</div>
+                    <div class="stat-label">总尝试次数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="bestOverallTime">--:--</div>
+                    <div class="stat-label">最佳成绩</div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h3>筛选记录</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterRecords('ALL')">全部</button>
+                    <button class="filter-btn" onclick="filterRecords('EASY')">简单</button>
+                    <button class="filter-btn" onclick="filterRecords('MEDIUM')">中等</button>
+                    <button class="filter-btn" onclick="filterRecords('HARD')">高级</button>
+                </div>
+            </div>
+            
+            <div class="records-table-container">
+                <div class="records-table-wrapper">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>赛季</th>
+                                <th>题目ID</th>
+                                <th>难度</th>
+                                <th>状态</th>
+                                <th>尝试次数</th>
+                                <th>完成时间</th>
+                                <th>最佳成绩</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">📝</div>
+                <p>暂无游戏记录</p>
+                <button class="primary-btn" onclick="goHome()">开始游戏</button>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        let sessionId = '';
+        let allRecords = [];
+        let currentFilter = 'ALL';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            sessionId = getCookie('sudokuSessionId') || localStorage.getItem('sudokuSessionId');
+            if (!sessionId) {
+                window.location.href = '/';
+                return;
+            }
+            
+            loadRecords();
+        });
+        
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+        
+        function loadRecords() {
+            fetch(`/api/records/${sessionId}`)
+                .then(response => response.json())
+                .then(records => {
+                    allRecords = records;
+                    updateStats();
+                    filterRecords(currentFilter);
+                })
+                .catch(error => {
+                    console.error('Error loading records:', error);
+                    showEmptyState();
+                });
+        }
+        
+        function updateStats() {
+            const completedRecords = allRecords.filter(r => r.isCompleted);
+            const totalCompleted = completedRecords.length;
+            const totalAttempts = allRecords.reduce((sum, r) => sum + r.attemptCount, 0);
+            
+            let bestTime = null;
+            completedRecords.forEach(record => {
+                if (record.bestTime && (bestTime === null || record.bestTime < bestTime)) {
+                    bestTime = record.bestTime;
+                }
+            });
+            
+            document.getElementById('totalCompleted').textContent = totalCompleted;
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('bestOverallTime').textContent = bestTime ? formatTime(bestTime) : '--:--';
+        }
+        
+        function filterRecords(difficulty) {
+            currentFilter = difficulty;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === getDifficultyButtonText(difficulty)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            let filteredRecords = allRecords;
+            if (difficulty !== 'ALL') {
+                filteredRecords = allRecords.filter(r => r.puzzle.difficulty === difficulty);
+            }
+            
+            renderRecordsTable(filteredRecords);
+        }
+        
+        function getDifficultyButtonText(difficulty) {
+            const names = {
+                'ALL': '全部',
+                'EASY': '简单',
+                'MEDIUM': '中等',
+                'HARD': '高级'
+            };
+            return names[difficulty] || difficulty;
+        }
+        
+        function renderRecordsTable(records) {
+            const tbody = document.getElementById('recordsTableBody');
+            tbody.innerHTML = '';
+            
+            if (records.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            document.getElementById('emptyState').style.display = 'none';
+            document.querySelector('.records-table-container').style.display = 'block';
+            
+            records.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="season-badge">S${record.seasonNumber || record.puzzle.seasonNumber || 1}</span></td>
+                    <td>#${record.puzzle.id}</td>
+                    <td><span class="difficulty-badge ${record.puzzle.difficulty.toLowerCase()}">${getDifficultyName(record.puzzle.difficulty)}</span></td>
+                    <td><span class="status-badge ${record.isCompleted ? 'completed' : 'in-progress'}">${record.isCompleted ? '已完成' : '进行中'}</span></td>
+                    <td>${record.attemptCount}</td>
+                    <td>${record.completionTime > 0 ? formatTime(record.completionTime) : '--:--'}</td>
+                    <td>${record.bestTime ? formatTime(record.bestTime) : '--:--'}</td>
+                    <td>
+                        <button class="action-btn" onclick="playPuzzle(${record.puzzle.id}, '${record.puzzle.difficulty}')">再玩一次</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function showEmptyState() {
+            document.getElementById('emptyState').style.display = 'block';
+            document.querySelector('.records-table-container').style.display = 'none';
+        }
+        
+        function getDifficultyName(difficulty) {
+            const names = {
+                'EASY': '简单',
+                'MEDIUM': '中等',
+                'HARD': '高级'
+            };
+            return names[difficulty] || difficulty;
+        }
+        
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const remainingSeconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+        
+        function playPuzzle(puzzleId, difficulty) {
+            window.location.href = `/game?difficulty=${difficulty}`;
+        }
+        
+        function goHome() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

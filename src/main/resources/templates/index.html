@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 - 选择难度</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 数独游戏</h1>
+            <p>挑战你的逻辑思维能力</p>
+        </header>
+        
+        <div class="season-info" id="seasonInfo" style="display: none;">
+            <div class="season-content">
+                <span class="season-label">当前赛季</span>
+                <span class="season-number" id="seasonNumber">第 1 赛季</span>
+                <span class="season-date" id="seasonDate"></span>
+            </div>
+        </div>
+        
+        <main class="difficulty-selection">
+            <h2>选择难度</h2>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn easy" onclick="startGame('EASY')">
+                    <span class="difficulty-icon">🌱</span>
+                    <span class="difficulty-name">简单</span>
+                    <span class="difficulty-desc">适合新手</span>
+                </button>
+                
+                <button class="difficulty-btn medium" onclick="startGame('MEDIUM')">
+                    <span class="difficulty-icon">🌿</span>
+                    <span class="difficulty-name">中等</span>
+                    <span class="difficulty-desc">有一定挑战</span>
+                </button>
+                
+                <button class="difficulty-btn hard" onclick="startGame('HARD')">
+                    <span class="difficulty-icon">🌳</span>
+                    <span class="difficulty-name">高级</span>
+                    <span class="difficulty-desc">极具挑战</span>
+                </button>
+            </div>
+            
+            <div class="additional-options">
+                <button class="secondary-btn" onclick="viewRecords()">📊 查看记录</button>
+                <button class="secondary-btn" onclick="showSessionInfo()">🔑 我的账号</button>
+            </div>
+            
+            <div class="admin-options">
+                <button class="admin-btn" onclick="confirmRegenerate()" id="regenBtn">🔄 重新生成题目</button>
+            </div>
+            
+            <div class="modal" id="sessionModal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeSessionModal()">&times;</span>
+                    <h2>🔑 我的账号信息</h2>
+                    <div class="help-content">
+                        <p style="font-size: 1.1em; margin-bottom: 15px;">您的游戏记录存储在以下账号中：</p>
+                        <div style="background: #f8f9fa; padding: 15px; border: 1px solid black; margin-bottom: 15px; word-break: break-all;">
+                            <strong>账号ID：</strong><span id="sessionDisplay"></span>
+                        </div>
+                        <p style="margin-bottom: 15px;">
+                            <strong>跨设备同步：</strong><br>
+                            如果您想在其他设备上查看游戏记录，请：
+                        </p>
+                        <ol style="margin-left: 20px; margin-bottom: 15px;">
+                            <li>在此页面复制您的账号ID</li>
+                            <li>在其他设备上打开游戏</li>
+                            <li>点击"导入账号"并粘贴账号ID</li>
+                        </ol>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="modal-btn" onclick="copySessionId()">📋 复制账号ID</button>
+                            <button class="modal-btn" onclick="importSessionId()">📥 导入账号</button>
+                            <button class="modal-btn" onclick="createNewSession()">🆕 新建账号</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>© 2026 数独游戏 - 每种难度包含50道题目</p>
+        </footer>
+    </div>
+    
+    <script>
+        let sessionId = getCookie('sudokuSessionId') || localStorage.getItem('sudokuSessionId');
+        
+        if (!sessionId) {
+            fetch('/api/session', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                sessionId = data.sessionId;
+                localStorage.setItem('sudokuSessionId', sessionId);
+            });
+        }
+        
+        function getCookie(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+        
+        loadSeasonInfo();
+        
+        function loadSeasonInfo() {
+            fetch('/api/season/current')
+                .then(response => response.json())
+                .then(season => {
+                    document.getElementById('seasonNumber').textContent = '第 ' + season.seasonNumber + ' 赛季';
+                    document.getElementById('seasonDate').textContent = formatDate(season.initializedAt);
+                    document.getElementById('seasonInfo').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading season info:', error);
+                });
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        
+        function startGame(difficulty) {
+            window.location.href = `/puzzle-select?difficulty=${difficulty}`;
+        }
+        
+        function viewRecords() {
+            window.location.href = '/records';
+        }
+        
+        function showSessionInfo() {
+            document.getElementById('sessionDisplay').textContent = sessionId || '加载中...';
+            document.getElementById('sessionModal').style.display = 'block';
+        }
+        
+        function closeSessionModal() {
+            document.getElementById('sessionModal').style.display = 'none';
+        }
+        
+        function copySessionId() {
+            if (!sessionId) {
+                alert('请先等待账号加载完成');
+                return;
+            }
+            navigator.clipboard.writeText(sessionId).then(() => {
+                alert('账号ID已复制到剪贴板！');
+            }).catch(() => {
+                // 降级方案：手动选择
+                const textArea = document.createElement('textarea');
+                textArea.value = sessionId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('账号ID已复制到剪贴板！');
+            });
+        }
+        
+        function importSessionId() {
+            const importedId = prompt('请输入您要导入的账号ID：');
+            if (!importedId || importedId.trim() === '') {
+                return;
+            }
+            
+            if (confirm(`确定要切换到账号ID: ${importedId} 吗？\n\n您当前的记录将不会丢失，但需要使用原账号ID才能访问。`)) {
+                localStorage.setItem('sudokuSessionId', importedId);
+                document.cookie = `sudokuSessionId=${importedId}; path=/; max-age=${365 * 24 * 60 * 60}`;
+                sessionId = importedId;
+                document.getElementById('sessionDisplay').textContent = sessionId;
+                alert('账号导入成功！页面将刷新以加载新账号的数据。');
+                window.location.reload();
+            }
+        }
+        
+        function createNewSession() {
+            if (confirm('确定要创建新账号吗？\n\n您当前的记录将保留在原账号中。')) {
+                fetch('/api/session', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    sessionId = data.sessionId;
+                    localStorage.setItem('sudokuSessionId', sessionId);
+                    document.getElementById('sessionDisplay').textContent = sessionId;
+                    alert('新账号创建成功！');
+                })
+                .catch(error => {
+                    console.error('Error creating session:', error);
+                    alert('创建失败，请重试');
+                });
+            }
+        }
+        
+        function confirmRegenerate() {
+            if (confirm('确定要重新生成新赛季题目吗？\n\n这将清除所有现有题目，并生成全新的150道题目。\n\n注意：已完成的游戏记录将保留，但对应的题目将不再可玩。')) {
+                regenerateSeason();
+            }
+        }
+        
+        function regenerateSeason() {
+            const btn = document.getElementById('regenBtn');
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+            
+            fetch('/api/season/regenerate', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadSeasonInfo();
+                btn.disabled = false;
+                btn.textContent = '🔄 重新生成题目';
+            })
+            .catch(error => {
+                console.error('Error regenerating season:', error);
+                alert('生成失败，请重试');
+                btn.disabled = false;
+                btn.textContent = '🔄 重新生成题目';
+            });
+        }
+    </script>
+</body>
+</html>

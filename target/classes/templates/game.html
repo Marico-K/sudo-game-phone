@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 - 游戏中</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- 游戏主容器：包含所有游戏相关元素 -->
+    <div class="game-container">
+        <!-- 游戏头部：返回按钮、标题、计时器、帮助按钮 -->
+        <header class="game-header">
+            <div class="header-left">
+                <!-- 返回主页按钮：点击触发goHome()函数 -->
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <!-- 难度标题：根据当前难度动态显示（简单/中等/高级） -->
+                <h1 id="difficultyTitle">数独游戏</h1>
+            </div>
+            <div class="header-right">
+                <!-- 计时器：显示游戏耗时，格式 00:00 -->
+                <div class="timer" id="timer">00:00</div>
+                <!-- 帮助按钮：点击显示帮助弹窗 -->
+                <button class="help-btn" onclick="showHelp()">❓ 帮助</button>
+            </div>
+        </header>
+
+        <!-- 游戏主体区域：数独棋盘、数字键盘、控制按钮 -->
+        <main class="game-main">
+            <!-- 游戏信息区：题目编号、尝试次数、最佳成绩 -->
+            <div class="game-info">
+                <div class="puzzle-info">
+                    <!-- 题目编号：显示当前题目ID -->
+                    <span id="puzzleNumber">题目 #1</span>
+                    <!-- 尝试次数：显示当前题目第几次尝试 -->
+                    <span id="attemptInfo">第 1 次尝试</span>
+                </div>
+                <!-- 最佳成绩：默认隐藏，有记录时显示 -->
+                <div class="best-time" id="bestTimeInfo" style="display: none;">
+                    最佳成绩: <span id="bestTime">--:--</span>
+                </div>
+            </div>
+
+            <!-- 数独棋盘容器：动态生成9x9的单元格 -->
+            <div class="sudoku-board" id="sudokuBoard">
+            </div>
+
+            <!-- 数字键盘：供用户选择填入的数字或清除 -->
+            <div class="number-keypad">
+                <button class="num-btn" onclick="selectNumber(1)">1</button>
+                <button class="num-btn" onclick="selectNumber(2)">2</button>
+                <button class="num-btn" onclick="selectNumber(3)">3</button>
+                <button class="num-btn" onclick="selectNumber(4)">4</button>
+                <button class="num-btn" onclick="selectNumber(5)">5</button>
+                <button class="num-btn" onclick="selectNumber(6)">6</button>
+                <button class="num-btn" onclick="selectNumber(7)">7</button>
+                <button class="num-btn" onclick="selectNumber(8)">8</button>
+                <button class="num-btn" onclick="selectNumber(9)">9</button>
+                <!-- 清除按钮：传入0表示清除当前格子数字 -->
+                <button class="num-btn num-btn-clear" onclick="selectNumber(0)">✕</button>
+            </div>
+
+            <!-- 游戏控制按钮区：检查答案、重置题目、新题目 -->
+            <div class="game-controls">
+                <button class="control-btn" onclick="checkSolution()">✓ 检查答案</button>
+                <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
+                <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
+            </div>
+        </main>
+
+        <!-- 帮助弹窗：显示游戏规则和操作说明，默认隐藏 -->
+        <div class="modal" id="helpModal" style="display: none;">
+            <div class="modal-content">
+                <!-- 关闭按钮：点击关闭弹窗 -->
+                <span class="close" onclick="closeModal('helpModal')">&times;</span>
+                <h2>游戏帮助</h2>
+                <div class="help-content">
+                    <h3>游戏规则：</h3>
+                    <ul>
+                        <li>在9×9的方格内填入1-9的数字</li>
+                        <li>每行、每列、每个3×3的小方格内都不能重复</li>
+                        <li>初始数字为固定提示，不能修改</li>
+                    </ul>
+                    <h3>操作说明：</h3>
+                    <ul>
+                        <li>点击方格选中位置</li>
+                        <li>使用下方数字键盘输入数字</li>
+                        <li>点击数字键可直接填入</li>
+                        <li>点击 ✕ 清除当前格子的数字</li>
+                        <li>完成后点击"检查答案"验证</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 胜利弹窗：完成游戏后显示，默认隐藏 -->
+        <div class="modal" id="winModal" style="display: none;">
+            <div class="modal-content win-content">
+                <h2>🎉 恭喜完成！</h2>
+                <div class="win-info">
+                    <!-- 完成时间：显示本次游戏耗时 -->
+                    <p>完成时间: <span id="completionTime">00:00</span></p>
+                    <!-- 新纪录提示：仅当刷新最佳成绩时显示 -->
+                    <p id="newRecordMsg" style="display: none; color: #4CAF50;">🏆 新纪录！</p>
+                    <!-- 最佳成绩提示：有最佳记录时显示 -->
+                    <p id="bestRecordMsg" style="display: none;">最佳成绩: <span id="finalBestTime">00:00</span></p>
+                </div>
+                <div class="win-buttons">
+                    <button class="modal-btn" onclick="closeModal('winModal'); newPuzzle()">再来一题</button>
+                    <button class="modal-btn" onclick="closeModal('winModal'); goHome()">返回主页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量声明区
+        let currentPuzzle = null;          // 当前数独题目完整信息（ID、题目、答案等）
+        let originalPuzzle = '';           // 原始题目字符串（0表示空单元格）
+        let currentBoard = [];             // 当前棋盘状态数组（存储每个单元格的数字）
+        let selectedCell = null;           // 选中的单元格信息 {row: 行, col: 列, index: 索引}
+        let selectedNumber = null;         // 选中的数字（1-9）或清除（0）
+        let timerInterval = null;          // 计时器定时器ID
+        let seconds = 0;                   // 游戏耗时（秒）
+        let sessionId = '';                // 用户会话ID（用于记录成绩）
+        let currentDifficulty = '';        // 当前难度（EASY/MEDIUM/HARD）
+        let attemptCount = 0;              // 当前题目尝试次数
+        let bestTime = null;               // 当前题目最佳成绩（秒）
+        let cellsCache = null;             // 单元格DOM缓存（优化性能，避免重复查询）
+
+        /**
+         * 页面加载完成后执行初始化逻辑
+         * 1. 验证用户会话ID
+         * 2. 获取URL参数（难度、题目ID）
+         * 3. 加载对应数独题目
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取会话ID：优先从Cookie获取，其次从LocalStorage
+            sessionId = getCookie('sudokuSessionId') || localStorage.getItem('sudokuSessionId');
+            // 无会话ID则返回主页
+            if (!sessionId) {
+                window.location.href = '/';
+                return;
+            }
+            
+            /**
+             * 获取Cookie值的工具函数
+             * @param {string} name - Cookie名称
+             * @returns {string|null} - Cookie值（不存在则返回null）
+             */
+            function getCookie(name) {
+                const value = "; " + document.cookie;
+                const parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+                return null;
+            }
+
+            // 解析URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            currentDifficulty = urlParams.get('difficulty'); // 获取难度参数
+            const puzzleId = urlParams.get('puzzleId');       // 获取题目ID参数
+
+            // 无难度参数则返回主页
+            if (!currentDifficulty) {
+                window.location.href = '/';
+                return;
+            }
+
+            // 设置页面标题（拼接难度中文名称）
+            document.getElementById('difficultyTitle').textContent =
+                `数独游戏 - ${getDifficultyName(currentDifficulty)}`;
+
+            // 有题目ID则加载指定题目，否则加载随机题目
+            if (puzzleId) {
+                loadPuzzleById(puzzleId);
+            } else {
+                loadRandomPuzzle();
+            }
+        });
+
+        /**
+         * 将难度英文标识转换为中文名称
+         * @param {string} difficulty - 难度标识（EASY/MEDIUM/HARD）
+         * @returns {string} - 中文难度名称
+         */
+        function getDifficultyName(difficulty) {
+            const names = {
+                'EASY': '简单',
+                'MEDIUM': '中等',
+                'HARD': '高级'
+            };
+            return names[difficulty] || difficulty;
+        }
+
+        /**
+         * 加载随机数独题目（按当前难度）
+         * 调用后端API获取随机题目，初始化棋盘、计时器、用户记录
+         */
+        function loadRandomPuzzle() {
+            fetch(`/api/puzzle/random/${currentDifficulty}`)
+                .then(response => response.json())
+                .then(puzzle => {
+                    currentPuzzle = puzzle;                     // 保存当前题目信息
+                    originalPuzzle = puzzle.puzzle;             // 保存原始题目字符串
+                    // 转换为数字数组（0表示空单元格）
+                    currentBoard = puzzle.puzzle.split('').map(c => c === '0' ? 0 : parseInt(c));
+
+                    // 更新题目编号显示
+                    document.getElementById('puzzleNumber').textContent = `题目 #${puzzle.id}`;
+
+                    // 加载用户记录、渲染棋盘、启动计时器
+                    loadUserRecord();
+                    renderBoard();
+                    startTimer();
+                })
+                .catch(error => {
+                    console.error('Error loading puzzle:', error);
+                    alert('加载题目失败，请重试');
+                });
+        }
+
+        /**
+         * 加载指定ID的数独题目
+         * @param {string} puzzleId - 题目ID
+         */
+        function loadPuzzleById(puzzleId) {
+            fetch(`/api/puzzle/${puzzleId}`)
+                .then(response => response.json())
+                .then(puzzle => {
+                    currentPuzzle = puzzle;                     // 保存当前题目信息
+                    originalPuzzle = puzzle.puzzle;             // 保存原始题目字符串
+                    // 转换为数字数组（0表示空单元格）
+                    currentBoard = puzzle.puzzle.split('').map(c => c === '0' ? 0 : parseInt(c));
+
+                    // 处理题目编号显示（优先使用URL中的level参数，否则用题目ID）
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const level = urlParams.get('level');
+                    const displayNumber = level ? parseInt(level) : puzzle.id;
+                    document.getElementById('puzzleNumber').textContent = `题目 #${displayNumber}`;
+
+                    // 加载用户记录、渲染棋盘、启动计时器
+                    loadUserRecord();
+                    renderBoard();
+                    startTimer();
+                })
+                .catch(error => {
+                    console.error('Error loading puzzle:', error);
+                    alert('加载题目失败，请重试');
+                });
+        }
+
+        /**
+         * 加载用户当前题目的记录（尝试次数、最佳成绩）
+         */
+        function loadUserRecord() {
+            fetch(`/api/record/${sessionId}/${currentPuzzle.id}`)
+                .then(response => {
+                    // 响应正常则返回JSON，否则返回null
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    return null;
+                })
+                .then(record => {
+                    if (record) {
+                        // 有记录则更新尝试次数和最佳成绩
+                        attemptCount = record.attemptCount;
+                        bestTime = record.bestTime;
+
+                        // 更新尝试次数显示
+                        document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+
+                        // 有最佳成绩则显示最佳成绩区域
+                        if (bestTime) {
+                            document.getElementById('bestTimeInfo').style.display = 'block';
+                            document.getElementById('bestTime').textContent = formatTime(bestTime);
+                        }
+                    } else {
+                        // 无记录则默认第1次尝试
+                        attemptCount = 1;
+                        document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+                    }
+
+                    // 启动游戏（记录本次尝试）
+                    startGame();
+                })
+                .catch(error => {
+                    console.error('Error loading record:', error);
+                    // 加载失败则默认第1次尝试
+                    attemptCount = 1;
+                    startGame();
+                });
+        }
+
+        /**
+         * 启动游戏（记录本次尝试）
+         * 调用后端API更新尝试次数
+         */
+        function startGame() {
+            fetch('/api/game/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sessionId=${sessionId}&puzzleId=${currentPuzzle.id}`
+            })
+            .then(response => response.json())
+            .then(record => {
+                // 更新尝试次数并显示
+                attemptCount = record.attemptCount;
+                document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+            })
+            .catch(error => console.error('Error starting game:', error));
+        }
+
+        /**
+         * 渲染数独棋盘（生成9x9单元格）
+         * 1. 清空棋盘容器
+         * 2. 循环生成每行每列的单元格
+         * 3. 设置单元格样式（3x3宫格边框、固定数字/用户输入样式）
+         * 4. 绑定单元格点击事件
+         */
+        function renderBoard() {
+            const board = document.getElementById('sudokuBoard');
+            board.innerHTML = '';
+            
+            // 重置单元格缓存（DOM重新渲染后需重新获取）
+            cellsCache = null;
+
+            // 循环生成9行9列单元格
+            for (let i = 0; i < 9; i++) { // i = 行索引
+                for (let j = 0; j < 9; j++) { // j = 列索引
+                    const cell = document.createElement('div');
+                    cell.className = 'cell'; // 基础样式
+
+                    // 为3x3宫格添加边框分隔（每3行/列添加顶部/左侧边框）
+                    if (i % 3 === 0 && i !== 0) cell.classList.add('border-top');
+                    if (j % 3 === 0 && j !== 0) cell.classList.add('border-left');
+
+                    // 计算单元格在一维数组中的索引
+                    const index = i * 9 + j;
+                    const value = currentBoard[index];          // 当前单元格数值
+                    const isFixed = originalPuzzle[index] !== '0'; // 是否为固定提示数字
+
+                    // 有数值则显示
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        // 固定数字添加fixed样式，用户输入添加user-input样式
+                        if (isFixed) {
+                            cell.classList.add('fixed');
+                        } else {
+                            cell.classList.add('user-input');
+                        }
+                    }
+
+                    // 绑定单元格点击事件（选中单元格）
+                    cell.addEventListener('click', () => selectCell(i, j, cell));
+
+                    // 添加到棋盘容器
+                    board.appendChild(cell);
+                }
+            }
+        }
+        
+        /**
+         * 初始化单元格DOM缓存（优化性能，避免重复querySelectorAll）
+         * @returns {Array} - 单元格DOM元素数组
+         */
+        function initCellsCache() {
+            if (!cellsCache) {
+                cellsCache = Array.from(document.querySelectorAll('.cell'));
+            }
+            return cellsCache;
+        }
+
+        /**
+         * 选中单元格逻辑
+         * @param {number} row - 行索引
+         * @param {number} col - 列索引
+         * @param {HTMLElement} cell - 单元格DOM元素
+         */
+        function selectCell(row, col, cell) {
+            const clickedValue = currentBoard[row * 9 + col]; // 当前单元格数值
+            
+            // 初始化单元格缓存
+            const cells = initCellsCache();
+            // 计算当前单元格所在3x3宫格的起始行/列
+            const boxRowStart = Math.floor(row / 3) * 3;
+            const boxColStart = Math.floor(col / 3) * 3;
+            
+            // 遍历所有单元格，重置高亮样式并添加相关高亮
+            cells.forEach((c, index) => {
+                // 清除所有高亮类
+                c.classList.remove('selected', 'highlighted', 'highlighted-row', 'highlighted-col', 'highlighted-box', 'highlighted-num');
+                
+                // 仅当单元格有数值时才添加高亮
+                if (clickedValue !== 0) {
+                    const cellRow = Math.floor(index / 9); // 当前遍历单元格的行
+                    const cellCol = index % 9;             // 当前遍历单元格的列
+                    
+                    // 高亮同行单元格
+                    if (cellRow === row) c.classList.add('highlighted-row');
+                    // 高亮同列单元格
+                    if (cellCol === col) c.classList.add('highlighted-col');
+                    // 高亮同宫格单元格
+                    if (cellRow >= boxRowStart && cellRow < boxRowStart + 3 &&
+                        cellCol >= boxColStart && cellCol < boxColStart + 3) {
+                        c.classList.add('highlighted-box');
+                    }
+                    
+                    // 高亮相同数字的单元格
+                    if (currentBoard[index] === clickedValue) {
+                        c.classList.add('highlighted-num');
+                    }
+                }
+            });
+            
+            // 为选中的单元格添加选中样式
+            cell.classList.add('selected');
+            // 保存选中单元格信息
+            selectedCell = { row, col, index: row * 9 + col };
+
+            // 如果已有选中的数字，则直接填入
+            if (selectedNumber !== null) {
+                placeNumber(selectedNumber);
+            }
+        }
+
+        /**
+         * 选择数字（数字键盘点击/键盘按键）
+         * @param {number} num - 选中的数字（1-9）或清除（0）
+         */
+        function selectNumber(num) {
+            // 移除所有数字按钮的激活样式
+            document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
+            // 第二次点击，取消选中
+            if(selectedNumber !== null && selectedNumber === num){
+                selectedNumber = null;
+                selectedCell = null;
+                return;
+            };
+            selectedNumber = num;
+            
+            // 为点击的按钮添加激活样式
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+
+            // 如果已有选中的单元格，则直接填入数字
+            if (selectedCell) {
+                placeNumber(num);
+            }
+        }
+
+        /**
+         * 填入数字到选中的单元格
+         * @param {number} num - 要填入的数字（1-9）或清除（0）
+         */
+        function placeNumber(num) {
+            // 无选中单元格则返回
+            if (!selectedCell) return;
+
+            const index = selectedCell.index; // 选中单元格的索引
+            const row = selectedCell.row;     // 选中单元格的行
+            const col = selectedCell.col;     // 选中单元格的列
+            // 固定提示数字不能修改
+            if (originalPuzzle[index] !== '0') return;
+
+            // 更新当前棋盘状态
+            currentBoard[index] = num;
+            // 重新渲染棋盘
+            renderBoard();
+
+            const cells = document.querySelectorAll('.cell');
+            
+            // 填入的不是清除指令（0）时执行高亮和冲突检查
+            if (num !== 0) {
+                // 为当前单元格添加选中样式
+                const currentCell = cells[index];
+                if (currentCell) {
+                    currentCell.classList.add('selected');
+                }
+                
+                // 高亮同行/列/宫格和相同数字
+                highlightRelatedCells(row, col, num);
+                
+                // 检查数字冲突（行/列/宫格重复）并标记
+                checkConflicts(row, col, num);
+                
+                // 重置选中状态
+                selectedCell = null;
+                selectedNumber = null;
+                // 移除所有数字按钮的激活样式
+                document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
+            }
+        }
+
+        /**
+         * 高亮与指定单元格相关的单元格（同行/列/宫格/相同数字）
+         * @param {number} row - 行索引
+         * @param {number} col - 列索引
+         * @param {number} value - 单元格数值
+         */
+        function highlightRelatedCells(row, col, value) {
+            const cells = document.querySelectorAll('.cell');
+            // 计算当前单元格所在3x3宫格的起始行/列
+            const boxRowStart = Math.floor(row / 3) * 3;
+            const boxColStart = Math.floor(col / 3) * 3;
+            
+            // 遍历所有单元格添加高亮样式
+            cells.forEach((cell, index) => {
+                const cellRow = Math.floor(index / 9); // 当前单元格行
+                const cellCol = index % 9;             // 当前单元格列
+                
+                // 高亮同行
+                if (cellRow === row) cell.classList.add('highlighted-row');
+                // 高亮同列
+                if (cellCol === col) cell.classList.add('highlighted-col');
+                // 高亮同宫格
+                if (cellRow >= boxRowStart && cellRow < boxRowStart + 3 &&
+                    cellCol >= boxColStart && cellCol < boxColStart + 3) {
+                    cell.classList.add('highlighted-box');
+                }
+                // 高亮相同数字
+                if (currentBoard[index] === value) {
+                    cell.classList.add('highlighted-num');
+                }
+            });
+        }
+
+        /**
+         * 检查数字冲突（行/列/宫格内重复）并标记冲突单元格
+         * @param {number} row - 行索引
+         * @param {number} col - 列索引
+         * @param {number} value - 要检查的数字
+         */
+        function checkConflicts(row, col, value) {
+            const cells = document.querySelectorAll('.cell');
+            const conflicts = []; // 存储冲突单元格索引
+            
+            // 检查行冲突：遍历当前行所有列
+            for (let c = 0; c < 9; c++) {
+                if (c !== col && currentBoard[row * 9 + c] === value) {
+                    conflicts.push(row * 9 + c);
+                }
+            }
+            
+            // 检查列冲突：遍历当前列所有行
+            for (let r = 0; r < 9; r++) {
+                if (r !== row && currentBoard[r * 9 + col] === value) {
+                    conflicts.push(r * 9 + col);
+                }
+            }
+            
+            // 检查宫格冲突：遍历当前宫格所有单元格
+            const boxRowStart = Math.floor(row / 3) * 3;
+            const boxColStart = Math.floor(col / 3) * 3;
+            for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+                for (let c = boxColStart; c < boxColStart + 3; c++) {
+                    if ((r !== row || c !== col) && currentBoard[r * 9 + c] === value) {
+                        conflicts.push(r * 9 + c);
+                    }
+                }
+            }
+            
+            // 标记冲突单元格（添加conflict样式）
+            conflicts.forEach(idx => {
+                if (cells[idx]) {
+                    cells[idx].classList.add('conflict');
+                }
+            });
+            
+            // 当前填入的数字有冲突时，也标记当前单元格
+            if (conflicts.length > 0 && cells[row * 9 + col]) {
+                cells[row * 9 + col].classList.add('conflict');
+            }
+        }
+
+        /**
+         * 启动计时器
+         * 1. 停止现有计时器（避免重复）
+         * 2. 重置秒数
+         * 3. 每秒更新秒数和显示
+         */
+        function startTimer() {
+            stopTimer(); // 先停止现有计时器
+            seconds = 0; // 重置秒数
+            updateTimerDisplay(); // 更新显示
+            // 每秒执行一次
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        /**
+         * 停止计时器
+         */
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval); // 清除定时器
+                timerInterval = null;         // 重置定时器ID
+            }
+        }
+
+        /**
+         * 更新计时器显示（格式：MM:SS）
+         */
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = formatTime(seconds);
+        }
+
+        /**
+         * 格式化时间（秒转MM:SS）
+         * @param {number} totalSeconds - 总秒数
+         * @returns {string} - 格式化后的时间字符串（00:00）
+         */
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60); // 分钟
+            const remainingSeconds = totalSeconds % 60;    // 剩余秒数
+            // 补零到2位
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        /**
+         * 检查答案是否正确
+         * 1. 将当前棋盘转换为字符串
+         * 2. 调用后端API验证答案
+         * 3. 正确则完成游戏，错误则提示
+         */
+        function checkSolution() {
+            // 将当前棋盘转换为字符串（0表示空）
+            const userSolution = currentBoard.map(n => n === 0 ? '0' : n.toString()).join('');
+
+            fetch('/api/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `userSolution=${userSolution}&correctSolution=${currentPuzzle.solution}`
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.valid) {
+                    stopTimer(); // 停止计时器
+                    completeGame(); // 完成游戏
+                } else {
+                    alert('答案不正确，请继续努力！');
+                }
+            })
+            .catch(error => {
+                console.error('Error validating solution:', error);
+                alert('验证失败，请重试');
+            });
+        }
+
+        /**
+         * 完成游戏逻辑
+         * 1. 调用后端API记录完成时间
+         * 2. 显示胜利弹窗
+         */
+        function completeGame() {
+            fetch('/api/game/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `sessionId=${sessionId}&puzzleId=${currentPuzzle.id}&completionTime=${seconds}`
+            })
+            .then(response => response.json())
+            .then(record => {
+                showWinModal(record); // 显示胜利弹窗
+            })
+            .catch(error => {
+                console.error('Error completing game:', error);
+                // 接口失败时仍显示胜利弹窗（使用本地数据）
+                showWinModal({ completionTime: seconds, isBestTime: false, bestTime: bestTime });
+            });
+        }
+
+        /**
+         * 显示胜利弹窗
+         * @param {Object} record - 游戏记录（完成时间、是否新纪录、最佳成绩）
+         */
+        function showWinModal(record) {
+            // 解析完成时间（确保为数字）
+            const completionTime = parseInt(record.completionTime || seconds);
+            // 显示完成时间
+            document.getElementById('completionTime').textContent = formatTime(completionTime);
+
+            // 根据是否新纪录显示不同提示
+            if (record.isBestTime === true) {
+                document.getElementById('newRecordMsg').style.display = 'block';
+                document.getElementById('bestRecordMsg').style.display = 'none';
+            } else if (record.bestTime) {
+                document.getElementById('newRecordMsg').style.display = 'none';
+                document.getElementById('bestRecordMsg').style.display = 'block';
+                // 显示最佳成绩
+                document.getElementById('finalBestTime').textContent = formatTime(parseInt(record.bestTime));
+            } else {
+                // 无最佳成绩则隐藏相关提示
+                document.getElementById('newRecordMsg').style.display = 'none';
+                document.getElementById('bestRecordMsg').style.display = 'none';
+            }
+
+            // 显示胜利弹窗
+            document.getElementById('winModal').style.display = 'block';
+        }
+
+        /**
+         * 重置当前题目
+         * 1. 确认用户操作
+         * 2. 恢复原始棋盘状态
+         * 3. 重新渲染棋盘并启动计时器
+         */
+        function resetPuzzle() {
+            if (confirm('确定要重置当前题目吗？')) {
+                // 恢复原始题目状态
+                currentBoard = originalPuzzle.split('').map(c => c === '0' ? 0 : parseInt(c));
+                renderBoard(); // 重新渲染棋盘
+                startTimer();  // 重启计时器
+            }
+        }
+
+        /**
+         * 加载新题目
+         * 1. 确认用户操作
+         * 2. 加载随机题目
+         */
+        function newPuzzle() {
+            if (confirm('开始新题目？当前进度将丢失。')) {
+                loadRandomPuzzle();
+            }
+        }
+
+        /**
+         * 显示帮助弹窗
+         */
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        /**
+         * 关闭指定弹窗
+         * @param {string} modalId - 弹窗ID
+         */
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        /**
+         * 返回主页
+         * 1. 停止计时器
+         * 2. 跳转到主页
+         */
+        function goHome() {
+            stopTimer();
+            window.location.href = '/';
+        }
+
+        /**
+         * 点击弹窗外部关闭弹窗
+         * @param {Event} event - 点击事件
+         */
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        /**
+         * 键盘事件监听（支持键盘输入数字）
+         * 1. 数字键1-9：填入对应数字
+         * 2. 0/退格/删除键：清除当前单元格
+         * @param {KeyboardEvent} event - 键盘事件
+         */
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '1' && event.key <= '9') {
+                selectNumber(parseInt(event.key));
+            } else if (event.key === '0' || event.key === 'Backspace' || event.key === 'Delete') {
+                selectNumber(0);
+            }
+        });
+    </script>
+</body>
+</html>

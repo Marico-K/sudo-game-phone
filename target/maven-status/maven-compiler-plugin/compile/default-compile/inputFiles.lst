@@ -1,0 +1,15 @@
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\repository\SudokuPuzzleRepository.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\dto\GameStartRequest.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\repository\SeasonConfigRepository.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\service\GameService.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\controller\GameController.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\service\SeasonService.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\model\UserRecord.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\repository\UserRecordRepository.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\SudokuGameApplication.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\service\SudokuService.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\model\SudokuPuzzle.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\data\SudokuDataInitializer.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\controller\WebController.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\controller\SeasonController.java
+E:\Trae项目\sudo-game\src\main\java\com\sudoku\model\SeasonConfig.java

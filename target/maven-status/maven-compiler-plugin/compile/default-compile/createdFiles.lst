@@ -1,0 +1,12 @@
+com\sudoku\model\SudokuPuzzle$Difficulty.class
+com\sudoku\controller\WebController.class
+com\sudoku\model\UserRecord.class
+com\sudoku\service\GameService.class
+com\sudoku\dto\GameStartRequest.class
+com\sudoku\model\SudokuPuzzle.class
+com\sudoku\repository\SudokuPuzzleRepository.class
+com\sudoku\service\SudokuService.class
+com\sudoku\data\SudokuDataInitializer.class
+com\sudoku\controller\GameController.class
+com\sudoku\repository\UserRecordRepository.class
+com\sudoku\SudokuGameApplication.class

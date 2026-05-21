@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独游戏 - 选择关卡</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <h1 id="difficultyTitle">选择关卡</h1>
+            </div>
+        </header>
+        
+        <main class="level-select-main">
+            <div class="difficulty-info">
+                <span class="info-text">共 50 道题目</span>
+                <span class="info-text">🏆 已完成</span>
+            </div>
+            
+            <div class="level-grid" id="levelGrid">
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        let sessionId = '';
+        let currentDifficulty = '';
+        let completedPuzzles = new Set();
+        
+        let puzzles = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            sessionId = getCookie('sudokuSessionId') || localStorage.getItem('sudokuSessionId');
+            if (!sessionId) {
+                window.location.href = '/';
+                return;
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            currentDifficulty = urlParams.get('difficulty');
+            
+            function getCookie(name) {
+                const value = "; " + document.cookie;
+                const parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+                return null;
+            }
+            
+            if (!currentDifficulty) {
+                window.location.href = '/';
+                return;
+            }
+            
+            document.getElementById('difficultyTitle').textContent = 
+                `${getDifficultyName(currentDifficulty)} - 选择关卡`;
+            
+            // 并行加载数据，全部完成后再渲染
+            Promise.all([
+                loadCompletedPuzzles(),
+                loadPuzzles()
+            ]).then(() => {
+                renderLevelGrid();
+            }).catch(error => {
+                console.error('Error loading data:', error);
+                renderLevelGrid();
+            });
+        });
+        
+        function getDifficultyName(difficulty) {
+            const names = {
+                'EASY': '简单',
+                'MEDIUM': '中等',
+                'HARD': '高级'
+            };
+            return names[difficulty] || difficulty;
+        }
+        
+        function loadCompletedPuzzles() {
+            return fetch(`/api/records/${sessionId}`)
+                .then(response => response.json())
+                .then(records => {
+                    records.forEach(record => {
+                        if (record.isCompleted && record.puzzle.difficulty === currentDifficulty) {
+                            completedPuzzles.add(record.puzzle.id);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading completed records:', error);
+                });
+        }
+        
+        function loadPuzzles() {
+            return fetch(`/api/puzzles/${currentDifficulty}`)
+                .then(response => response.json())
+                .then(data => {
+                    puzzles = data;
+                })
+                .catch(error => {
+                    console.error('Error loading puzzles:', error);
+                });
+        }
+        
+        function renderLevelGrid() {
+            const grid = document.getElementById('levelGrid');
+            grid.innerHTML = '';
+            
+            if (puzzles.length === 0) {
+                for (let i = 1; i <= 50; i++) {
+                    addLevelButton(grid, i, null);
+                }
+            } else {
+                puzzles.forEach((puzzle, index) => {
+                    addLevelButton(grid, index + 1, puzzle.id);
+                });
+            }
+        }
+        
+        function addLevelButton(grid, levelNumber, puzzleId) {
+            const levelButton = document.createElement('button');
+            levelButton.className = 'level-button';
+            levelButton.innerHTML = `
+                <span class="level-number">${levelNumber}</span>
+                ${completedPuzzles.has(puzzleId) ? '<span class="trophy">🏆</span>' : ''}
+            `;
+            
+            if (puzzleId) {
+                levelButton.onclick = function() {
+                    window.location.href = `/game?difficulty=${currentDifficulty}&puzzleId=${puzzleId}&level=${levelNumber}`;
+                };
+            }
+            
+            grid.appendChild(levelButton);
+        }
+        
+        function goHome() {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
