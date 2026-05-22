@@ -297,6 +297,7 @@
             font-size: 1.3em;
             font-weight: bold;
             aspect-ratio: 1;
+            position: relative;
         }
 
         .num-btn:hover {
@@ -311,6 +312,50 @@
             background: #4CAF50;
             color: white;
             border-color: #4CAF50;
+        }
+
+        .num-btn.disabled {
+            background: #e0e0e0;
+            color: #999;
+            border-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .num-btn.disabled:hover {
+            background: #e0e0e0;
+        }
+
+        .num-remaining {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.6em;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .num-btn.active .num-remaining {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .num-btn.disabled .num-remaining {
+            color: #ccc;
+        }
+
+        .num-btn.min-remaining {
+            border-color: #e53935;
+            border-width: 3px;
+            box-shadow: 0 0 8px rgba(229, 57, 53, 0.5);
+        }
+
+        .num-btn.min-remaining .num-remaining {
+            color: #e53935;
+            font-weight: bold;
+        }
+
+        .num-btn.active.min-remaining {
+            border-color: #e53935;
+            box-shadow: 0 0 8px rgba(229, 57, 53, 0.5);
         }
 
         .num-btn-clear {
@@ -612,6 +657,25 @@
             background: #f0f0f0;
         }
 
+        .secondary-btn {
+            background: transparent;
+            color: black;
+            border: 1px solid black;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .secondary-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .additional-options {
+            margin-top: 20px;
+            text-align: center;
+        }
+
         /* ==================== 页面底部样式 ==================== */
         footer {
             text-align: center;
@@ -689,65 +753,123 @@
 
         @media (max-width: 480px) {
             .container {
-                padding: 10px;
+                padding: 8px;
             }
 
             .game-container {
-                padding: 10px;
+                padding: 8px;
             }
 
             header h1 {
+                font-size: 1.6em;
+            }
+
+            header p {
+                font-size: 1em;
+            }
+
+            .difficulty-selection h2 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+
+            .difficulty-btn {
+                padding: 15px 20px;
+            }
+
+            .difficulty-icon {
                 font-size: 1.8em;
             }
 
+            .difficulty-name {
+                font-size: 1.1em;
+            }
+
+            .continue-game-area {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .continue-game-area p {
+                margin: 10px 0;
+                color: #666;
+            }
+
+            .primary-btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 15px 20px;
+                font-size: 1.1em;
+            }
+
+            .secondary-btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+
+            .additional-options {
+                margin-top: 25px;
+            }
+
             .game-main {
-                padding: 15px;
+                padding: 12px;
             }
 
             .game-info {
                 flex-direction: column;
                 gap: 10px;
-                padding: 12px;
+                padding: 10px;
             }
 
             .puzzle-info {
                 flex-direction: column;
                 gap: 5px;
-                font-size: 0.9em;
+                font-size: 0.85em;
             }
 
             .cell {
-                font-size: 1.2em;
+                font-size: 1.1em;
             }
 
             .number-keypad {
-                gap: 6px;
-                padding: 10px;
+                gap: 5px;
+                padding: 8px;
                 max-width: 100%;
             }
 
             .num-btn {
-                padding: 12px;
-                font-size: 1.1em;
+                padding: 10px;
+                font-size: 1em;
             }
 
             .control-btn {
-                padding: 10px 18px;
-                font-size: 0.9em;
+                padding: 12px 15px;
+                font-size: 0.85em;
             }
 
             .modal-content {
-                margin: 20% auto;
-                padding: 20px;
+                margin: 15% auto;
+                padding: 15px;
                 width: 95%;
             }
 
             .win-buttons {
                 flex-direction: column;
+                gap: 12px;
             }
 
             .win-buttons button {
                 width: 100%;
+                padding: 15px;
+            }
+
+            footer {
+                margin-top: 30px;
+                font-size: 0.9em;
             }
         }
     </style>
@@ -814,6 +936,7 @@
             </div>
             <div class="header-right">
                 <div class="timer" id="timer">00:00</div>
+                <button class="help-btn" onclick="toggleIconMode()" id="iconToggleBtn">🔢 数字</button>
                 <button class="help-btn" onclick="showHelp()">❓ 帮助</button>
             </div>
         </header>
@@ -835,15 +958,15 @@
 
             <!-- 数字键盘 -->
             <div class="number-keypad">
-                <button class="num-btn" onclick="selectNumber(1)">1</button>
-                <button class="num-btn" onclick="selectNumber(2)">2</button>
-                <button class="num-btn" onclick="selectNumber(3)">3</button>
-                <button class="num-btn" onclick="selectNumber(4)">4</button>
-                <button class="num-btn" onclick="selectNumber(5)">5</button>
-                <button class="num-btn" onclick="selectNumber(6)">6</button>
-                <button class="num-btn" onclick="selectNumber(7)">7</button>
-                <button class="num-btn" onclick="selectNumber(8)">8</button>
-                <button class="num-btn" onclick="selectNumber(9)">9</button>
+                <button class="num-btn" onclick="selectNumber(1)"><span class="num-icon">1</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(2)"><span class="num-icon">2</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(3)"><span class="num-icon">3</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(4)"><span class="num-icon">4</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(5)"><span class="num-icon">5</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(6)"><span class="num-icon">6</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(7)"><span class="num-icon">7</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(8)"><span class="num-icon">8</span><span class="num-remaining">9</span></button>
+                <button class="num-btn" onclick="selectNumber(9)"><span class="num-icon">9</span><span class="num-remaining">9</span></button>
                 <button class="num-btn num-btn-clear" onclick="selectNumber(0)">✕</button>
             </div>
 
@@ -980,6 +1103,52 @@
         let bestTime = null;               // 当前题目最佳成绩
         let puzzleIdCounter = 0;           // 题目ID计数器
         let cellsCache = null;             // 单元格DOM缓存
+        let iconMode = 'numbers';          // 图标模式: 'numbers', 'weather', 'animals'
+
+        // 图标映射表
+        const iconMaps = {
+            numbers: ['', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+            weather: ['', '☀️', '⛅', '☁️', '🌧️', '⛈️', '❄️', '🌤️', '🌙', '🌈'],
+            animals: ['', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨']
+        };
+
+        /**
+         * 获取指定数字对应的图标
+         * @param {number} num - 数字（1-9）
+         * @returns {string} - 图标或数字字符串
+         */
+        function getIcon(num) {
+            return iconMaps[iconMode][num] || num.toString();
+        }
+
+        /**
+         * 切换图标模式
+         */
+        function toggleIconMode() {
+            const modes = ['numbers', 'weather', 'animals'];
+            const currentIndex = modes.indexOf(iconMode);
+            iconMode = modes[(currentIndex + 1) % modes.length];
+            renderBoard();
+            updateNumberButtons();
+            
+            // 更新切换按钮的显示
+            updateIconToggleButton();
+        }
+
+        /**
+         * 更新图标切换按钮的显示
+         */
+        function updateIconToggleButton() {
+            const btn = document.getElementById('iconToggleBtn');
+            if (btn) {
+                const modeNames = {
+                    numbers: '🔢 数字',
+                    weather: '☀️ 天气',
+                    animals: '🐾 动物'
+                };
+                btn.textContent = modeNames[iconMode] || '🔢 数字';
+            }
+        }
 
         // ==================== 数独生成器类 ====================
         class SudokuGenerator {
@@ -1434,7 +1603,7 @@
                     const isFixed = originalPuzzle[index] !== '0';
 
                     if (value !== 0) {
-                        cell.textContent = value;
+                        cell.textContent = getIcon(value);
                         if (isFixed) {
                             cell.classList.add('fixed');
                         } else {
@@ -1446,6 +1615,9 @@
                     board.appendChild(cell);
                 }
             }
+            
+            // 更新数字按钮状态
+            updateNumberButtons();
         }
 
         /**
@@ -1497,18 +1669,102 @@
         }
 
         /**
+         * 统计数字在棋盘上出现的次数
+         * @param {number} num - 要统计的数字（1-9）
+         * @returns {number} - 出现次数
+         */
+        function countNumberOccurrences(num) {
+            return currentBoard.filter(cell => cell === num).length;
+        }
+
+        /**
+         * 更新数字按钮的显示状态
+         */
+        function updateNumberButtons() {
+            // 第一步：收集所有数字的剩余数量
+            const remainings = [];
+            for (let num = 1; num <= 9; num++) {
+                const count = countNumberOccurrences(num);
+                const remaining = 9 - count;
+                remainings.push({ num, remaining });
+            }
+            
+            // 找出最小剩余数量（排除已用完的数字）
+            const availableRemainings = remainings.filter(r => r.remaining > 0);
+            const minRemaining = availableRemainings.length > 0 
+                ? Math.min(...availableRemainings.map(r => r.remaining)) 
+                : null;
+            
+            // 第二步：更新每个按钮的状态
+            for (let num = 1; num <= 9; num++) {
+                const count = countNumberOccurrences(num);
+                const remaining = 9 - count;
+                const btn = document.querySelectorAll('.num-btn')[num - 1];
+                const remainingEl = btn.querySelector('.num-remaining');
+                const iconEl = btn.querySelector('.num-icon');
+                
+                // 更新图标显示
+                if (iconEl) {
+                    iconEl.textContent = getIcon(num);
+                }
+                
+                if (remainingEl) {
+                    remainingEl.textContent = remaining.toString();
+                }
+                
+                if (remaining === 0) {
+                    btn.classList.add('disabled');
+                    btn.classList.remove('min-remaining');
+                } else {
+                    btn.classList.remove('disabled');
+                    // 如果是剩余数量最少的，添加高亮样式
+                    if (remaining === minRemaining) {
+                        btn.classList.add('min-remaining');
+                    } else {
+                        btn.classList.remove('min-remaining');
+                    }
+                }
+            }
+            
+            // 如果所有数字都已用完，自动触发检查答案
+            if (availableRemainings.length === 0) {
+                checkSolution();
+            }
+        }
+
+        /**
          * 选择数字
          */
         function selectNumber(num) {
+            // 清除所有按钮的激活状态
             document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
             
+            // 如果点击的是清除按钮（0）
+            if (num === 0) {
+                if (selectedCell !== null) {
+                    placeNumber(0);
+                }
+                selectedNumber = null;
+                return;
+            }
+            
+            // 检查该数字是否还有剩余
+            const count = countNumberOccurrences(num);
+            const remaining = 9 - count;
+            
+            // 如果剩余数量为0，不允许选择
+            if (remaining === 0) {
+                return;
+            }
+            
+            // 如果当前选中的数字和点击的相同，取消选择
             if (selectedNumber !== null && selectedNumber === num) {
                 selectedNumber = null;
                 return;
             }
 
             selectedNumber = num;
-            document.querySelectorAll('.num-btn')[num === 0 ? 9 : num - 1].classList.add('active');
+            document.querySelectorAll('.num-btn')[num - 1].classList.add('active');
 
             if (selectedCell !== null) {
                 placeNumber(num);
@@ -1537,7 +1793,7 @@
                 cell.textContent = '';
                 cell.classList.remove('user-input', 'conflict');
             } else {
-                cell.textContent = num;
+                cell.textContent = getIcon(num);
                 cell.classList.add('user-input');
                 cell.classList.remove('conflict');
             }
@@ -1547,6 +1803,15 @@
             
             // 自动保存进度
             saveGameProgress();
+
+            // 更新数字按钮状态
+            updateNumberButtons();
+
+            // 重置选中状态
+            selectedNumber = null;
+
+            // 移除所有数字按钮的激活样式
+            document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
         }
 
         /**
