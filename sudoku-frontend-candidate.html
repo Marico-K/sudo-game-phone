@@ -327,7 +327,7 @@
             flex-shrink: 0;
         }
 
-        /* 不同数字的背景颜色 */
+        /* 不同数字的背景颜色（仅在同行/列/宫中唯一时显示） */
         .candidate-num.c1 { background: #4CAF50; }
         .candidate-num.c2 { background: #2196F3; }
         .candidate-num.c3 { background: #FF9800; }
@@ -337,6 +337,13 @@
         .candidate-num.c7 { background: #FFEB3B; color: #333; }
         .candidate-num.c8 { background: #607D8B; }
         .candidate-num.c9 { background: #E91E63; }
+        
+        /* 非唯一候选数字样式（白色背景黑色字体） */
+        .candidate-num.candidate-normal {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: 1px solid #ccc;
+        }
 
         /* 草稿模式按钮样式 */
         .control-btn.candidate-mode {
@@ -486,11 +493,14 @@
 
         .modal-content {
             background-color: white;
-            margin: 10% auto;
-            padding: 30px;
+            margin: 5% auto;
+            padding: 20px;
             border: 1px solid black;
             width: 90%;
             max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
 
         .close {
@@ -980,9 +990,11 @@
             }
 
             .modal-content {
-                margin: 15% auto;
+                margin: 10% auto;
                 padding: 15px;
                 width: 95%;
+                max-height: 85vh;
+                overflow-y: auto;
             }
 
             .win-buttons {
@@ -1105,7 +1117,7 @@
             <!-- 控制按钮 -->
             <div class="game-controls">
                 <button class="control-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
-                <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿</button>
+                <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿（开挂）</button>
                 <button class="control-btn" onclick="clearAllCandidates()">🗑️ 清除草稿</button>
                 <button class="control-btn" onclick="checkSolution()">✓ 检查答案</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
@@ -1945,7 +1957,7 @@
                         }
                     } else if (Array.isArray(value) && value.length > 0) {
                         // 候选值
-                        const candidatesEl = createCandidatesElement(value);
+                        const candidatesEl = createCandidatesElement(value, i, j);
                         cell.appendChild(candidatesEl);
                     }
 
@@ -1960,15 +1972,80 @@
         }
 
         /**
-         * 创建候选数字元素（优化：缓存常用元素）
+         * 检查数字在同行/列/宫中是否唯一出现（仅在候选数字中）
+         * 只要在四种情况中的任一种情况下唯一，就返回 true
+         * @param {number} row - 行号
+         * @param {number} col - 列号
+         * @param {number} num - 数字
+         * @returns {boolean} - 是否在任一种情况下唯一
          */
-        function createCandidatesElement(values) {
+        function isCandidateUnique(row, col, num) {
+            const index = row * 9 + col;
+            
+            // 条件1：该格子只有一个候选数字
+            const cellValue = currentBoard[index];
+            const singleCandidate = Array.isArray(cellValue) && cellValue.length === 1;
+            if (singleCandidate) {
+                return true;
+            }
+            
+            // 条件2：检查同行是否唯一
+            let rowUnique = true;
+            for (let c = 0; c < 9; c++) {
+                const idx = row * 9 + c;
+                if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
+                    rowUnique = false;
+                    break;
+                }
+            }
+            
+            // 条件3：检查同列是否唯一
+            let colUnique = true;
+            for (let r = 0; r < 9; r++) {
+                const idx = r * 9 + col;
+                if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
+                    colUnique = false;
+                    break;
+                }
+            }
+            
+            // 条件4：检查同宫是否唯一
+            let boxUnique = true;
+            const boxRowStart = Math.floor(row / 3) * 3;
+            const boxColStart = Math.floor(col / 3) * 3;
+            for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+                for (let c = boxColStart; c < boxColStart + 3; c++) {
+                    const idx = r * 9 + c;
+                    if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
+                        boxUnique = false;
+                        break;
+                    }
+                }
+                if (!boxUnique) break;
+            }
+            
+            // 只要在任一种情况下唯一，就返回 true
+            return rowUnique || colUnique || boxUnique;
+        }
+
+        /**
+         * 创建候选数字元素（优化：缓存常用元素）
+         * @param {number[]} values - 候选数字数组
+         * @param {number} row - 行号（用于判断唯一性）
+         * @param {number} col - 列号（用于判断唯一性）
+         */
+        function createCandidatesElement(values, row, col) {
             const candidatesEl = document.createElement('div');
             candidatesEl.className = 'cell-candidates';
             for (let n = 1; n <= 9; n++) {
                 const candidateEl = document.createElement('span');
                 if (values.includes(n)) {
-                    candidateEl.className = `candidate-num c${n}`;
+                    // 只有当数字在同行/列/宫中唯一时才显示彩色背景
+                    if (isCandidateUnique(row, col, n)) {
+                        candidateEl.className = `candidate-num c${n}`;
+                    } else {
+                        candidateEl.className = 'candidate-num candidate-normal';
+                    }
                     candidateEl.textContent = n;
                 } else {
                     candidateEl.className = 'candidate-num';
@@ -1989,6 +2066,8 @@
             const cell = cellsCache[index];
             const value = currentBoard[index];
             const isFixed = originalPuzzle[index] !== '0';
+            const row = Math.floor(index / 9);
+            const col = index % 9;
 
             // 清除之前的内容
             cell.innerHTML = '';
@@ -2002,7 +2081,7 @@
                     cell.classList.add('user-input');
                 }
             } else if (Array.isArray(value) && value.length > 0) {
-                cell.appendChild(createCandidatesElement(value));
+                cell.appendChild(createCandidatesElement(value, row, col));
             }
         }
 
