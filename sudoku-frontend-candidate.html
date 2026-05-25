@@ -299,18 +299,20 @@
             grid-template-rows: repeat(3, 1fr);
             width: 100%;
             height: 100%;
-            padding: 1px;
-            gap: 0;
+            padding: 2px;
+            gap: 1px;
             box-sizing: border-box;
             overflow: hidden;
             position: absolute;
             top: 0;
             left: 0;
+            justify-items: center;
+            align-items: center;
         }
 
         /* 单个候选数字 */
         .candidate-num {
-            font-size: 10px;
+            font-size: 8px;
             color: white;
             display: flex;
             align-items: center;
@@ -319,9 +321,10 @@
             line-height: 1;
             overflow: hidden;
             border-radius: 50%;
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             font-weight: bold;
+            flex-shrink: 0;
         }
 
         /* 不同数字的背景颜色 */
@@ -948,6 +951,16 @@
 
             .cell {
                 font-size: 1.1em;
+            }
+
+            .cell-candidates {
+                padding: 0;
+            }
+
+            .candidate-num {
+                font-size: 6px;
+                width: 10px;
+                height: 10px;
             }
 
             .number-keypad {
