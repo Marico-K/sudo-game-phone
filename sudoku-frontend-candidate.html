@@ -494,36 +494,58 @@
         .modal-content {
             background-color: white;
             margin: 5% auto;
-            padding: 20px;
+            padding: 0;
             border: 1px solid black;
             width: 90%;
             max-width: 500px;
             max-height: 80vh;
-            overflow-y: auto;
+            overflow: hidden;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: black;
+            font-size: 1.2em;
         }
 
         .close {
             color: #aaa;
-            float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            line-height: 1;
         }
 
         .close:hover {
             color: #000;
         }
 
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: black;
+        .help-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
         }
 
         .help-content h3 {
-            margin-top: 15px;
+            margin-top: 0;
             margin-bottom: 10px;
             color: black;
+        }
+
+        .help-content h3:not(:first-child) {
+            margin-top: 15px;
         }
 
         .help-content ul {
@@ -991,10 +1013,22 @@
 
             .modal-content {
                 margin: 10% auto;
-                padding: 15px;
+                padding: 0;
                 width: 95%;
                 max-height: 85vh;
-                overflow-y: auto;
+                overflow: hidden;
+            }
+
+            .modal-header {
+                padding: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 1.1em;
+            }
+
+            .help-content {
+                padding: 15px;
             }
 
             .win-buttons {
@@ -1129,8 +1163,10 @@
         <!-- 帮助弹窗 -->
         <div class="modal" id="helpModal" style="display: none;">
             <div class="modal-content">
-                <span class="close" onclick="closeModal('helpModal')">&times;</span>
-                <h2>游戏帮助</h2>
+                <div class="modal-header">
+                    <h2>游戏帮助</h2>
+                    <span class="close" onclick="closeModal('helpModal')">&times;</span>
+                </div>
                 <div class="help-content">
                     <h3>游戏规则：</h3>
                     <ul>
@@ -1152,6 +1188,11 @@
                         <li><strong>草稿模式</strong>：在格子中标记候选数字</li>
                         <li>在草稿模式下，点击数字添加/移除候选</li>
                         <li>确定数字会自动删除同行/列/宫的重复候选</li>
+                    </ul>
+                    <h3>候选数字样式：</h3>
+                    <ul>
+                        <li><strong>彩色背景</strong>：表示该候选数字是唯一可能（在同行/列/宫中只出现一次，或该格子只有一个候选）</li>
+                        <li><strong>白色背景</strong>：表示该候选数字在同行/列/宫中多次出现，需要进一步推理</li>
                     </ul>
                     <h3>快捷键：</h3>
                     <ul>
