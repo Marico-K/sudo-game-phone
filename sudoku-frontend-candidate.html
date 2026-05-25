@@ -1817,39 +1817,6 @@
             return cellsCache;
         }
 
-        // 图标缓存
-        const iconCache = {};
-
-        /**
-         * 获取图标（带缓存）
-         * @param {number} num - 数字（1-9）
-         * @returns {string} - 图标字符串
-         */
-        function getIcon(num) {
-            if (iconCache[num] && iconCache[num][iconMode]) {
-                return iconCache[num][iconMode];
-            }
-            
-            let icon;
-            switch (iconMode) {
-                case 'weather':
-                    icon = weatherIcons[num - 1];
-                    break;
-                case 'animals':
-                    icon = animalIcons[num - 1];
-                    break;
-                default:
-                    icon = num.toString();
-            }
-            
-            if (!iconCache[num]) {
-                iconCache[num] = {};
-            }
-            iconCache[num][iconMode] = icon;
-            
-            return icon;
-        }
-
         /**
          * 选中单元格（优化版：减少重复操作）
          */
@@ -2072,10 +2039,10 @@
             // 检查冲突（只检查确定值）
             checkConflicts();
             
-            // 重新选中当前格子（保持高亮）
+            // 保持当前格子的选中状态（添加选中样式）
             const cells = initCellsCache();
             if (cells[index]) {
-                selectCell(row, col, cells[index]);
+                cells[index].classList.add('selected');
             }
             
             // 自动保存进度（使用防抖优化）
