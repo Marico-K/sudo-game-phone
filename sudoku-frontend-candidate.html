@@ -320,26 +320,18 @@
             overflow: hidden;
         }
 
-        /* 模式切换按钮 */
-        .mode-toggle-btn {
-            background: white;
-            color: black;
-            border: 1px solid black;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 0.9em;
-            border-radius: 5px;
-            transition: all 0.2s;
-        }
-
-        .mode-toggle-btn:hover {
-            background: #f0f0f0;
-        }
-
-        .mode-toggle-btn.candidate-mode {
+        /* 草稿模式按钮样式 */
+        .control-btn.candidate-mode {
             background: #4CAF50;
             color: white;
             border-color: #4CAF50;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .control-btn.candidate-mode:hover {
+            background: #45a049;
+            border-color: #45a049;
         }
 
         /* 3x3宫格边框 */
@@ -450,10 +442,16 @@
             padding: 12px 25px;
             cursor: pointer;
             font-size: 1em;
+            font-weight: normal;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            text-align: center;
         }
 
         .control-btn:hover {
             background: #f0f0f0;
+            transform: translateY(-1px);
         }
 
         /* ==================== 弹窗样式 ==================== */
@@ -554,31 +552,36 @@
             background: white;
             padding: 30px;
             border: 1px solid black;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
         }
 
         .stats-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
             margin-bottom: 30px;
         }
 
         .stat-card {
             background: white;
             color: black;
-            padding: 25px;
+            padding: 12px 15px;
             border: 1px solid black;
             text-align: center;
+            flex: 1;
+            min-width: 100px;
         }
 
         .stat-number {
-            font-size: 2.5em;
+            font-size: 1.5em;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 1em;
+            font-size: 0.8em;
         }
 
         .filter-section {
@@ -592,7 +595,8 @@
 
         .filter-buttons {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -600,9 +604,12 @@
             background: white;
             color: black;
             border: 1px solid black;
-            padding: 10px 20px;
+            padding: 10px 15px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.9em;
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
         }
 
         .filter-btn:hover {
@@ -618,6 +625,12 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             margin: 15px 0;
+            min-height: 300px;
+            flex: 1;
+            border: 1px solid black;
+            background: white;
+            position: relative;
+            overflow-y: auto;
         }
 
         .records-table {
@@ -702,19 +715,24 @@
         }
 
         .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 50px 20px;
+            padding: 40px 20px;
             color: black;
+            min-height: 200px;
         }
 
         .empty-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
+            font-size: 3em;
+            margin-bottom: 15px;
         }
 
         .empty-state p {
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1em;
+            margin-bottom: 15px;
         }
 
         .primary-btn {
@@ -800,18 +818,23 @@
 
             .control-btn {
                 width: 100%;
+                min-width: auto;
             }
 
             .stats-summary {
-                grid-template-columns: 1fr;
+                flex-wrap: wrap;
+            }
+
+            .stat-card {
+                min-width: 80px;
             }
 
             .filter-buttons {
-                flex-direction: column;
+                flex-wrap: wrap;
             }
 
             .filter-btn {
-                width: 100%;
+                min-width: 70px;
             }
 
             .records-table {
@@ -1013,7 +1036,6 @@
                     <h1 id="difficultyTitle">数独游戏</h1>
                 </div>
                 <div class="header-right">
-                    <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
                     <button class="help-btn" onclick="toggleIconMode()" id="iconToggleBtn">🔢 数字</button>
                     <button class="help-btn" onclick="showHelp()">❓ 帮助</button>
                 </div>
@@ -1054,6 +1076,7 @@
 
             <!-- 控制按钮 -->
             <div class="game-controls">
+                <button class="control-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
                 <button class="control-btn" onclick="checkSolution()">✓ 检查答案</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
                 <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
@@ -1080,11 +1103,20 @@
                         <li>点击 ✕ 清除当前格子的数字</li>
                         <li>完成后点击"检查答案"验证</li>
                     </ul>
+                    <h3>草稿模式：</h3>
+                    <ul>
+                        <li>点击"确定模式/草稿模式"按钮切换输入模式</li>
+                        <li><strong>确定模式</strong>：直接填入确定的数字</li>
+                        <li><strong>草稿模式</strong>：在格子中标记候选数字</li>
+                        <li>在草稿模式下，点击数字添加/移除候选</li>
+                        <li>确定数字会自动删除同行/列/宫的重复候选</li>
+                    </ul>
                     <h3>快捷键：</h3>
                     <ul>
                         <li>数字键 1-9：填入数字</li>
                         <li>Delete/Backspace：清除数字</li>
                         <li>方向键：移动选中格</li>
+                        <li>E键：切换确定/草稿模式</li>
                     </ul>
                 </div>
             </div>
@@ -1160,13 +1192,13 @@
                     <tbody id="recordsBody">
                     </tbody>
                 </table>
-            </div>
 
-            <!-- 空状态提示 -->
-            <div class="empty-state" id="emptyState" style="display: none;">
-                <div class="empty-icon">📝</div>
-                <p>还没有游戏记录</p>
-                <button class="primary-btn" onclick="goHome()">开始游戏</button>
+                <!-- 空状态提示 -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">📝</div>
+                    <p>还没有游戏记录</p>
+                    <button class="primary-btn" onclick="goHome()">开始游戏</button>
+                </div>
             </div>
         </main>
     </div>
@@ -2332,10 +2364,12 @@
 
             if (filteredRecords.length === 0) {
                 tbody.innerHTML = '';
-                emptyState.style.display = 'block';
+                document.getElementById('recordsTable').style.display = 'none';
+                emptyState.style.display = 'flex';
                 return;
             }
 
+            document.getElementById('recordsTable').style.display = 'table';
             emptyState.style.display = 'none';
 
             // 按ID倒序排列
