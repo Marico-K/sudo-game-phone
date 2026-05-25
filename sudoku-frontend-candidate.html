@@ -311,14 +311,29 @@
         /* 单个候选数字 */
         .candidate-num {
             font-size: 10px;
-            color: #666;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             background: transparent;
             line-height: 1;
             overflow: hidden;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-weight: bold;
         }
+
+        /* 不同数字的背景颜色 */
+        .candidate-num.c1 { background: #4CAF50; }
+        .candidate-num.c2 { background: #2196F3; }
+        .candidate-num.c3 { background: #FF9800; }
+        .candidate-num.c4 { background: #F44336; }
+        .candidate-num.c5 { background: #9C27B0; }
+        .candidate-num.c6 { background: #00BCD4; }
+        .candidate-num.c7 { background: #FFEB3B; color: #333; }
+        .candidate-num.c8 { background: #607D8B; }
+        .candidate-num.c9 { background: #E91E63; }
 
         /* 草稿模式按钮样式 */
         .control-btn.candidate-mode {
@@ -1077,6 +1092,7 @@
             <!-- 控制按钮 -->
             <div class="game-controls">
                 <button class="control-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
+                <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿</button>
                 <button class="control-btn" onclick="checkSolution()">✓ 检查答案</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
                 <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
@@ -1280,6 +1296,87 @@
                     btn.classList.remove('candidate-mode');
                 }
             }
+        }
+
+        /**
+         * 自动填写所有空格的候选数字
+         */
+        function fillAllCandidates() {
+            // 遍历所有格子
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const index = row * 9 + col;
+                    
+                    // 如果是固定数字，跳过
+                    if (originalPuzzle[index] !== '0') continue;
+                    
+                    // 获取当前格子的确定值（如果有）
+                    const currentValue = currentBoard[index];
+                    
+                    // 如果已经有确定值，跳过
+                    if (typeof currentValue === 'number' && currentValue !== 0) continue;
+                    
+                    // 计算该格子的候选数字
+                    const candidates = getCandidates(row, col);
+                    
+                    // 设置候选数字
+                    currentBoard[index] = candidates;
+                }
+            }
+            
+            // 更新显示
+            renderBoard();
+            
+            // 自动保存进度
+            scheduleSaveProgress();
+        }
+
+        /**
+         * 获取指定格子的所有候选数字
+         * @param {number} row - 行号
+         * @param {number} col - 列号
+         * @returns {number[]} - 候选数字数组
+         */
+        function getCandidates(row, col) {
+            const usedNumbers = new Set();
+            
+            // 获取同行已使用的数字
+            for (let c = 0; c < 9; c++) {
+                const val = currentBoard[row * 9 + c];
+                if (typeof val === 'number' && val !== 0) {
+                    usedNumbers.add(val);
+                }
+            }
+            
+            // 获取同列已使用的数字
+            for (let r = 0; r < 9; r++) {
+                const val = currentBoard[r * 9 + col];
+                if (typeof val === 'number' && val !== 0) {
+                    usedNumbers.add(val);
+                }
+            }
+            
+            // 获取同宫已使用的数字
+            const boxRowStart = Math.floor(row / 3) * 3;
+            const boxColStart = Math.floor(col / 3) * 3;
+            for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+                for (let c = boxColStart; c < boxColStart + 3; c++) {
+                    const val = currentBoard[r * 9 + c];
+                    if (typeof val === 'number' && val !== 0) {
+                        usedNumbers.add(val);
+                    }
+                }
+            }
+            
+            // 返回未使用的数字作为候选
+            const candidates = [];
+            for (let n = 1; n <= 9; n++) {
+                if (!usedNumbers.has(n)) {
+                    candidates.push(n);
+                }
+            }
+            
+            return candidates;
         }
 
         /**
@@ -1826,8 +1923,13 @@
             candidatesEl.className = 'cell-candidates';
             for (let n = 1; n <= 9; n++) {
                 const candidateEl = document.createElement('span');
-                candidateEl.className = 'candidate-num';
-                candidateEl.textContent = values.includes(n) ? getIcon(n) : '';
+                if (values.includes(n)) {
+                    candidateEl.className = `candidate-num c${n}`;
+                    candidateEl.textContent = n;
+                } else {
+                    candidateEl.className = 'candidate-num';
+                    candidateEl.textContent = '';
+                }
                 candidatesEl.appendChild(candidateEl);
             }
             return candidatesEl;
