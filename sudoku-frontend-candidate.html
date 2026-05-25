@@ -1064,7 +1064,7 @@
                     <h1 id="difficultyTitle">数独游戏</h1>
                 </div>
                 <div class="header-right">
-                    <button class="help-btn" onclick="toggleIconMode()" id="iconToggleBtn">🔢 数字</button>
+                    <button class="help-btn" id="iconToggleBtn">🔢 数字</button>
                     <button class="help-btn" onclick="showHelp()">❓ 帮助</button>
                 </div>
             </div>
@@ -1106,6 +1106,7 @@
             <div class="game-controls">
                 <button class="control-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
                 <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿</button>
+                <button class="control-btn" onclick="clearAllCandidates()">🗑️ 清除草稿</button>
                 <button class="control-btn" onclick="checkSolution()">✓ 检查答案</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
                 <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
@@ -1286,9 +1287,9 @@
             const btn = document.getElementById('iconToggleBtn');
             if (btn) {
                 const modeNames = {
-                    numbers: '🔢 数字',
+                    numbers: '🔢 数字'/*,
                     weather: '☀️ 天气',
-                    animals: '🐾 动物'
+                    animals: '🐾 动物'*/
                 };
                 btn.textContent = modeNames[iconMode] || '🔢 数字';
             }
@@ -1334,6 +1335,36 @@
                     
                     // 设置候选数字
                     currentBoard[index] = candidates;
+                }
+            }
+            
+            // 更新显示
+            renderBoard();
+            
+            // 自动保存进度
+            scheduleSaveProgress();
+        }
+
+        /**
+         * 清除所有草稿（候选数字）
+         */
+        function clearAllCandidates() {
+            // 遍历所有格子
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const index = row * 9 + col;
+                    
+                    // 如果是固定数字，跳过
+                    if (originalPuzzle[index] !== '0') continue;
+                    
+                    // 获取当前格子的值
+                    const currentValue = currentBoard[index];
+                    
+                    // 如果是候选数组，清空它
+                    if (Array.isArray(currentValue)) {
+                        currentBoard[index] = [];
+                    }
+                    // 如果是确定值，保持不变
                 }
             }
             
