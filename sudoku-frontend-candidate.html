@@ -165,22 +165,28 @@
         }
 
         .difficulty-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
             margin-bottom: 35px;
-            flex-wrap: wrap;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .difficulty-btn {
             background: white;
             border: none;
-            padding: 24px 32px;
+            padding: 15px 20px;
             cursor: pointer;
-            min-width: 160px;
-            border-radius: 16px;
+            min-width: 120px;
+            border-radius: 12px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
         }
 
         .difficulty-btn:hover {
@@ -201,22 +207,29 @@
         }
 
         .difficulty-icon {
-            font-size: 2.5em;
-            display: block;
-            margin-bottom: 10px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+
+        .difficulty-text {
+            display: flex;
+            flex-direction: column;
         }
 
         .difficulty-name {
-            font-size: 1.3em;
+            font-size: 1.15em;
             font-weight: 700;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             color: #333;
         }
 
         .difficulty-desc {
             color: #666;
-            font-size: 0.9em;
+            font-size: 0.8em;
             font-weight: 500;
         }
 
@@ -326,6 +339,15 @@
             transition: all 0.2s ease;
         }
 
+        /* 4宫格和6宫格的字体大小调整 */
+        .cell.size-4x4 {
+            font-size: 2.5em;
+        }
+
+        .cell.size-6x6 {
+            font-size: 2em;
+        }
+
         .cell:hover {
             background: #f0f4f8;
         }
@@ -394,6 +416,18 @@
             align-items: center;
         }
 
+        /* 4宫格候选数容器 */
+        .cell-candidates.size-4x4 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
+        /* 6宫格候选数容器 */
+        .cell-candidates.size-6x6 {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+
         /* 单个候选数字 */
         .candidate-num {
             font-size: 3vmin;
@@ -411,6 +445,22 @@
             aspect-ratio: 1;
             font-weight: bold;
             flex-shrink: 0;
+        }
+
+        /* 4宫格候选数字体大小 */
+        .cell-candidates.size-4x4 .candidate-num {
+            font-size: 5vmin;
+            width: 70%;
+            max-width: 20px;
+            min-width: 12px;
+        }
+
+        /* 6宫格候选数字体大小 */
+        .cell-candidates.size-6x6 .candidate-num {
+            font-size: 4vmin;
+            width: 60%;
+            max-width: 16px;
+            min-width: 10px;
         }
 
         /* 不同数字的背景颜色（仅在同行/列/宫中唯一时显示） */
@@ -883,6 +933,16 @@
             font-weight: 600;
         }
 
+        .difficulty-badge.mini_4x4 {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #0d47a1;
+        }
+
+        .difficulty-badge.mini_6x6 {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: #4a148c;
+        }
+
         .difficulty-badge.easy {
             background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
             color: #155724;
@@ -1013,13 +1073,13 @@
         /* ==================== 响应式样式 ==================== */
         @media (max-width: 768px) {
             .difficulty-buttons {
-                flex-direction: column;
-                align-items: center;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
 
             .difficulty-btn {
                 width: 100%;
-                max-width: 300px;
+                padding: 12px 15px;
             }
 
             .game-header {
@@ -1263,20 +1323,40 @@
             <div id="difficultySection">
                 <h2>选择难度开始游戏</h2>
                 <div class="difficulty-buttons">
+                    <button class="difficulty-btn" onclick="startGame('MINI_4x4')">
+                        <span class="difficulty-icon">🌟</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">迷你4×4</span>
+                            <span class="difficulty-desc">12个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('MINI_6x6')">
+                        <span class="difficulty-icon">✨</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">迷你6×6</span>
+                            <span class="difficulty-desc">22个空格</span>
+                        </span>
+                    </button>
                     <button class="difficulty-btn" onclick="startGame('EASY')">
                         <span class="difficulty-icon">😊</span>
-                        <span class="difficulty-name">简单</span>
-                        <span class="difficulty-desc">35个空格</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">简单9宫格</span>
+                            <span class="difficulty-desc">35个空格</span>
+                        </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('MEDIUM')">
                         <span class="difficulty-icon">🤔</span>
-                        <span class="difficulty-name">中等</span>
-                        <span class="difficulty-desc">45个空格</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">中等9宫格</span>
+                            <span class="difficulty-desc">45个空格</span>
+                        </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('HARD')">
                         <span class="difficulty-icon">😰</span>
-                        <span class="difficulty-name">高级</span>
-                        <span class="difficulty-desc">55个空格</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">高级9宫格</span>
+                            <span class="difficulty-desc">55个空格</span>
+                        </span>
                     </button>
                 </div>
                 <div class="additional-options">
@@ -1325,18 +1405,7 @@
             <div class="sudoku-board" id="sudokuBoard"></div>
 
             <!-- 数字键盘 -->
-            <div id="numberKeyPad" class="number-keypad">
-                <button class="num-btn" onclick="selectNumber(1)"><span class="num-icon">1</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(2)"><span class="num-icon">2</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(3)"><span class="num-icon">3</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(4)"><span class="num-icon">4</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(5)"><span class="num-icon">5</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(6)"><span class="num-icon">6</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(7)"><span class="num-icon">7</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(8)"><span class="num-icon">8</span><span class="num-remaining">9</span></button>
-                <button class="num-btn" onclick="selectNumber(9)"><span class="num-icon">9</span><span class="num-remaining">9</span></button>
-                <button class="num-btn num-btn-clear" onclick="selectNumber(0)">✕</button>
-            </div>
+            <div id="numberKeyPad" class="number-keypad"></div>
 
             <!-- 控制按钮 -->
             <div id="gameControls" class="game-controls">
@@ -1444,9 +1513,11 @@
                 <h3>按难度筛选</h3>
                 <div class="filter-buttons">
                     <button class="filter-btn active" onclick="filterRecords('ALL')">全部</button>
-                    <button class="filter-btn" onclick="filterRecords('EASY')">简单</button>
-                    <button class="filter-btn" onclick="filterRecords('MEDIUM')">中等</button>
-                    <button class="filter-btn" onclick="filterRecords('HARD')">高级</button>
+                    <button class="filter-btn" onclick="filterRecords('MINI_4x4')">迷你4×4</button>
+                    <button class="filter-btn" onclick="filterRecords('MINI_6x6')">迷你6×6</button>
+                    <button class="filter-btn" onclick="filterRecords('EASY')">简单9宫格</button>
+                    <button class="filter-btn" onclick="filterRecords('MEDIUM')">中等9宫格</button>
+                    <button class="filter-btn" onclick="filterRecords('HARD')">高级9宫格</button>
                 </div>
             </div>
 
@@ -1560,10 +1631,11 @@
          * 自动填写所有空格的候选数字
          */
         function fillAllCandidates() {
+            const size = currentPuzzle.size || 9;
             // 遍历所有格子
-            for (let row = 0; row < 9; row++) {
-                for (let col = 0; col < 9; col++) {
-                    const index = row * 9 + col;
+            for (let row = 0; row < size; row++) {
+                for (let col = 0; col < size; col++) {
+                    const index = row * size + col;
                     
                     // 如果是固定数字，跳过
                     if (originalPuzzle[index] !== '0') continue;
@@ -1593,10 +1665,11 @@
          * 清除所有草稿（候选数字）
          */
         function clearAllCandidates() {
+            const size = currentPuzzle.size || 9;
             // 遍历所有格子
-            for (let row = 0; row < 9; row++) {
-                for (let col = 0; col < 9; col++) {
-                    const index = row * 9 + col;
+            for (let row = 0; row < size; row++) {
+                for (let col = 0; col < size; col++) {
+                    const index = row * size + col;
                     
                     // 如果是固定数字，跳过
                     if (originalPuzzle[index] !== '0') continue;
@@ -1626,30 +1699,33 @@
          * @returns {number[]} - 候选数字数组
          */
         function getCandidates(row, col) {
+            const size = currentPuzzle.size || 9;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
             const usedNumbers = new Set();
             
             // 获取同行已使用的数字
-            for (let c = 0; c < 9; c++) {
-                const val = currentBoard[row * 9 + c];
+            for (let c = 0; c < size; c++) {
+                const val = currentBoard[row * size + c];
                 if (typeof val === 'number' && val !== 0) {
                     usedNumbers.add(val);
                 }
             }
             
             // 获取同列已使用的数字
-            for (let r = 0; r < 9; r++) {
-                const val = currentBoard[r * 9 + col];
+            for (let r = 0; r < size; r++) {
+                const val = currentBoard[r * size + col];
                 if (typeof val === 'number' && val !== 0) {
                     usedNumbers.add(val);
                 }
             }
             
             // 获取同宫已使用的数字
-            const boxRowStart = Math.floor(row / 3) * 3;
-            const boxColStart = Math.floor(col / 3) * 3;
-            for (let r = boxRowStart; r < boxRowStart + 3; r++) {
-                for (let c = boxColStart; c < boxColStart + 3; c++) {
-                    const val = currentBoard[r * 9 + c];
+            const boxRowStart = Math.floor(row / boxRows) * boxRows;
+            const boxColStart = Math.floor(col / boxCols) * boxCols;
+            for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                    const val = currentBoard[r * size + c];
                     if (typeof val === 'number' && val !== 0) {
                         usedNumbers.add(val);
                     }
@@ -1658,7 +1734,7 @@
             
             // 返回未使用的数字作为候选
             const candidates = [];
-            for (let n = 1; n <= 9; n++) {
+            for (let n = 1; n <= size; n++) {
                 if (!usedNumbers.has(n)) {
                     candidates.push(n);
                 }
@@ -1674,10 +1750,11 @@
          * @returns {number[]} - 同行其他格子的索引数组
          */
         function getRows(row, col) {
-            const excludeIndex = row * 9 + col;
+            const size = currentPuzzle.size || 9;
+            const excludeIndex = row * size + col;
             const indices = [];
-            for (let c = 0; c < 9; c++) {
-                const idx = row * 9 + c;
+            for (let c = 0; c < size; c++) {
+                const idx = row * size + c;
                 if (idx !== excludeIndex) indices.push(idx);
             }
             return indices;
@@ -1690,10 +1767,11 @@
          * @returns {number[]} - 同列其他格子的索引数组
          */
         function getCols(row, col) {
-            const excludeIndex = row * 9 + col;
+            const size = currentPuzzle.size || 9;
+            const excludeIndex = row * size + col;
             const indices = [];
-            for (let r = 0; r < 9; r++) {
-                const idx = r * 9 + col;
+            for (let r = 0; r < size; r++) {
+                const idx = r * size + col;
                 if (idx !== excludeIndex) indices.push(idx);
             }
             return indices;
@@ -1706,13 +1784,16 @@
          * @returns {number[]} - 同宫其他格子的索引数组
          */
         function getBoxes(row, col) {
-            const rowStart = Math.floor(row / 3) * 3;
-            const colStart = Math.floor(col / 3) * 3;
-            const excludeIndex = row * 9 + col;
+            const size = currentPuzzle.size || 9;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            const rowStart = Math.floor(row / boxRows) * boxRows;
+            const colStart = Math.floor(col / boxCols) * boxCols;
+            const excludeIndex = row * size + col;
             const indices = [];
-            for (let r = rowStart; r < rowStart + 3; r++) {
-                for (let c = colStart; c < colStart + 3; c++) {
-                    const idx = r * 9 + c;
+            for (let r = rowStart; r < rowStart + boxRows; r++) {
+                for (let c = colStart; c < colStart + boxCols; c++) {
+                    const idx = r * size + c;
                     if (idx !== excludeIndex) indices.push(idx);
                 }
             }
@@ -1721,17 +1802,47 @@
 
         // ==================== 数独生成器类 ====================
         class SudokuGenerator {
-            constructor() {
-                this.SIZE = 9;
-                this.solutionCount = 0;
+            constructor(size = 9) {
+                this.setSize(size);
+            }
+
+            /**
+             * 设置棋盘尺寸
+             * @param {number} size 尺寸（4、6或9）
+             */
+            setSize(size) {
+                this.SIZE = size;
+                // 宫格的行列数
+                if (size === 4) {
+                    this.BOX_ROWS = 2;
+                    this.BOX_COLS = 2;
+                } else if (size === 6) {
+                    this.BOX_ROWS = 2;
+                    this.BOX_COLS = 3;
+                } else {
+                    this.BOX_ROWS = 3;
+                    this.BOX_COLS = 3;
+                }
+                // 可用的数字范围
+                this.NUMBERS = [];
+                for (let i = 1; i <= size; i++) {
+                    this.NUMBERS.push(i);
+                }
+            }
+
+            /**
+             * 获取当前尺寸
+             */
+            getSize() {
+                return this.SIZE;
             }
 
             /**
              * 生成完整的数独棋盘
-             * @returns {number[][]} 9x9完整数独棋盘
+             * @returns {number[][]} 完整数独棋盘
              */
             generateFullBoard() {
-                const board = Array(9).fill(null).map(() => Array(9).fill(0));
+                const board = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(0));
                 this.fillBoard(board, 0, 0);
                 return board;
             }
@@ -1748,8 +1859,8 @@
                 const nextRow = col === this.SIZE - 1 ? row + 1 : row;
                 const nextCol = col === this.SIZE - 1 ? 0 : col + 1;
 
-                // 随机打乱1-9的顺序
-                const nums = this.shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                // 随机打乱数字顺序
+                const nums = this.shuffleArray([...this.NUMBERS]);
 
                 for (const num of nums) {
                     if (this.isValid(board, row, col, num)) {
@@ -1778,11 +1889,11 @@
                 for (let r = 0; r < this.SIZE; r++) {
                     if (board[r][col] === num) return false;
                 }
-                // 检查3x3宫格
-                const boxRow = row - row % 3;
-                const boxCol = col - col % 3;
-                for (let r = boxRow; r < boxRow + 3; r++) {
-                    for (let c = boxCol; c < boxCol + 3; c++) {
+                // 检查宫格
+                const boxRow = row - row % this.BOX_ROWS;
+                const boxCol = col - col % this.BOX_COLS;
+                for (let r = boxRow; r < boxRow + this.BOX_ROWS; r++) {
+                    for (let c = boxCol; c < boxCol + this.BOX_COLS; c++) {
                         if (board[r][c] === num) return false;
                     }
                 }
@@ -1855,7 +1966,7 @@
                     return;
                 }
 
-                for (let num = 1; num <= 9; num++) {
+                for (const num of this.NUMBERS) {
                     if (this.isValid(board, row, col, num)) {
                         board[row][col] = num;
                         this.countSolve(board, nextRow, nextCol);
@@ -1880,7 +1991,7 @@
             /**
              * 棋盘转字符串
              * @param {number[][]} board 棋盘
-             * @returns {string} 81位字符串
+             * @returns {string} 字符串
              */
             boardToString(board) {
                 return board.flat().join('');
@@ -1988,11 +2099,12 @@
          * 一键答题：自动填写所有候选数唯一的格子
          */
         function fillUniqueCandidates() {
+            const size = currentPuzzle.size || 9;
             let filledCount = 0;
             
-            for (let row = 0; row < 9; row++) {
-                for (let col = 0; col < 9; col++) {
-                    const index = row * 9 + col;
+            for (let row = 0; row < size; row++) {
+                for (let col = 0; col < size; col++) {
+                    const index = row * size + col;
                     
                     // 跳过固定数字和已有确定值的格子
                     if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
@@ -2039,9 +2151,14 @@
             const board = document.getElementById('sudokuBoard');
             if (!board) return;
             board.innerHTML = '';
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
-                    const index = i * 9 + j;
+            const size = currentPuzzle.size || 9;
+            
+            // 动态设置网格列数
+            board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const index = i * size + j;
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     board.appendChild(cell);
@@ -2057,19 +2174,20 @@
             });
             
             // 从中心点开始，一圈一圈向外扩散
-            const centerRow = 4;
-            const centerCol = 4;
+            const centerRow = Math.floor(size / 2);
+            const centerCol = Math.floor(size / 2);
+            const maxDist = size - 1;
     
             let delay = 100;
-            for (let dist = 0; dist <= 8; dist++) {
-                for (let i = 0; i < 9; i++) {
-                    for (let j = 0; j < 9; j++) {
+            for (let dist = 0; dist <= maxDist; dist++) {
+                for (let i = 0; i < size; i++) {
+                    for (let j = 0; j < size; j++) {
                         const rowDist = Math.abs(i - centerRow);
                         const colDist = Math.abs(j - centerCol);
-                        const maxDist = Math.max(rowDist, colDist);
+                        const maxDistCell = Math.max(rowDist, colDist);
                         
-                        if (maxDist === dist) {
-                            const index = i * 9 + j;
+                        if (maxDistCell === dist) {
+                            const index = i * size + j;
                             const value = currentBoard[index];
                             
                             if (typeof value === 'number' && value !== 0) {
@@ -2149,9 +2267,23 @@
 
             // 使用setTimeout让UI有时间更新
             setTimeout(() => {
-                // 根据难度确定空格数量
-                const emptyCounts = { EASY: 35, MEDIUM: 45, HARD: 55 };
-                const emptyCount = emptyCounts[difficulty];
+                // 根据难度确定棋盘尺寸和空格数量
+                let boardSize, emptyCount;
+                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55 };
+                
+                if (difficulty === 'MINI_4x4') {
+                    boardSize = 4;
+                    emptyCount = emptyCounts[difficulty] || 12; // 4x4棋盘共16格，大约75%空格
+                } else if (difficulty === 'MINI_6x6') {
+                    boardSize = 6;
+                    emptyCount = emptyCounts[difficulty] || 22; // 6x6棋盘共36格，大约60%空格
+                } else {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 35;
+                }
+                
+                // 设置生成器尺寸
+                sudokuGenerator.setSize(boardSize);
 
                 // 生成完整棋盘和题目
                 const fullBoard = sudokuGenerator.generateFullBoard();
@@ -2169,7 +2301,8 @@
                     id: puzzleId,
                     puzzle: puzzleStr,
                     solution: solutionStr,
-                    difficulty: difficulty
+                    difficulty: difficulty,
+                    size: boardSize
                 };
 
                 originalPuzzle = puzzleStr;
@@ -2199,7 +2332,13 @@
          * @returns {string} 中文名称
          */
         function getDifficultyName(difficulty) {
-            const names = { EASY: '简单', MEDIUM: '中等', HARD: '高级' };
+            const names = { 
+                MINI_4x4: '迷你4×4', 
+                MINI_6x6: '迷你6×6', 
+                EASY: '简单9宫格', 
+                MEDIUM: '中等9宫格', 
+                HARD: '高级9宫格' 
+            };
             return names[difficulty] || difficulty;
         }
 
@@ -2296,17 +2435,32 @@
             const board = document.getElementById('sudokuBoard');
             board.innerHTML = '';
             cellsCache = [];
-
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
+            
+            // 获取当前棋盘尺寸
+            const size = currentPuzzle.size || 9;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            
+            // 动态设置网格列数
+            board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
+                    
+                    // 根据尺寸添加不同的类名用于样式调整
+                    if (size === 4) {
+                        cell.classList.add('size-4x4');
+                    } else if (size === 6) {
+                        cell.classList.add('size-6x6');
+                    }
 
-                    // 3x3宫格边框
-                    if (i % 3 === 0 && i !== 0) cell.classList.add('border-top');
-                    if (j % 3 === 0 && j !== 0) cell.classList.add('border-left');
+                    // 宫格边框
+                    if (i % boxRows === 0 && i !== 0) cell.classList.add('border-top');
+                    if (j % boxCols === 0 && j !== 0) cell.classList.add('border-left');
 
-                    const index = i * 9 + j;
+                    const index = i * size + j;
                     const value = currentBoard[index];
                     const isFixed = originalPuzzle[index] !== '0';
 
@@ -2337,6 +2491,9 @@
                 }
             }
             
+            // 生成数字键盘
+            generateNumberKeypad();
+            
             // 更新数字按钮状态
             updateNumberButtons();
         }
@@ -2350,7 +2507,8 @@
          * @returns {boolean} - 是否在任一种情况下唯一
          */
         function isCandidateUnique(row, col, num) {
-            const index = row * 9 + col;
+            const size = currentPuzzle.size || 9;
+            const index = row * size + col;
             
             // 条件1：该格子只有一个候选数字
             const cellValue = currentBoard[index];
@@ -2361,8 +2519,8 @@
             
             // 条件2：检查同行是否唯一
             let rowUnique = true;
-            for (let c = 0; c < 9; c++) {
-                const idx = row * 9 + c;
+            for (let c = 0; c < size; c++) {
+                const idx = row * size + c;
                 if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
                     rowUnique = false;
                     break;
@@ -2371,8 +2529,8 @@
             
             // 条件3：检查同列是否唯一
             let colUnique = true;
-            for (let r = 0; r < 9; r++) {
-                const idx = r * 9 + col;
+            for (let r = 0; r < size; r++) {
+                const idx = r * size + col;
                 if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
                     colUnique = false;
                     break;
@@ -2381,11 +2539,13 @@
             
             // 条件4：检查同宫是否唯一
             let boxUnique = true;
-            const boxRowStart = Math.floor(row / 3) * 3;
-            const boxColStart = Math.floor(col / 3) * 3;
-            for (let r = boxRowStart; r < boxRowStart + 3; r++) {
-                for (let c = boxColStart; c < boxColStart + 3; c++) {
-                    const idx = r * 9 + c;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            const boxRowStart = Math.floor(row / boxRows) * boxRows;
+            const boxColStart = Math.floor(col / boxCols) * boxCols;
+            for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                    const idx = r * size + c;
                     if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
                         boxUnique = false;
                         break;
@@ -2407,7 +2567,17 @@
         function createCandidatesElement(values, row, col) {
             const candidatesEl = document.createElement('div');
             candidatesEl.className = 'cell-candidates';
-            for (let n = 1; n <= 9; n++) {
+            const size = currentPuzzle.size || 9;
+            
+            // 根据尺寸添加不同的类名用于样式调整
+            if (size === 4) {
+                candidatesEl.classList.add('size-4x4');
+            } else if (size === 6) {
+                candidatesEl.classList.add('size-6x6');
+            }
+            
+            const maxNum = size;
+            for (let n = 1; n <= maxNum; n++) {
                 const candidateEl = document.createElement('span');
                 if (values.includes(n)) {
                     // 只有当数字在同行/列/宫中唯一时才显示彩色背景
@@ -2469,11 +2639,14 @@
          * 选中单元格（优化版：减少重复操作）
          */
         function selectCell(row, col, cell) {
-            const index = row * 9 + col;
+            const size = currentPuzzle.size || 9;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            const index = row * size + col;
             const clickedValue = currentBoard[index];
             const cells = initCellsCache();
-            const boxRowStart = Math.floor(row / 3) * 3;
-            const boxColStart = Math.floor(col / 3) * 3;
+            const boxRowStart = Math.floor(row / boxRows) * boxRows;
+            const boxColStart = Math.floor(col / boxCols) * boxCols;
 
             // 清除之前选中单元格的样式
             if (selectedCell && cells[selectedCell.index]) {
@@ -2487,13 +2660,13 @@
 
             // 应用行、列、宫高亮（无论是否有确定值）
             cells.forEach((c, idx) => {
-                const cellRow = Math.floor(idx / 9);
-                const cellCol = idx % 9;
+                const cellRow = Math.floor(idx / size);
+                const cellCol = idx % size;
                 
                 if (cellRow === row) c.classList.add('highlighted-row');
                 if (cellCol === col) c.classList.add('highlighted-col');
-                if (cellRow >= boxRowStart && cellRow < boxRowStart + 3 &&
-                    cellCol >= boxColStart && cellCol < boxColStart + 3) {
+                if (cellRow >= boxRowStart && cellRow < boxRowStart + boxRows &&
+                    cellCol >= boxColStart && cellCol < boxColStart + boxCols) {
                     c.classList.add('highlighted-box');
                 }
             });
@@ -2525,14 +2698,46 @@
         }
 
         /**
+         * 动态生成数字键盘
+         */
+        function generateNumberKeypad() {
+            const keypad = document.getElementById('numberKeyPad');
+            keypad.innerHTML = '';
+            
+            const size = currentPuzzle.size || 9;
+            
+            // 根据尺寸决定列数
+            const cols = size <= 4 ? 4 : 5;
+            keypad.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            // 生成数字按钮
+            for (let num = 1; num <= size; num++) {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn';
+                btn.onclick = () => selectNumber(num);
+                btn.innerHTML = `<span class="num-icon">${getIcon(num)}</span><span class="num-remaining">${size}</span>`;
+                keypad.appendChild(btn);
+            }
+            
+            // 添加清除按钮
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'num-btn num-btn-clear';
+            clearBtn.onclick = () => selectNumber(0);
+            clearBtn.textContent = '✕';
+            keypad.appendChild(clearBtn);
+        }
+
+        /**
          * 更新数字按钮的显示状态
          */
         function updateNumberButtons() {
+            const size = currentPuzzle.size || 9;
+            
             // 第一步：收集所有数字的剩余数量
             const remainings = [];
-            for (let num = 1; num <= 9; num++) {
+            for (let num = 1; num <= size; num++) {
                 const count = countNumberOccurrences(num);
-                const remaining = 9 - count;
+                const remaining = size - count;
                 remainings.push({ num, remaining });
             }
             
@@ -2542,11 +2747,16 @@
                 ? Math.min(...availableRemainings.map(r => r.remaining)) 
                 : null;
             
+            // 获取所有数字按钮（排除清除按钮）
+            const numBtns = Array.from(document.querySelectorAll('.num-btn')).filter(btn => !btn.classList.contains('num-btn-clear'));
+            
             // 第二步：更新每个按钮的状态
-            for (let num = 1; num <= 9; num++) {
+            for (let num = 1; num <= size; num++) {
                 const count = countNumberOccurrences(num);
-                const remaining = 9 - count;
-                const btn = document.querySelectorAll('.num-btn')[num - 1];
+                const remaining = size - count;
+                const btn = numBtns[num - 1];
+                if (!btn) continue;
+                
                 const remainingEl = btn.querySelector('.num-remaining');
                 const iconEl = btn.querySelector('.num-icon');
                 
@@ -2735,23 +2945,26 @@
          * 检查冲突（优化版：减少重复检查）
          */
         function checkConflicts() {
+            const size = currentPuzzle.size || 9;
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
             const cells = initCellsCache();
             
             // 使用 Set 存储有冲突的索引
             const conflictIndices = new Set();
 
             // 检查每个确定值单元格（只有确定值才会产生冲突）
-            for (let i = 0; i < 81; i++) {
+            for (let i = 0; i < size * size; i++) {
                 const value = currentBoard[i];
                 // 只检查确定值（数字类型）
                 if (typeof value !== 'number' || value === 0) continue;
 
-                const row = Math.floor(i / 9);
-                const col = i % 9;
+                const row = Math.floor(i / size);
+                const col = i % size;
 
                 // 检查同行冲突
-                for (let j = 0; j < 9; j++) {
-                    const idx = row * 9 + j;
+                for (let j = 0; j < size; j++) {
+                    const idx = row * size + j;
                     if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
                         conflictIndices.add(i);
                         conflictIndices.add(idx);
@@ -2759,20 +2972,20 @@
                 }
 
                 // 检查同列冲突
-                for (let r = 0; r < 9; r++) {
-                    const idx = r * 9 + col;
+                for (let r = 0; r < size; r++) {
+                    const idx = r * size + col;
                     if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
                         conflictIndices.add(i);
                         conflictIndices.add(idx);
                     }
                 }
 
-                // 检查3x3宫格冲突
-                const boxRow = Math.floor(row / 3) * 3;
-                const boxCol = Math.floor(col / 3) * 3;
-                for (let r = boxRow; r < boxRow + 3; r++) {
-                    for (let c = boxCol; c < boxCol + 3; c++) {
-                        const idx = r * 9 + c;
+                // 检查宫格冲突
+                const boxRow = Math.floor(row / boxRows) * boxRows;
+                const boxCol = Math.floor(col / boxCols) * boxCols;
+                for (let r = boxRow; r < boxRow + boxRows; r++) {
+                    for (let c = boxCol; c < boxCol + boxCols; c++) {
+                        const idx = r * size + c;
                         if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
                             conflictIndices.add(i);
                             conflictIndices.add(idx);
@@ -3152,22 +3365,52 @@
          * 恢复游戏状态
          */
         function restoreGameState(record) {
+            // 根据难度确定棋盘尺寸
+            let boardSize = 9;
+            if (record.difficulty === 'MINI_4x4') {
+                boardSize = 4;
+            } else if (record.difficulty === 'MINI_6x6') {
+                boardSize = 6;
+            }
+            
             // 恢复题目信息
             currentPuzzle = {
                 id: record.puzzleId,
                 puzzle: record.originalPuzzle || record.currentBoard.replace(/[^0]/g, '0'), // 如果没有原始题目，用当前状态生成
                 solution: record.solution || '',
-                difficulty: record.difficulty
+                difficulty: record.difficulty,
+                size: boardSize
             };
             
             // 恢复棋盘状态（支持JSON格式的候选数字）
-            originalPuzzle = record.originalPuzzle || record.currentBoard.replace(/[^0]/g, '0');
+            let boardData;
             try {
                 // 尝试解析JSON格式（支持候选数字数组）
-                currentBoard = JSON.parse(record.currentBoard);
+                boardData = JSON.parse(record.currentBoard);
             } catch (e) {
-                // 如果不是JSON格式，使用旧的解析方式（兼容旧数据）
-                currentBoard = record.currentBoard.split('').map(c => {
+                // 如果不是JSON格式，使用字符串格式
+                boardData = record.currentBoard;
+            }
+            
+            // 恢复原始题目
+            if (record.originalPuzzle) {
+                originalPuzzle = record.originalPuzzle;
+            } else if (Array.isArray(boardData)) {
+                // 从JSON数组中提取原始题目
+                originalPuzzle = boardData.map(cell => 
+                    typeof cell === 'number' && cell !== 0 ? cell : 0
+                ).join('');
+            } else {
+                // 旧格式字符串
+                originalPuzzle = record.currentBoard.replace(/[^0-9]/g, '0');
+            }
+            
+            // 恢复当前棋盘状态
+            if (Array.isArray(boardData)) {
+                currentBoard = boardData;
+            } else {
+                // 旧格式解析
+                currentBoard = boardData.split('').map(c => {
                     const num = parseInt(c);
                     return num === 0 ? [] : num;
                 });
@@ -3239,16 +3482,17 @@
             else if (selectedCell && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 event.preventDefault();
                 let { row, col } = selectedCell;
+                const size = currentPuzzle.size || 9;
                 
                 switch (event.key) {
                     case 'ArrowUp': row = Math.max(0, row - 1); break;
-                    case 'ArrowDown': row = Math.min(8, row + 1); break;
+                    case 'ArrowDown': row = Math.min(size - 1, row + 1); break;
                     case 'ArrowLeft': col = Math.max(0, col - 1); break;
-                    case 'ArrowRight': col = Math.min(8, col + 1); break;
+                    case 'ArrowRight': col = Math.min(size - 1, col + 1); break;
                 }
 
                 const cells = initCellsCache();
-                const newIndex = row * 9 + col;
+                const newIndex = row * size + col;
                 selectCell(row, col, cells[newIndex]);
             }
             // ESC关闭弹窗
