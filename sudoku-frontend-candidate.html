@@ -776,22 +776,22 @@
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 18px 20px;
-            border-radius: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
             text-align: center;
             flex: 1;
-            min-width: 110px;
+            min-width: 85px;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .stat-number {
-            font-size: 1.8em;
+            font-size: 1.4em;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .stat-label {
-            font-size: 0.85em;
+            font-size: 0.75em;
             opacity: 0.9;
         }
 
@@ -2329,8 +2329,9 @@
                         const candidatesEl = createCandidatesElement(value, i, j);
                         cell.appendChild(candidatesEl);
                     }
-
-                    cell.addEventListener('click', () => selectCell(i, j, cell));
+                    if (!hasWon) {
+                        cell.addEventListener('click', () => selectCell(i, j, cell));
+                    }                    
                     board.appendChild(cell);
                     cellsCache.push(cell);
                 }
