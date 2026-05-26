@@ -321,6 +321,88 @@
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
+        /* 对角线数独样式 */
+        .sudoku-board.game-type-diagonal .cell.diagonal-cell {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        }
+
+        /* 奇偶数独样式 */
+        .sudoku-board.game-type-odd_even .cell.odd-cell,
+        .sudoku-board.game-type-odd_even .cell.odd-cell.fixed,
+        .sudoku-board.game-type-odd_even .cell.odd-cell.user-input {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
+        }
+
+        .sudoku-board.game-type-odd_even .cell.even-cell,
+        .sudoku-board.game-type-odd_even .cell.even-cell.fixed,
+        .sudoku-board.game-type-odd_even .cell.even-cell.user-input {
+            background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%) !important;
+        }
+
+        /* 杀手数独样式 */
+        .sudoku-board.game-type-killer {
+            background: #34495e;
+            border-color: #34495e;
+            gap: 0;
+        }
+
+        .sudoku-board.game-type-killer .cell {
+            background: white;
+            border: none;
+            position: relative;
+        }
+
+        /* 杀手数独笼子边框（红色虚线） */
+        .sudoku-board.game-type-killer .cell.cage-border-top {
+            border-top: 2px dashed #e74c3c;
+        }
+
+        .sudoku-board.game-type-killer .cell.cage-border-bottom {
+            border-bottom: 2px dashed #e74c3c;
+        }
+
+        .sudoku-board.game-type-killer .cell.cage-border-left {
+            border-left: 2px dashed #e74c3c;
+        }
+
+        .sudoku-board.game-type-killer .cell.cage-border-right {
+            border-right: 2px dashed #e74c3c;
+        }
+
+        /* 杀手数独宫格边框（深灰色实线） */
+        .sudoku-board.game-type-killer .cell.border-top {
+            border-top: 3px solid #2c3e50 !important;
+        }
+
+        .sudoku-board.game-type-killer .cell.border-left {
+            border-left: 3px solid #2c3e50 !important;
+        }
+
+        .cage-sum {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #e74c3c;
+            background: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            z-index: 9999;
+            line-height: 1;
+            pointer-events: none;
+            border: 1px solid #e74c3c;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .cell.size-4x4 .cage-sum {
+            font-size: 8px;
+        }
+        
+        .cell.size-6x6 .cage-sum {
+            font-size: 9px;
+        }
+
         .cell {
             background: white;
             display: flex;
@@ -334,7 +416,7 @@
             box-sizing: border-box;
             max-width: 100%;
             max-height: 100%;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             transition: all 0.2s ease;
         }
@@ -414,6 +496,7 @@
             left: 0;
             justify-items: center;
             align-items: center;
+            z-index: 10;
         }
 
         /* 4宫格候选数容器 */
@@ -856,36 +939,33 @@
             font-weight: 600;
         }
 
-        .filter-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: #f8f9fa;
-            color: #444;
-            border: none;
-            padding: 12px 20px;
-            cursor: pointer;
+        .filter-select {
+            width: 100%;
+            max-width: 220px;
+            padding: 12px 16px;
             font-size: 0.92em;
-            text-align: center;
-            flex: 1;
-            min-width: 85px;
+            font-weight: 500;
+            color: #444;
+            background: white;
+            border: 2px solid #e9ecef;
             border-radius: 10px;
+            cursor: pointer;
             transition: all 0.25s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
         }
 
-        .filter-btn:hover {
-            background: #e9ecef;
-            transform: translateY(-2px);
+        .filter-select:hover {
+            border-color: #667eea;
         }
 
-        .filter-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .records-table-container {
@@ -941,6 +1021,31 @@
         .difficulty-badge.mini_6x6 {
             background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
             color: #4a148c;
+        }
+
+        .difficulty-badge.diagonal {
+            background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+            color: #0d47a1;
+        }
+
+        .difficulty-badge.odd_even {
+            background: linear-gradient(135deg, #ffebee 0%, #ffab91 100%);
+            color: #bf360c;
+        }
+
+        .difficulty-badge.killer_4x4 {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #2e7d32;
+        }
+
+        .difficulty-badge.killer_6x6 {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #e65100;
+        }
+
+        .difficulty-badge.killer_9x9 {
+            background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+            color: #424242;
         }
 
         .difficulty-badge.easy {
@@ -1127,12 +1232,8 @@
                 min-width: 80px;
             }
 
-            .filter-buttons {
-                flex-wrap: wrap;
-            }
-
-            .filter-btn {
-                min-width: 70px;
+            .filter-select {
+                max-width: 100%;
             }
 
             .records-table {
@@ -1358,6 +1459,41 @@
                             <span class="difficulty-desc">55个空格</span>
                         </span>
                     </button>
+                    <button class="difficulty-btn" onclick="startGame('DIAGONAL')">
+                        <span class="difficulty-icon">🔷</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">对角线数独</span>
+                            <span class="difficulty-desc">两条对角线不重复</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('ODD_EVEN')">
+                        <span class="difficulty-icon">⚫⚪</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">奇偶数独</span>
+                            <span class="difficulty-desc">按色块填奇偶</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_4x4')">
+                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手4×4</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_6x6')">
+                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手6×6</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_9x9')">
+                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手9×9</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
                 </div>
                 <div class="additional-options">
                     <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
@@ -1508,17 +1644,22 @@
                 </div>
             </div>
 
-            <!-- 筛选按钮 -->
+            <!-- 筛选下拉框 -->
             <div class="filter-section">
                 <h3>按难度筛选</h3>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterRecords('ALL')">全部</button>
-                    <button class="filter-btn" onclick="filterRecords('MINI_4x4')">迷你4×4</button>
-                    <button class="filter-btn" onclick="filterRecords('MINI_6x6')">迷你6×6</button>
-                    <button class="filter-btn" onclick="filterRecords('EASY')">简单9宫格</button>
-                    <button class="filter-btn" onclick="filterRecords('MEDIUM')">中等9宫格</button>
-                    <button class="filter-btn" onclick="filterRecords('HARD')">高级9宫格</button>
-                </div>
+                <select class="filter-select" onchange="filterRecords(this.value)">
+                    <option value="ALL">全部</option>
+                    <option value="MINI_4x4">迷你4×4</option>
+                    <option value="MINI_6x6">迷你6×6</option>
+                    <option value="EASY">简单9宫格</option>
+                    <option value="MEDIUM">中等9宫格</option>
+                    <option value="HARD">高级9宫格</option>
+                    <option value="DIAGONAL">对角线数独</option>
+                    <option value="ODD_EVEN">奇偶数独</option>
+                    <option value="KILLER_4x4">杀手4×4</option>
+                    <option value="KILLER_6x6">杀手6×6</option>
+                    <option value="KILLER_9x9">杀手9×9</option>
+                </select>
             </div>
 
             <!-- 记录表格 -->
@@ -1802,8 +1943,9 @@
 
         // ==================== 数独生成器类 ====================
         class SudokuGenerator {
-            constructor(size = 9) {
+            constructor(size = 9, gameType = 'STANDARD') {
                 this.setSize(size);
+                this.setGameType(gameType);
             }
 
             /**
@@ -1828,6 +1970,20 @@
                 for (let i = 1; i <= size; i++) {
                     this.NUMBERS.push(i);
                 }
+            }
+
+            /**
+             * 设置游戏类型
+             * @param {string} gameType 游戏类型（STANDARD, DIAGONAL, ODD_EVEN, KILLER）
+             */
+            setGameType(gameType) {
+                this.GAME_TYPE = gameType;
+                // 奇偶数独的奇偶标记（true为奇数格，false为偶数格）
+                if (gameType !== 'ODD_EVEN') {
+                    this.oddEvenMarks = null;
+                }
+                // 杀手数独的笼子
+                this.cages = null;
             }
 
             /**
@@ -1895,6 +2051,40 @@
                 for (let r = boxRow; r < boxRow + this.BOX_ROWS; r++) {
                     for (let c = boxCol; c < boxCol + this.BOX_COLS; c++) {
                         if (board[r][c] === num) return false;
+                    }
+                }
+                // 对角线数独：检查两条对角线
+                if (this.GAME_TYPE === 'DIAGONAL') {
+                    // 主对角线 (row == col)
+                    if (row === col) {
+                        for (let i = 0; i < this.SIZE; i++) {
+                            if (i !== row && board[i][i] === num) return false;
+                        }
+                    }
+                    // 副对角线 (row + col == SIZE - 1)
+                    if (row + col === this.SIZE - 1) {
+                        for (let i = 0; i < this.SIZE; i++) {
+                            const j = this.SIZE - 1 - i;
+                            if ((i !== row || j !== col) && board[i][j] === num) return false;
+                        }
+                    }
+                }
+                // 奇偶数独：检查奇偶性
+                if (this.GAME_TYPE === 'ODD_EVEN' && this.oddEvenMarks) {
+                    const isOdd = num % 2 === 1;
+                    if (this.oddEvenMarks[row][col] !== isOdd) return false;
+                }
+                // 杀手数独：检查同笼不重复
+                if (this.GAME_TYPE === 'KILLER' && this.cages) {
+                    for (const cage of this.cages) {
+                        const hasCell = cage.cells.some(cell => cell.row === row && cell.col === col);
+                        if (hasCell) {
+                            for (const cell of cage.cells) {
+                                if (cell.row !== row || cell.col !== col) {
+                                    if (board[cell.row][cell.col] === num) return false;
+                                }
+                            }
+                        }
                     }
                 }
                 return true;
@@ -1996,6 +2186,223 @@
             boardToString(board) {
                 return board.flat().join('');
             }
+
+            /**
+             * 生成奇偶数独的奇偶标记
+             * @returns {boolean[][]} 奇偶标记矩阵（true为奇数格，false为偶数格）
+             */
+            generateOddEvenMarks() {
+                const marks = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(false));
+                
+                // 使用棋盘格模式：(r + c) % 2 === 0 的格子为奇数格
+                // 这样每行、每列都恰好有5个奇数格和4个偶数格
+                // 每个宫格也恰好有5个奇数格和4个偶数格
+                for (let r = 0; r < this.SIZE; r++) {
+                    for (let c = 0; c < this.SIZE; c++) {
+                        marks[r][c] = (r + c) % 2 === 0;
+                    }
+                }
+                
+                this.oddEvenMarks = marks;
+                return marks;
+            }
+
+            /**
+             * 生成符合奇偶标记的完整数独解
+             * @returns {number[][]} 符合奇偶标记的完整数独棋盘
+             */
+            generateOddEvenBoard() {
+                if (!this.oddEvenMarks) {
+                    this.generateOddEvenMarks();
+                }
+                
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                while (attempts < maxAttempts) {
+                    const board = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(0));
+                    if (this.fillOddEvenBoard(board, 0, 0)) {
+                        return board;
+                    }
+                    attempts++;
+                }
+                
+                // 如果多次尝试失败，返回空棋盘
+                console.warn('奇偶数独生成失败');
+                return Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(0));
+            }
+
+            /**
+             * 递归填充奇偶数独棋盘
+             * @param {number[][]} board 棋盘
+             * @param {number} row 行
+             * @param {number} col 列
+             * @returns {boolean} 是否成功填充
+             */
+            fillOddEvenBoard(board, row, col) {
+                if (row === this.SIZE) return true;
+                if (col === this.SIZE) return this.fillOddEvenBoard(board, row + 1, 0);
+
+                const nextCol = col === this.SIZE - 1 ? 0 : col + 1;
+
+                // 根据奇偶标记筛选可用数字
+                const requiredOdd = this.oddEvenMarks[row][col];
+                const nums = this.shuffleArray([...this.NUMBERS]).filter(num => (num % 2 === 1) === requiredOdd);
+
+                for (const num of nums) {
+                    // 直接检查行、列、宫格（不检查奇偶性，因为我们已经筛选过了）
+                    if (this.isValidBasic(board, row, col, num)) {
+                        board[row][col] = num;
+                        if (this.fillOddEvenBoard(board, row, nextCol)) return true;
+                        board[row][col] = 0;
+                    }
+                }
+                return false;
+            }
+
+            /**
+             * 基本有效性检查（仅检查行、列、宫格）
+             * @param {number[][]} board 棋盘
+             * @param {number} row 行
+             * @param {number} col 列
+             * @param {number} num 数字
+             * @returns {boolean} 是否有效
+             */
+            isValidBasic(board, row, col, num) {
+                // 检查同行
+                for (let c = 0; c < this.SIZE; c++) {
+                    if (board[row][c] === num) return false;
+                }
+                // 检查同列
+                for (let r = 0; r < this.SIZE; r++) {
+                    if (board[r][col] === num) return false;
+                }
+                // 检查宫格
+                const boxRow = row - row % this.BOX_ROWS;
+                const boxCol = col - col % this.BOX_COLS;
+                for (let r = boxRow; r < boxRow + this.BOX_ROWS; r++) {
+                    for (let c = boxCol; c < boxCol + this.BOX_COLS; c++) {
+                        if (board[r][c] === num) return false;
+                    }
+                }
+                return true;
+            }
+
+            /**
+             * 生成奇偶数独的另一种方法：先生成数独解，再根据解生成标记
+             * @returns {object} 包含完整棋盘和奇偶标记
+             */
+            generateOddEvenPuzzle() {
+                // 先生成一个标准数独解
+                const solution = this.generateFullBoard();
+                
+                // 根据解生成奇偶标记
+                const marks = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(false));
+                for (let r = 0; r < this.SIZE; r++) {
+                    for (let c = 0; c < this.SIZE; c++) {
+                        marks[r][c] = solution[r][c] % 2 === 1;
+                    }
+                }
+                
+                return { solution, marks };
+            }
+
+            /**
+             * 生成杀手数独的完整解
+             * @returns {number[][]} 完整棋盘
+             */
+            generateKillerSolution() {
+                // 先生成一个标准数独解
+                const board = this.generateFullBoard();
+                
+                // 根据解生成笼子
+                this.cages = this.generateCagesFromSolution(board);
+                
+                return board;
+            }
+            
+            /**
+             * 根据解生成笼子
+             * @param {number[][]} board 棋盘解
+             * @returns {Array} 笼子数组
+             */
+            generateCagesFromSolution(board) {
+                const cages = [];
+                const used = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(false));
+                
+                for (let r = 0; r < this.SIZE; r++) {
+                    for (let c = 0; c < this.SIZE; c++) {
+                        if (!used[r][c]) {
+                            const cage = this.createSimpleCageForSolution(r, c, used, board);
+                            cages.push(cage);
+                        }
+                    }
+                }
+                
+                return cages;
+            }
+            
+            /**
+             * 为解创建笼子
+             * @param {number} startRow 起始行
+             * @param {number} startCol 起始列
+             * @param {boolean[][]} used 使用标记
+             * @param {number[][]} board 棋盘解
+             * @returns {Object} 笼子对象
+             */
+            createSimpleCageForSolution(startRow, startCol, used, board) {
+                const cells = [{ row: startRow, col: startCol }];
+                used[startRow][startCol] = true;
+                
+                const maxSize = Math.floor(Math.random() * 3) + 2;
+                
+                while (cells.length < maxSize) {
+                    const possibleExtensions = [];
+                    
+                    for (const cell of cells) {
+                        const directions = [
+                            { dr: -1, dc: 0 },
+                            { dr: 1, dc: 0 },
+                            { dr: 0, dc: -1 },
+                            { dr: 0, dc: 1 }
+                        ];
+                        
+                        for (const { dr, dc } of directions) {
+                            const nr = cell.row + dr;
+                            const nc = cell.col + dc;
+                            
+                            if (nr >= 0 && nr < this.SIZE && nc >= 0 && nc < this.SIZE && !used[nr][nc]) {
+                                const isAdjacent = cells.some(c => 
+                                    (Math.abs(c.row - nr) === 1 && c.col === nc) ||
+                                    (Math.abs(c.col - nc) === 1 && c.row === nr)
+                                );
+                                
+                                if (isAdjacent) {
+                                    possibleExtensions.push({ row: nr, col: nc });
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (possibleExtensions.length === 0) break;
+                    
+                    const extension = possibleExtensions[Math.floor(Math.random() * possibleExtensions.length)];
+                    cells.push(extension);
+                    used[extension.row][extension.col] = true;
+                }
+                
+                // 计算笼子的实际和
+                let sum = 0;
+                for (const cell of cells) {
+                    sum += board[cell.row][cell.col];
+                }
+                
+                return {
+                    cells,
+                    sum
+                };
+            }
+
         }
 
         // 创建数独生成器实例
@@ -2267,31 +2674,78 @@
 
             // 使用setTimeout让UI有时间更新
             setTimeout(() => {
-                // 根据难度确定棋盘尺寸和空格数量
-                let boardSize, emptyCount;
-                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55 };
+                // 根据难度确定棋盘尺寸、空格数量和游戏类型
+                let boardSize, emptyCount, gameType;
+                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81 };
                 
                 if (difficulty === 'MINI_4x4') {
                     boardSize = 4;
-                    emptyCount = emptyCounts[difficulty] || 12; // 4x4棋盘共16格，大约75%空格
+                    emptyCount = emptyCounts[difficulty] || 12;
+                    gameType = 'MINI_4x4';
                 } else if (difficulty === 'MINI_6x6') {
                     boardSize = 6;
-                    emptyCount = emptyCounts[difficulty] || 22; // 6x6棋盘共36格，大约60%空格
+                    emptyCount = emptyCounts[difficulty] || 22;
+                    gameType = 'MINI_6x6';
+                } else if (difficulty === 'DIAGONAL') {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 40;
+                    gameType = 'DIAGONAL';
+                } else if (difficulty === 'ODD_EVEN') {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 40;
+                    gameType = 'ODD_EVEN';
+                } else if (difficulty === 'KILLER_4x4') {
+                    boardSize = 4;
+                    emptyCount = emptyCounts[difficulty] || 16;
+                    gameType = 'KILLER';
+                } else if (difficulty === 'KILLER_6x6') {
+                    boardSize = 6;
+                    emptyCount = emptyCounts[difficulty] || 36;
+                    gameType = 'KILLER';
+                } else if (difficulty === 'KILLER_9x9') {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 81;
+                    gameType = 'KILLER';
                 } else {
                     boardSize = 9;
                     emptyCount = emptyCounts[difficulty] || 35;
+                    gameType = 'STANDARD';
                 }
                 
-                // 设置生成器尺寸
+                // 设置生成器尺寸和游戏类型
                 sudokuGenerator.setSize(boardSize);
+                sudokuGenerator.setGameType(gameType);
 
-                // 生成完整棋盘和题目
-                const fullBoard = sudokuGenerator.generateFullBoard();
-                const puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                let fullBoard, puzzleBoard, puzzleStr, solutionStr;
+                let oddEvenMarks = null;
+                let cages = null;
+
+                if (gameType === 'KILLER') {
+                    // 杀手数独：生成完整解和笼子
+                    fullBoard = sudokuGenerator.generateKillerSolution();
+                    cages = sudokuGenerator.cages;
+                    // 杀手数独没有初始数字，全部为空
+                    puzzleBoard = Array(boardSize).fill(null).map(() => Array(boardSize).fill(0));
+                } else if (gameType === 'ODD_EVEN') {
+                    // 奇偶数独：先生成数独解，再根据解生成标记
+                    const oddEvenResult = sudokuGenerator.generateOddEvenPuzzle();
+                    fullBoard = oddEvenResult.solution;
+                    oddEvenMarks = oddEvenResult.marks;
+                    sudokuGenerator.oddEvenMarks = oddEvenMarks;
+                    puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                } else if (gameType === 'DIAGONAL') {
+                    // 对角线数独
+                    fullBoard = sudokuGenerator.generateFullBoard();
+                    puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                } else {
+                    // 标准数独
+                    fullBoard = sudokuGenerator.generateFullBoard();
+                    puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                }
 
                 // 转换为字符串
-                const puzzleStr = sudokuGenerator.boardToString(puzzleBoard);
-                const solutionStr = sudokuGenerator.boardToString(fullBoard);
+                puzzleStr = sudokuGenerator.boardToString(puzzleBoard);
+                solutionStr = sudokuGenerator.boardToString(fullBoard);
 
                 // 生成题目ID
                 const puzzleId = Storage.getNextPuzzleId();
@@ -2302,7 +2756,10 @@
                     puzzle: puzzleStr,
                     solution: solutionStr,
                     difficulty: difficulty,
-                    size: boardSize
+                    size: boardSize,
+                    gameType: gameType,
+                    oddEvenMarks: oddEvenMarks,
+                    cages: cages
                 };
 
                 originalPuzzle = puzzleStr;
@@ -2337,7 +2794,12 @@
                 MINI_6x6: '迷你6×6', 
                 EASY: '简单9宫格', 
                 MEDIUM: '中等9宫格', 
-                HARD: '高级9宫格' 
+                HARD: '高级9宫格',
+                DIAGONAL: '对角线数独',
+                ODD_EVEN: '奇偶数独',
+                KILLER_4x4: '杀手4×4',
+                KILLER_6x6: '杀手6×6',
+                KILLER_9x9: '杀手9×9'
             };
             return names[difficulty] || difficulty;
         }
@@ -2419,7 +2881,10 @@
                     isCompleted: false,
                     bestTime: null,
                     currentBoard: puzzleStr,
-                    elapsedTime: 0
+                    elapsedTime: 0,
+                    gameType: currentPuzzle.gameType || 'STANDARD',
+                    oddEvenMarks: currentPuzzle.oddEvenMarks || null,
+                    cages: currentPuzzle.cages || null
                 };
             } else {
                 record.originalPuzzle = puzzleStr;
@@ -2436,13 +2901,19 @@
             board.innerHTML = '';
             cellsCache = [];
             
-            // 获取当前棋盘尺寸
+            // 获取当前棋盘尺寸和游戏类型
             const size = currentPuzzle.size || 9;
+            const gameType = currentPuzzle.gameType || 'STANDARD';
             const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            const oddEvenMarks = currentPuzzle.oddEvenMarks;
+            const cages = currentPuzzle.cages;
             
             // 动态设置网格列数
             board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            // 根据游戏类型添加样式类
+            board.className = `sudoku-board game-type-${gameType.toLowerCase()}`;
             
             for (let i = 0; i < size; i++) {
                 for (let j = 0; j < size; j++) {
@@ -2460,6 +2931,43 @@
                     if (i % boxRows === 0 && i !== 0) cell.classList.add('border-top');
                     if (j % boxCols === 0 && j !== 0) cell.classList.add('border-left');
 
+                    // 对角线数独：标记对角线上的格子
+                    if (gameType === 'DIAGONAL') {
+                        if (i === j || i + j === size - 1) {
+                            cell.classList.add('diagonal-cell');
+                        }
+                    }
+
+                    // 奇偶数独：根据奇偶性标记格子
+                    if (gameType === 'ODD_EVEN' && oddEvenMarks) {
+                        if (oddEvenMarks[i][j]) {
+                            cell.classList.add('odd-cell');
+                        } else {
+                            cell.classList.add('even-cell');
+                        }
+                    }
+
+                    // 杀手数独：标记笼子信息和边框
+                    if (gameType === 'KILLER' && cages) {
+                        for (const cage of cages) {
+                            if (cage.cells.some(cellInfo => cellInfo.row === i && cellInfo.col === j)) {
+                                cell.dataset.cageSum = cage.sum;
+                                // 标记笼子边框
+                                const cageCells = cage.cells;
+                                const isTopEdge = !cageCells.some(c => c.row === i - 1 && c.col === j);
+                                const isBottomEdge = !cageCells.some(c => c.row === i + 1 && c.col === j);
+                                const isLeftEdge = !cageCells.some(c => c.row === i && c.col === j - 1);
+                                const isRightEdge = !cageCells.some(c => c.row === i && c.col === j + 1);
+                                
+                                if (isTopEdge) cell.classList.add('cage-border-top');
+                                if (isBottomEdge) cell.classList.add('cage-border-bottom');
+                                if (isLeftEdge) cell.classList.add('cage-border-left');
+                                if (isRightEdge) cell.classList.add('cage-border-right');
+                                break;
+                            }
+                        }
+                    }
+
                     const index = i * size + j;
                     const value = currentBoard[index];
                     const isFixed = originalPuzzle[index] !== '0';
@@ -2469,10 +2977,31 @@
                     cell.dataset.row = i;
                     cell.dataset.col = j;
 
+                    // 杀手数独：创建笼子和元素
+                    let cageSumEl = null;
+                    if (gameType === 'KILLER' && cages && cages.length > 0) {
+                        const cage = cages.find(c => c.cells.some(cellInfo => cellInfo.row === i && cellInfo.col === j));
+                        if (cage) {
+                            const isFirstCell = cage.cells[0].row === i && cage.cells[0].col === j;
+                            if (isFirstCell) {
+                                cageSumEl = document.createElement('div');
+                                cageSumEl.className = 'cage-sum';
+                                cageSumEl.textContent = cage.sum;
+                            }
+                        }
+                    }
+                    
                     // 判断是确定值还是候选值
-                    if (typeof value === 'number') {
+                    if (typeof value === 'number' && value !== 0) {
                         // 确定值
-                        cell.textContent = getIcon(value);
+                        const valueEl = document.createElement('span');
+                        valueEl.textContent = getIcon(value);
+                        valueEl.style.position = 'absolute';
+                        valueEl.style.top = '50%';
+                        valueEl.style.left = '50%';
+                        valueEl.style.transform = 'translate(-50%, -50%)';
+                        valueEl.style.zIndex = '5';
+                        cell.appendChild(valueEl);
                         if (isFixed) {
                             cell.classList.add('fixed');
                         } else {
@@ -2483,6 +3012,12 @@
                         const candidatesEl = createCandidatesElement(value, i, j);
                         cell.appendChild(candidatesEl);
                     }
+                    
+                    // 最后添加笼子和（确保在最上层）
+                    if (cageSumEl) {
+                        cell.appendChild(cageSumEl);
+                    }
+                    
                     if (!hasWon) {
                         cell.addEventListener('click', () => selectCell(i, j, cell));
                     }                    
@@ -2606,15 +3141,26 @@
             const cell = cellsCache[index];
             const value = currentBoard[index];
             const isFixed = originalPuzzle[index] !== '0';
-            const row = Math.floor(index / 9);
-            const col = index % 9;
+            const size = currentPuzzle.size || 9;
+            const row = Math.floor(index / size);
+            const col = index % size;
+
+            // 保存笼子和元素（如果存在）
+            const cageSumEl = cell.querySelector('.cage-sum');
 
             // 清除之前的内容
             cell.innerHTML = '';
             cell.classList.remove('fixed', 'user-input', 'conflict');
 
             if (typeof value === 'number') {
-                cell.textContent = getIcon(value);
+                const valueEl = document.createElement('span');
+                valueEl.textContent = getIcon(value);
+                valueEl.style.position = 'absolute';
+                valueEl.style.top = '50%';
+                valueEl.style.left = '50%';
+                valueEl.style.transform = 'translate(-50%, -50%)';
+                valueEl.style.zIndex = '5';
+                cell.appendChild(valueEl);
                 if (isFixed) {
                     cell.classList.add('fixed');
                 } else {
@@ -2622,6 +3168,11 @@
                 }
             } else if (Array.isArray(value) && value.length > 0) {
                 cell.appendChild(createCandidatesElement(value, row, col));
+            }
+
+            // 最后重新添加笼子和元素（确保在最上层）
+            if (cageSumEl) {
+                cell.appendChild(cageSumEl);
             }
         }
 
@@ -3367,10 +3918,20 @@
         function restoreGameState(record) {
             // 根据难度确定棋盘尺寸
             let boardSize = 9;
-            if (record.difficulty === 'MINI_4x4') {
+            if (record.difficulty === 'MINI_4x4' || record.difficulty === 'KILLER_4x4') {
                 boardSize = 4;
-            } else if (record.difficulty === 'MINI_6x6') {
+            } else if (record.difficulty === 'MINI_6x6' || record.difficulty === 'KILLER_6x6') {
                 boardSize = 6;
+            }
+            
+            // 根据难度确定游戏类型
+            let gameType = 'STANDARD';
+            if (record.difficulty === 'DIAGONAL') {
+                gameType = 'DIAGONAL';
+            } else if (record.difficulty === 'ODD_EVEN') {
+                gameType = 'ODD_EVEN';
+            } else if (record.difficulty === 'KILLER_4x4' || record.difficulty === 'KILLER_6x6' || record.difficulty === 'KILLER_9x9') {
+                gameType = 'KILLER';
             }
             
             // 恢复题目信息
@@ -3379,7 +3940,10 @@
                 puzzle: record.originalPuzzle || record.currentBoard.replace(/[^0]/g, '0'), // 如果没有原始题目，用当前状态生成
                 solution: record.solution || '',
                 difficulty: record.difficulty,
-                size: boardSize
+                size: boardSize,
+                gameType: gameType,
+                oddEvenMarks: record.oddEvenMarks || null,
+                cages: record.cages || null
             };
             
             // 恢复棋盘状态（支持JSON格式的候选数字）
