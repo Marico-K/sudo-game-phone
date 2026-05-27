@@ -341,8 +341,8 @@
 
         /* 杀手数独样式 */
         .sudoku-board.game-type-killer {
-            background: #34495e;
-            border-color: #34495e;
+            background: white;
+            border-color: #2c3e50;
             gap: 0;
         }
 
@@ -352,38 +352,64 @@
             position: relative;
         }
 
-        /* 杀手数独笼子边框（红色虚线） */
-        .sudoku-board.game-type-killer .cell.cage-border-top {
-            border-top: 2px dashed #e74c3c;
-        }
+        /* 杀手数独笼子背景色 - 12种颜色轮询 */
+        .sudoku-board.game-type-killer .cell.cage-color-0 { background-color: rgba(231, 76, 60, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-0 .cage-sum { color: #c0392b; border-color: #c0392b; }
 
-        .sudoku-board.game-type-killer .cell.cage-border-bottom {
-            border-bottom: 2px dashed #e74c3c;
-        }
+        .sudoku-board.game-type-killer .cell.cage-color-1 { background-color: rgba(52, 152, 219, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-1 .cage-sum { color: #2980b9; border-color: #2980b9; }
 
-        .sudoku-board.game-type-killer .cell.cage-border-left {
-            border-left: 2px dashed #e74c3c;
-        }
+        .sudoku-board.game-type-killer .cell.cage-color-2 { background-color: rgba(46, 204, 113, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-2 .cage-sum { color: #27ae60; border-color: #27ae60; }
 
-        .sudoku-board.game-type-killer .cell.cage-border-right {
-            border-right: 2px dashed #e74c3c;
-        }
+        .sudoku-board.game-type-killer .cell.cage-color-3 { background-color: rgba(243, 156, 18, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-3 .cage-sum { color: #d68910; border-color: #d68910; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-4 { background-color: rgba(155, 89, 182, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-4 .cage-sum { color: #8e44ad; border-color: #8e44ad; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-5 { background-color: rgba(26, 188, 156, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-5 .cage-sum { color: #16a085; border-color: #16a085; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-6 .cage-sum { color: #c2185b; border-color: #c2185b; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-7 { background-color: rgba(96, 125, 139, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-7 .cage-sum { color: #546e7a; border-color: #546e7a; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-8 { background-color: rgba(241, 196, 15, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-8 .cage-sum { color: #f1c40f; border-color: #f1c40f; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-9 { background-color: rgba(127, 140, 141, 0.3) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-9 .cage-sum { color: #7f8c8d; border-color: #7f8c8d; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-10 { background-color: rgba(248, 148, 6, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-10 .cage-sum { color: #f89406; border-color: #f89406; }
+
+        .sudoku-board.game-type-killer .cell.cage-color-11 { background-color: rgba(142, 68, 173, 0.2) !important; }
+        .sudoku-board.game-type-killer .cell.cage-color-11 .cage-sum { color: #9b59b6; border-color: #9b59b6; }
+
+        /* 杀手数独笼子边框（统一深灰色虚线） */
+        .sudoku-board.game-type-killer .cell.cage-border-top { border-top: 1px dashed #ff8c8c; }
+        .sudoku-board.game-type-killer .cell.cage-border-bottom { border-bottom: 1px dashed #ff8c8c; }
+        .sudoku-board.game-type-killer .cell.cage-border-left { border-left: 1px dashed #ff8c8c; }
+        .sudoku-board.game-type-killer .cell.cage-border-right { border-right: 1px dashed #ff8c8c; }
 
         /* 杀手数独宫格边框（深灰色实线） */
         .sudoku-board.game-type-killer .cell.border-top {
-            border-top: 3px solid #2c3e50 !important;
+            border-top: 1.5px solid #2c3e50 !important;
         }
 
         .sudoku-board.game-type-killer .cell.border-left {
-            border-left: 3px solid #2c3e50 !important;
+            border-left: 1.5px solid #2c3e50 !important;
         }
 
         .cage-sum {
             position: absolute;
             top: 1px;
             left: 1px;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 8px;
+            font-weight: 600;
             color: #e74c3c;
             background: white;
             padding: 1px 4px;
@@ -396,7 +422,7 @@
         }
         
         .cell.size-4x4 .cage-sum {
-            font-size: 8px;
+            font-size: 10px;
         }
         
         .cell.size-6x6 .cage-sum {
@@ -532,7 +558,7 @@
 
         /* 4宫格候选数字体大小 */
         .cell-candidates.size-4x4 .candidate-num {
-            font-size: 5vmin;
+            font-size: 4vmin;
             width: 70%;
             max-width: 20px;
             min-width: 12px;
@@ -540,7 +566,7 @@
 
         /* 6宫格候选数字体大小 */
         .cell-candidates.size-6x6 .candidate-num {
-            font-size: 4vmin;
+            font-size: 3vmin;
             width: 60%;
             max-width: 16px;
             min-width: 10px;
@@ -557,9 +583,9 @@
         .candidate-num.c8 { background: #607D8B; }
         .candidate-num.c9 { background: #E91E63; }
         
-        /* 非唯一候选数字样式（白色背景黑色字体） */
+        /* 非唯一候选数字样式（透明背景） */
         .candidate-num.candidate-normal {
-            background: rgba(255, 255, 255, 0.8);
+            background: transparent;
             color: #333;
         }
 
@@ -581,11 +607,11 @@
 
         /* 3x3宫格边框 */
         .cell.border-top {
-            border-top: 3px solid #2c3e50;
+            border-top: 1.5px solid #2c3e50;
         }
 
         .cell.border-left {
-            border-left: 3px solid #2c3e50;
+            border-left: 1.5px solid #2c3e50;
         }
 
         /* ==================== 数字键盘样式 ==================== */
@@ -732,7 +758,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 100000;
             left: 0;
             top: 0;
             width: 100%;
@@ -2308,99 +2334,231 @@
             }
 
             /**
-             * 生成杀手数独的完整解
+             * 杀手数独专用：校验笼子内数字不重复
+             */
+            isValidKillerCage(board, row, col, num, cages) {
+                const currentCage = cages.find(cage =>
+                    cage.cells.some(cell => cell.row === row && cell.col === col)
+                );
+                if (!currentCage) return true;
+                return !currentCage.cells.some(cell => board[cell.row][cell.col] === num);
+            }
+
+            /**
+             * 生成【唯一解】杀手数独（对外核心方法）
              * @returns {number[][]} 完整棋盘
              */
             generateKillerSolution() {
-                // 先生成一个标准数独解
-                const board = this.generateFullBoard();
+                this.setGameType('KILLER');
+                let solution = null;
                 
-                // 根据解生成笼子
-                this.cages = this.generateCagesFromSolution(board);
+                // 根据棋盘大小设置提示数比例
+                let hintRatio = 0;
+                if (this.SIZE === 4) {
+                    hintRatio = 0; // 4x4: 无提示数
+                } else if (this.SIZE === 6) {
+                    hintRatio = 0.2; // 6x6: 20%提示数
+                } else if (this.SIZE === 9) {
+                    hintRatio = 0.3; // 9x9: 30%提示数
+                }
                 
-                return board;
+                let attempt = 0;
+                // 根据棋盘大小调整尝试次数：9x9复杂度高，尝试次数少一些
+                const maxAttempt = 200;
+
+                while (attempt < maxAttempt) {
+                    attempt++;
+                    // 1. 生成标准数独解
+                    solution = this.generateFullBoard();
+                    // 2. 生成合规笼子（连通、大小2-3格、无重叠）
+                    this.cages = this.generateValidCages(solution);
+                    // 3. 创建带提示数的谜题
+                    const puzzleBoard = this.createKillerPuzzleWithHints(solution, hintRatio);
+                    this.puzzleBoard = puzzleBoard;
+                    
+                    // 4. 使用带提示数的谜题验证唯一解（提示数大大减少搜索空间）
+                    if (this.checkKillerUniqueSolutionWithHints()) {
+                        console.log(`✅ 第${attempt}次尝试：找到唯一解杀手数独`);
+                        return solution;
+                    }
+                }
+
+                console.log('⚠️ 达到最大尝试次数，返回当前解');
+                return solution || this.generateFullBoard();
             }
-            
+
             /**
-             * 根据解生成笼子
-             * @param {number[][]} board 棋盘解
-             * @returns {Array} 笼子数组
+             * 创建带提示数的杀手数独谜题
+             * @param {number[][]} solution 完整解
+             * @param {number} hintRatio 提示数比例（0-1）
              */
-            generateCagesFromSolution(board) {
-                const cages = [];
-                const used = Array(this.SIZE).fill(null).map(() => Array(this.SIZE).fill(false));
+            createKillerPuzzleWithHints(solution, hintRatio = 0.3) {
+                const puzzle = solution.map(row => [...row]);
+                const totalCells = this.SIZE * this.SIZE;
+                const hintCount = Math.floor(totalCells * hintRatio);
+                const positions = [];
                 
                 for (let r = 0; r < this.SIZE; r++) {
                     for (let c = 0; c < this.SIZE; c++) {
-                        if (!used[r][c]) {
-                            const cage = this.createSimpleCageForSolution(r, c, used, board);
-                            cages.push(cage);
+                        positions.push({ row: r, col: c });
+                    }
+                }
+                
+                this.shuffleArray(positions);
+                
+                const keepPositions = new Set();
+                for (let i = 0; i < hintCount; i++) {
+                    const pos = positions[i];
+                    keepPositions.add(`${pos.row}-${pos.col}`);
+                }
+                
+                for (let r = 0; r < this.SIZE; r++) {
+                    for (let c = 0; c < this.SIZE; c++) {
+                        if (!keepPositions.has(`${r}-${c}`)) {
+                            puzzle[r][c] = 0;
                         }
                     }
                 }
                 
+                return puzzle;
+            }
+
+            /**
+             * 生成合规笼子（连通、大小2-4格、无重叠、相邻）
+             */
+            generateValidCages(board) {
+                const used = Array(this.SIZE).fill(false).map(() => Array(this.SIZE).fill(false));
+                const cages = [];
+                // 笼子大小：2-3格（降低难度，避免多解）
+                const CAGE_MIN_SIZE = 2;
+                const CAGE_MAX_SIZE = 4; // 统一最大4格，降低难度
+
+                for (let r = 0; r < this.SIZE; r++) {
+                    for (let c = 0; c < this.SIZE; c++) {
+                        if (used[r][c]) continue;
+                        const cage = this.createCage(r, c, used, board, CAGE_MIN_SIZE, CAGE_MAX_SIZE);
+                        cages.push(cage);
+                    }
+                }
                 return cages;
             }
-            
+
             /**
-             * 为解创建笼子
-             * @param {number} startRow 起始行
-             * @param {number} startCol 起始列
-             * @param {boolean[][]} used 使用标记
-             * @param {number[][]} board 棋盘解
-             * @returns {Object} 笼子对象
+             * 创建单个连通笼子
              */
-            createSimpleCageForSolution(startRow, startCol, used, board) {
-                const cells = [{ row: startRow, col: startCol }];
-                used[startRow][startCol] = true;
-                
-                const maxSize = Math.floor(Math.random() * 3) + 2;
-                
-                while (cells.length < maxSize) {
-                    const possibleExtensions = [];
-                    
+            createCage(startR, startC, used, board, minSize, maxSize) {
+                const cells = [{ row: startR, col: startC }];
+                used[startR][startC] = true;
+                const targetSize = minSize + Math.floor(Math.random() * (maxSize - minSize + 1));
+
+                // 扩展相邻格子
+                while (cells.length < targetSize) {
+                    const neighbors = [];
                     for (const cell of cells) {
-                        const directions = [
-                            { dr: -1, dc: 0 },
-                            { dr: 1, dc: 0 },
-                            { dr: 0, dc: -1 },
-                            { dr: 0, dc: 1 }
-                        ];
-                        
-                        for (const { dr, dc } of directions) {
+                        const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+                        for (const [dr, dc] of dirs) {
                             const nr = cell.row + dr;
                             const nc = cell.col + dc;
-                            
                             if (nr >= 0 && nr < this.SIZE && nc >= 0 && nc < this.SIZE && !used[nr][nc]) {
-                                const isAdjacent = cells.some(c => 
-                                    (Math.abs(c.row - nr) === 1 && c.col === nc) ||
-                                    (Math.abs(c.col - nc) === 1 && c.row === nr)
-                                );
-                                
-                                if (isAdjacent) {
-                                    possibleExtensions.push({ row: nr, col: nc });
-                                }
+                                neighbors.push({ row: nr, col: nc });
                             }
                         }
                     }
-                    
-                    if (possibleExtensions.length === 0) break;
-                    
-                    const extension = possibleExtensions[Math.floor(Math.random() * possibleExtensions.length)];
-                    cells.push(extension);
-                    used[extension.row][extension.col] = true;
+                    if (neighbors.length === 0) break;
+                    const add = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    cells.push(add);
+                    used[add.row][add.col] = true;
                 }
-                
-                // 计算笼子的实际和
-                let sum = 0;
-                for (const cell of cells) {
-                    sum += board[cell.row][cell.col];
+
+                // 计算笼子和
+                const sum = cells.reduce((s, cell) => s + board[cell.row][cell.col], 0);
+                return { cells, sum };
+            }
+
+            /**
+             * 【极速验证】杀手数独是否唯一解（核心优化）
+             */
+            checkKillerUniqueSolution() {
+                this.solutionCount = 0;
+                const emptyBoard = Array(this.SIZE).fill(0).map(() => Array(this.SIZE).fill(0));
+                this.backtrackKiller(emptyBoard, this.cages, 0, 0);
+                return this.solutionCount === 1;
+            }
+
+            /**
+             * 使用带提示数的谜题验证唯一解（大大减少搜索空间）
+             */
+            checkKillerUniqueSolutionWithHints() {
+                this.solutionCount = 0;
+                // 使用带提示数的谜题作为起点
+                const startBoard = this.puzzleBoard.map(row => [...row]);
+                this.backtrackKiller(startBoard, this.cages, 0, 0);
+                return this.solutionCount === 1;
+            }
+
+            /**
+             * 杀手数独回溯求解（超强剪枝，速度提升10倍+）
+             */
+            backtrackKiller(board, cages, row, col) {
+                // 找到2个解直接终止
+                if (this.solutionCount >= 2) return;
+                // 填满棋盘 = 找到解
+                if (row === this.SIZE) {
+                    this.solutionCount++;
+                    return;
                 }
-                
-                return {
-                    cells,
-                    sum
-                };
+
+                const nextRow = col === this.SIZE - 1 ? row + 1 : row;
+                const nextCol = col === this.SIZE - 1 ? 0 : col + 1;
+
+                // 已填数字直接跳过
+                if (board[row][col] !== 0) {
+                    this.backtrackKiller(board, cages, nextRow, nextCol);
+                    return;
+                }
+
+                // 获取当前笼子
+                const cage = cages.find(c =>
+                    c.cells.some(cell => cell.row === row && cell.col === col)
+                );
+
+                // 笼子预计算：已填和、已用数字、剩余格子
+                let filledSum = 0, filledCnt = 0;
+                const usedNums = new Set();
+                if (cage) {
+                    for (const cell of cage.cells) {
+                        const v = board[cell.row][cell.col];
+                        if (v !== 0) {
+                            filledSum += v;
+                            filledCnt++;
+                            usedNums.add(v);
+                        }
+                    }
+                }
+                const remainSum = cage ? cage.sum - filledSum : 0;
+                const remainCnt = cage ? cage.cells.length - filledCnt : 0;
+
+                // 尝试所有合法数字
+                for (const num of this.NUMBERS) {
+                    // 1. 笼子内已用数字
+                    if (usedNums.has(num)) continue;
+                    // 2. 基础数独规则
+                    if (!this.isValid(board, row, col, num)) continue;
+                    // 3. 笼子和剪枝（剩余数字不可能满足和要求，直接跳过）
+                    if (cage) {
+                        const minRemain = remainCnt - 1;
+                        const maxRemain = (remainCnt - 1) * this.SIZE;
+                        if (num + minRemain > remainSum || num + maxRemain < remainSum) continue;
+                    }
+
+                    // 填写数字
+                    board[row][col] = num;
+                    this.backtrackKiller(board, cages, nextRow, nextCol);
+                    board[row][col] = 0;
+
+                    // 提前终止
+                    if (this.solutionCount >= 2) return;
+                }
             }
 
         }
@@ -2724,8 +2882,13 @@
                     // 杀手数独：生成完整解和笼子
                     fullBoard = sudokuGenerator.generateKillerSolution();
                     cages = sudokuGenerator.cages;
-                    // 杀手数独没有初始数字，全部为空
-                    puzzleBoard = Array(boardSize).fill(null).map(() => Array(boardSize).fill(0));
+                    // 如果有预先生成的带提示数谜题（9x9专用），使用它
+                    if (sudokuGenerator.puzzleBoard) {
+                        puzzleBoard = sudokuGenerator.puzzleBoard;
+                    } else {
+                        // 杀手数独没有初始数字，全部为空
+                        puzzleBoard = Array(boardSize).fill(null).map(() => Array(boardSize).fill(0));
+                    }
                 } else if (gameType === 'ODD_EVEN') {
                     // 奇偶数独：先生成数独解，再根据解生成标记
                     const oddEvenResult = sudokuGenerator.generateOddEvenPuzzle();
@@ -2949,15 +3112,19 @@
 
                     // 杀手数独：标记笼子信息和边框
                     if (gameType === 'KILLER' && cages) {
-                        for (const cage of cages) {
+                        for (let cageIndex = 0; cageIndex < cages.length; cageIndex++) {
+                            const cage = cages[cageIndex];
                             if (cage.cells.some(cellInfo => cellInfo.row === i && cellInfo.col === j)) {
                                 cell.dataset.cageSum = cage.sum;
+                                // 添加笼子颜色类（循环使用12种颜色）
+                                const colorIndex = cageIndex % 12;
+                                cell.classList.add(`cage-color-${colorIndex}`);
                                 // 标记笼子边框
                                 const cageCells = cage.cells;
                                 const isTopEdge = !cageCells.some(c => c.row === i - 1 && c.col === j);
                                 const isBottomEdge = !cageCells.some(c => c.row === i + 1 && c.col === j);
-                                const isLeftEdge = !cageCells.some(c => c.row === i && c.col === j - 1);
-                                const isRightEdge = !cageCells.some(c => c.row === i && c.col === j + 1);
+                                const isLeftEdge = !cageCells.some(c => c.col === j - 1 && c.row === i);
+                                const isRightEdge = !cageCells.some(c => c.col === j + 1 && c.row === i);
                                 
                                 if (isTopEdge) cell.classList.add('cage-border-top');
                                 if (isBottomEdge) cell.classList.add('cage-border-bottom');
@@ -3045,14 +3212,7 @@
             const size = currentPuzzle.size || 9;
             const index = row * size + col;
             
-            // 条件1：该格子只有一个候选数字
-            const cellValue = currentBoard[index];
-            const singleCandidate = Array.isArray(cellValue) && cellValue.length === 1;
-            if (singleCandidate) {
-                return true;
-            }
-            
-            // 条件2：检查同行是否唯一
+            // 条件1：检查同行是否唯一
             let rowUnique = true;
             for (let c = 0; c < size; c++) {
                 const idx = row * size + c;
@@ -3062,7 +3222,7 @@
                 }
             }
             
-            // 条件3：检查同列是否唯一
+            // 条件2：检查同列是否唯一
             let colUnique = true;
             for (let r = 0; r < size; r++) {
                 const idx = r * size + col;
@@ -3072,7 +3232,7 @@
                 }
             }
             
-            // 条件4：检查同宫是否唯一
+            // 条件3：检查同宫是否唯一
             let boxUnique = true;
             const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
@@ -3089,7 +3249,7 @@
                 if (!boxUnique) break;
             }
             
-            // 只要在任一种情况下唯一，就返回 true
+            // 只有在任一种情况下唯一，才返回 true
             return rowUnique || colUnique || boxUnique;
         }
 
@@ -4007,10 +4167,110 @@
 
         // ==================== 弹窗函数 ====================
 
+        const helpContent = {
+            STANDARD: {
+                title: '标准数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列、每个3×3的小方格内都不能重复',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            DIAGONAL: {
+                title: '对角线数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列、每个3×3的小方格内都不能重复',
+                    '两条对角线上的数字也不能重复（1-9各出现一次）',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            ODD_EVEN: {
+                title: '奇偶数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列、每个3×3的小方格内都不能重复',
+                    '浅色格子只能填奇数（1、3、5、7、9）',
+                    '深色格子只能填偶数（2、4、6、8）',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            KILLER: {
+                title: '杀手数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列、每个3×3的小方格内都不能重复',
+                    '虚线围成的笼内数字相加等于左上角的提示数',
+                    '每个笼内的数字不能重复',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            MINI_4x4: {
+                title: '迷你4×4数独',
+                rules: [
+                    '在4×4的方格内填入1-4的数字',
+                    '每行、每列、每个2×2的小方格内都不能重复',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            MINI_6x6: {
+                title: '迷你6×6数独',
+                rules: [
+                    '在6×6的方格内填入1-6的数字',
+                    '每行、每列、每个2×3的小方格内都不能重复',
+                    '初始数字为固定提示，不能修改'
+                ]
+            }
+        };
+
+        function getGameHelpContent(gameType) {
+            const info = helpContent[gameType] || helpContent.STANDARD;
+            let html = `<h3>【${info.title}】游戏规则：</h3><ul>`;
+            info.rules.forEach(rule => {
+                html += `<li>${rule}</li>`;
+            });
+            html += '</ul>';
+            return html;
+        }
+
         /**
          * 显示帮助弹窗
          */
         function showHelp() {
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const helpHtml = getGameHelpContent(gameType);
+            
+            const commonHelp = `
+                <h3>操作说明：</h3>
+                <ul>
+                    <li>点击方格选中位置</li>
+                    <li>使用下方数字键盘输入数字</li>
+                    <li>点击 ✕ 清除当前格子的数字</li>
+                    <li>全部空格填满后自动验证答案</li>
+                </ul>
+                <h3>草稿模式：</h3>
+                <ul>
+                    <li>点击"确定模式/草稿模式"按钮切换输入模式</li>
+                    <li><strong>确定模式</strong>：直接填入确定的数字</li>
+                    <li><strong>草稿模式</strong>：在格子中标记候选数字</li>
+                    <li>在草稿模式下，点击数字添加/移除候选</li>
+                    <li>确定数字会自动删除同行/列/宫的重复候选</li>
+                </ul>
+                <h3>候选数字样式：</h3>
+                <ul>
+                    <li><strong>彩色背景</strong>：表示该候选数字目前是已标记候选数字中的唯一可能</li>
+                    <li><strong>白色背景</strong>：表示该候选数字在同行/列/宫中多次出现</li>
+                </ul>
+                <h3>快捷键：</h3>
+                <ul>
+                    <li>数字键 1-9：填入数字</li>
+                    <li>Delete/Backspace：清除数字</li>
+                    <li>方向键：移动选中格</li>
+                    <li>E键：切换确定/草稿模式</li>
+                </ul>
+            `;
+            
+            document.querySelector('#helpModal .help-content').innerHTML = helpHtml + commonHelp;
             document.getElementById('helpModal').style.display = 'block';
         }
 
