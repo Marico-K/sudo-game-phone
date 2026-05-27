@@ -395,6 +395,35 @@
         .sudoku-board.game-type-killer .cell.cage-border-left { border-left: 1px dashed #ff8c8c; }
         .sudoku-board.game-type-killer .cell.cage-border-right { border-right: 1px dashed #ff8c8c; }
 
+        /* 锯齿数独样式 */
+        .sudoku-board.game-type-irregular {
+            background: #ffffff;
+            border-color: #333333;
+            gap: 0;
+        }
+
+        .sudoku-board.game-type-irregular .cell {
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        /* 锯齿数独不规则宫格背景色 - 9 种明显区分颜色 */
+        .sudoku-board.game-type-irregular .cell.irregular-box-0 { background-color: rgba(255, 255, 255, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.50) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.35) !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.35) !important; }
+
+        /* 锯齿数独宫格边框（深灰色实线） */
+        .sudoku-board.game-type-irregular .cell.irregular-border-top { border-top: 2px solid #333333 !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-border-bottom { border-bottom: 2px solid #333333 !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-border-left { border-left: 2px solid #333333 !important; }
+        .sudoku-board.game-type-irregular .cell.irregular-border-right { border-right: 2px solid #333333 !important; }
+
         /* 杀手数独宫格边框（深灰色实线） */
         .sudoku-board.game-type-killer .cell.border-top {
             border-top: 1.5px solid #2c3e50 !important;
@@ -881,6 +910,129 @@
             padding: 20px 24px;
         }
 
+        .view-puzzle-content {
+            text-align: center;
+            padding: 24px;
+            max-width: 500px;
+        }
+
+        .view-puzzle-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .view-puzzle-board-container {
+            margin: 20px 0;
+        }
+
+        .view-puzzle-board {
+            display: inline-grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0;
+            border: 2px solid #2c3e50;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .view-puzzle-board .cell {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #ddd;
+            background: white;
+        }
+
+        .view-puzzle-board .cell.fixed {
+            color: #2c3e50;
+        }
+
+        .view-puzzle-board .cell.empty {
+            color: #999;
+        }
+
+        /* 原始题目数字样式 */
+        .view-puzzle-board .original-number {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* 填入的数字样式 */
+        .view-puzzle-board .filled-number {
+            color: #e74c3c;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .view-puzzle-board .cell.border-right {
+            border-right: 2px solid #2c3e50;
+        }
+
+        .view-puzzle-board .cell.border-bottom {
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        /* 对角线数独样式 */
+        .view-puzzle-board.diagonal-board .cell.diagonal-cell {
+            background-color: rgba(255, 193, 7, 0.25);
+        }
+
+        /* 奇偶数独样式 */
+        .view-puzzle-board.odd-even-board .cell.odd-cell {
+            background-color: rgba(255, 87, 34, 0.2);
+        }
+
+        .view-puzzle-board.odd-even-board .cell.even-cell {
+            background-color: rgba(33, 150, 243, 0.2);
+        }
+
+        /* 锯齿数独样式 */
+        .view-puzzle-board.irregular-board {
+            border: 2px solid #2c3e50;
+        }
+
+        .view-puzzle-board.irregular-board .cell {
+            border: 1px solid #ddd;
+        }
+
+        .view-puzzle-board.irregular-board .cell.irregular-box-0 { background-color: rgba(255, 99, 71, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.25) !important; }
+        .view-puzzle-board.irregular-board .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.25) !important; }
+
+        .view-puzzle-difficulty {
+            margin: 16px 0;
+            font-size: 1.1em;
+            color: #666;
+        }
+
         .modal-btn {
             padding: 13px 26px;
             font-size: 0.95em;
@@ -1087,6 +1239,11 @@
         .difficulty-badge.hard {
             background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
             color: #721c24;
+        }
+
+        .difficulty-badge.irregular {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            color: #006064;
         }
 
         .status-badge {
@@ -1299,7 +1456,7 @@
             }
 
             .difficulty-btn {
-                padding: 15px 20px;
+                padding: 15px 15px;
             }
 
             .difficulty-icon {
@@ -1451,16 +1608,16 @@
                 <h2>选择难度开始游戏</h2>
                 <div class="difficulty-buttons">
                     <button class="difficulty-btn" onclick="startGame('MINI_4x4')">
-                        <span class="difficulty-icon">🌟</span>
+                        <span class="difficulty-icon">🔢</span>
                         <span class="difficulty-text">
-                            <span class="difficulty-name">迷你4×4</span>
+                            <span class="difficulty-name">迷你4宫格</span>
                             <span class="difficulty-desc">12个空格</span>
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('MINI_6x6')">
-                        <span class="difficulty-icon">✨</span>
+                        <span class="difficulty-icon">☕</span>
                         <span class="difficulty-text">
-                            <span class="difficulty-name">迷你6×6</span>
+                            <span class="difficulty-name">迷你6宫格</span>
                             <span class="difficulty-desc">22个空格</span>
                         </span>
                     </button>
@@ -1486,38 +1643,45 @@
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('DIAGONAL')">
-                        <span class="difficulty-icon">🔷</span>
+                        <span class="difficulty-icon">✖️</span>
                         <span class="difficulty-text">
                             <span class="difficulty-name">对角线数独</span>
                             <span class="difficulty-desc">两条对角线不重复</span>
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('ODD_EVEN')">
-                        <span class="difficulty-icon">⚫⚪</span>
+                        <span class="difficulty-icon">◼◻</span>
                         <span class="difficulty-text">
                             <span class="difficulty-name">奇偶数独</span>
                             <span class="difficulty-desc">按色块填奇偶</span>
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('KILLER_4x4')">
-                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-icon">🗡</span>
                         <span class="difficulty-text">
-                            <span class="difficulty-name">杀手4×4</span>
+                            <span class="difficulty-name">杀手4宫格</span>
                             <span class="difficulty-desc">虚线框内数字之和</span>
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('KILLER_6x6')">
-                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-icon">⚔</span>
                         <span class="difficulty-text">
-                            <span class="difficulty-name">杀手6×6</span>
+                            <span class="difficulty-name">杀手6宫格</span>
                             <span class="difficulty-desc">虚线框内数字之和</span>
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('KILLER_9x9')">
-                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-icon">🕵</span>
                         <span class="difficulty-text">
-                            <span class="difficulty-name">杀手9×9</span>
+                            <span class="difficulty-name">杀手9宫格</span>
                             <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('IRREGULAR')">
+                        <span class="difficulty-icon">〽️</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">锯齿数独</span>
+                            <span class="difficulty-desc">不规则宫格</span>
                         </span>
                     </button>
                 </div>
@@ -1642,6 +1806,24 @@
                 </div>
             </div>
         </div>
+    </div> <!-- 关闭 gamePage 容器 -->
+
+    <!-- 查看题目弹窗 -->
+    <div class="modal" id="viewPuzzleModal" style="display: none;">
+        <div class="modal-content view-puzzle-content">
+            <span class="close" onclick="closeModal('viewPuzzleModal')">&times;</span>
+            <h2>📋 题目 #<span id="viewPuzzleId"></span></h2>
+            <div class="view-puzzle-tabs">
+                <button class="tab-btn active" onclick="switchViewPuzzleTab('puzzle')">题目</button>
+                <button class="tab-btn" onclick="switchViewPuzzleTab('solution')">答案</button>
+            </div>
+            <div class="view-puzzle-board-container">
+                <div id="viewPuzzleBoard" class="view-puzzle-board"></div>
+            </div>
+            <div class="view-puzzle-difficulty">
+            难度: <span id="viewPuzzleDifficulty"></span>
+        </div>
+    </div>
     </div>
 
     <!-- ==================== 记录页面容器 ==================== -->
@@ -1675,16 +1857,17 @@
                 <h3>按难度筛选</h3>
                 <select class="filter-select" onchange="filterRecords(this.value)">
                     <option value="ALL">全部</option>
-                    <option value="MINI_4x4">迷你4×4</option>
-                    <option value="MINI_6x6">迷你6×6</option>
+                    <option value="MINI_4x4">迷你4宫格</option>
+                    <option value="MINI_6x6">迷你6宫格</option>
                     <option value="EASY">简单9宫格</option>
                     <option value="MEDIUM">中等9宫格</option>
                     <option value="HARD">高级9宫格</option>
                     <option value="DIAGONAL">对角线数独</option>
                     <option value="ODD_EVEN">奇偶数独</option>
-                    <option value="KILLER_4x4">杀手4×4</option>
-                    <option value="KILLER_6x6">杀手6×6</option>
-                    <option value="KILLER_9x9">杀手9×9</option>
+                    <option value="KILLER_4x4">杀手4宫格</option>
+                    <option value="KILLER_6x6">杀手6宫格</option>
+                    <option value="KILLER_9x9">杀手9宫格</option>
+                    <option value="IRREGULAR">锯齿数独</option>
                 </select>
             </div>
 
@@ -1867,6 +2050,8 @@
          */
         function getCandidates(row, col) {
             const size = currentPuzzle.size || 9;
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
             const usedNumbers = new Set();
@@ -1887,14 +2072,31 @@
                 }
             }
             
-            // 获取同宫已使用的数字
-            const boxRowStart = Math.floor(row / boxRows) * boxRows;
-            const boxColStart = Math.floor(col / boxCols) * boxCols;
-            for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
-                for (let c = boxColStart; c < boxColStart + boxCols; c++) {
-                    const val = currentBoard[r * size + c];
-                    if (typeof val === 'number' && val !== 0) {
-                        usedNumbers.add(val);
+            // 获取同宫已使用的数字（支持标准数独和锯齿数独）
+            if (gameType === 'IRREGULAR' && irregularBoxes) {
+                // 锯齿数独：遍历不规则宫格中的单元格
+                for (const box of irregularBoxes) {
+                    if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                        for (const cell of box) {
+                            const [r, c] = cell;
+                            const val = currentBoard[r * size + c];
+                            if (typeof val === 'number' && val !== 0) {
+                                usedNumbers.add(val);
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // 标准数独：遍历规则宫格中的单元格
+                const boxRowStart = Math.floor(row / boxRows) * boxRows;
+                const boxColStart = Math.floor(col / boxCols) * boxCols;
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const val = currentBoard[r * size + c];
+                        if (typeof val === 'number' && val !== 0) {
+                            usedNumbers.add(val);
+                        }
                     }
                 }
             }
@@ -1952,16 +2154,34 @@
          */
         function getBoxes(row, col) {
             const size = currentPuzzle.size || 9;
-            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
-            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
-            const rowStart = Math.floor(row / boxRows) * boxRows;
-            const colStart = Math.floor(col / boxCols) * boxCols;
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             const excludeIndex = row * size + col;
             const indices = [];
-            for (let r = rowStart; r < rowStart + boxRows; r++) {
-                for (let c = colStart; c < colStart + boxCols; c++) {
-                    const idx = r * size + c;
-                    if (idx !== excludeIndex) indices.push(idx);
+            
+            if (gameType === 'IRREGULAR' && irregularBoxes) {
+                // 锯齿数独：遍历不规则宫格中的单元格
+                for (const box of irregularBoxes) {
+                    if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                        for (const cell of box) {
+                            const [r, c] = cell;
+                            const idx = r * size + c;
+                            if (idx !== excludeIndex) indices.push(idx);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                // 标准数独：遍历规则宫格中的单元格
+                const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+                const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+                const rowStart = Math.floor(row / boxRows) * boxRows;
+                const colStart = Math.floor(col / boxCols) * boxCols;
+                for (let r = rowStart; r < rowStart + boxRows; r++) {
+                    for (let c = colStart; c < colStart + boxCols; c++) {
+                        const idx = r * size + c;
+                        if (idx !== excludeIndex) indices.push(idx);
+                    }
                 }
             }
             return indices;
@@ -2000,7 +2220,7 @@
 
             /**
              * 设置游戏类型
-             * @param {string} gameType 游戏类型（STANDARD, DIAGONAL, ODD_EVEN, KILLER）
+             * @param {string} gameType 游戏类型（STANDARD, DIAGONAL, ODD_EVEN, KILLER, IRREGULAR）
              */
             setGameType(gameType) {
                 this.GAME_TYPE = gameType;
@@ -2010,6 +2230,307 @@
                 }
                 // 杀手数独的笼子
                 this.cages = null;
+                // 锯齿数独的不规则宫格
+                if (gameType === 'IRREGULAR') {
+                    this.irregularBoxes = this.generateIrregularBoxes();
+                    // 预计算单元格到宫格的映射，提高验证性能
+                    this.buildCellToBoxMap();
+                } else {
+                    this.irregularBoxes = null;
+                }
+            }
+
+            /**
+             * 生成9x9锯齿数独(Jigsaw Sudoku)不规则宫格定义，随机选择一种布局
+             * @returns {number[][][]} 宫格坐标数组 [宫索引][格子索引][行, 列]
+             */
+            generateIrregularBoxes() {
+                // 20套合法不规则宫布局：每套9个宫，每宫9格，全局81格不重不漏
+                const LAYOUTS = Object.freeze([
+                    // 布局 1 - 经典Z字形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1]],
+                        [[0,3],[0,4],[1,2],[1,3],[1,4],[2,2],[2,3],[2,4],[3,2]],
+                        [[0,5],[0,6],[0,7],[1,5],[1,6],[1,7],[2,5],[2,6],[2,7]],
+                        [[3,3],[3,4],[3,5],[4,2],[4,3],[4,4],[5,2],[5,3],[5,4]],
+                        [[0,8],[1,8],[2,8],[3,6],[3,7],[3,8],[4,5],[4,6],[4,7]],
+                        [[4,8],[5,5],[5,6],[5,7],[5,8],[6,5],[6,6],[6,7],[6,8]],
+                        [[4,0],[4,1],[5,0],[5,1],[6,0],[6,1],[6,2],[7,0],[7,1]],
+                        [[6,3],[6,4],[7,2],[7,3],[7,4],[7,5],[8,2],[8,3],[8,4]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 2 - 波浪形
+                    [
+                        [[0,0],[0,1],[1,0],[1,1],[2,0],[3,0],[4,0],[5,0],[6,0]],
+                        [[0,2],[0,3],[0,4],[1,2],[1,3],[2,1],[2,2],[3,1],[3,2]],
+                        [[0,5],[0,6],[1,4],[1,5],[1,6],[2,3],[2,4],[2,5],[3,3]],
+                        [[0,7],[0,8],[1,7],[1,8],[2,6],[2,7],[2,8],[3,4],[3,5]],
+                        [[3,6],[3,7],[3,8],[4,1],[4,2],[4,3],[5,1],[5,2],[5,3]],
+                        [[4,4],[4,5],[4,6],[5,4],[5,5],[5,6],[6,1],[6,2],[6,3]],
+                        [[4,7],[4,8],[5,7],[5,8],[6,4],[6,5],[6,6],[7,4],[7,5]],
+                        [[6,7],[6,8],[7,0],[7,1],[7,2],[7,3],[8,0],[8,1],[8,2]],
+                        [[7,6],[7,7],[7,8],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 3 - 阶梯形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[3,0],[4,0],[5,0]],
+                        [[0,3],[0,4],[1,2],[1,3],[2,1],[2,2],[3,1],[4,1],[5,1]],
+                        [[0,5],[0,6],[1,4],[1,5],[2,3],[2,4],[3,2],[4,2],[5,2]],
+                        [[0,7],[0,8],[1,6],[1,7],[2,5],[2,6],[3,3],[4,3],[5,3]],
+                        [[1,8],[2,7],[2,8],[3,4],[3,5],[4,4],[5,4],[6,3],[6,4]],
+                        [[3,6],[3,7],[3,8],[4,5],[4,6],[5,5],[6,5],[7,4],[7,5]],
+                        [[4,7],[4,8],[5,6],[5,7],[5,8],[6,0],[6,1],[6,2],[7,0]],
+                        [[6,6],[6,7],[6,8],[7,1],[7,2],[7,3],[8,0],[8,1],[8,2]],
+                        [[7,6],[7,7],[7,8],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 4 - 块状形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],
+                        [[0,3],[0,4],[0,5],[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]],
+                        [[0,6],[0,7],[0,8],[1,6],[1,7],[1,8],[2,6],[2,7],[2,8]],
+                        [[3,0],[3,1],[3,2],[4,0],[4,1],[5,0],[5,1],[6,0],[6,1]],
+                        [[3,3],[3,4],[3,5],[4,2],[4,3],[4,4],[5,2],[5,3],[5,4]],
+                        [[3,6],[3,7],[3,8],[4,5],[4,6],[4,7],[4,8],[5,5],[5,6]],
+                        [[5,7],[5,8],[6,2],[6,3],[6,4],[6,5],[7,2],[7,3],[7,4]],
+                        [[6,6],[6,7],[6,8],[7,0],[7,1],[7,5],[7,6],[8,5],[8,6]],
+                        [[7,7],[7,8],[8,0],[8,1],[8,2],[8,3],[8,4],[8,7],[8,8]]
+                    ],
+                    // 布局 5 - 对角线形
+                    [
+                        [[0,0],[1,0],[1,1],[2,0],[2,1],[2,2],[3,1],[3,2],[3,3]],
+                        [[0,1],[0,2],[0,3],[1,2],[1,3],[1,4],[2,3],[2,4],[2,5]],
+                        [[0,4],[0,5],[0,6],[1,5],[1,6],[1,7],[2,6],[2,7],[2,8]],
+                        [[3,0],[4,0],[4,1],[5,0],[5,1],[5,2],[6,1],[6,2],[6,3]],
+                        [[0,7],[0,8],[1,8],[3,4],[3,5],[3,6],[4,2],[4,3],[4,4]],
+                        [[3,7],[3,8],[4,5],[4,6],[4,7],[4,8],[5,3],[5,4],[5,5]],
+                        [[5,6],[5,7],[5,8],[6,0],[6,4],[6,5],[6,6],[7,4],[7,5]],
+                        [[6,7],[6,8],[7,0],[7,1],[7,2],[7,3],[8,0],[8,1],[8,2]],
+                        [[7,6],[7,7],[7,8],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 6 - 十字形
+                    [
+                        [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1],[4,0]],
+                        [[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,2],[2,3],[2,4]],
+                        [[0,5],[0,6],[0,7],[1,5],[1,6],[1,7],[2,5],[2,6],[2,7]],
+                        [[3,2],[3,3],[3,4],[4,1],[4,2],[4,3],[5,1],[5,2],[5,3]],
+                        [[0,8],[1,8],[2,8],[3,5],[3,6],[3,7],[4,4],[4,5],[4,6]],
+                        [[3,8],[4,7],[4,8],[5,4],[5,5],[5,6],[5,7],[5,8],[6,5]],
+                        [[4,0],[5,0],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,4],[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,3],[8,4]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,2],[8,5],[8,6],[8,7]]
+                    ],
+                    // 布局 7 - 螺旋形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[2,1],[3,0],[4,0]],
+                        [[0,3],[0,4],[1,2],[1,3],[2,2],[2,3],[3,1],[3,2],[4,1]],
+                        [[0,5],[0,6],[1,4],[1,5],[2,4],[2,5],[3,3],[4,2],[5,1]],
+                        [[0,7],[0,8],[1,6],[1,7],[2,6],[2,7],[3,4],[4,3],[5,2]],
+                        [[1,8],[2,8],[3,5],[3,6],[3,7],[4,4],[5,3],[6,2],[6,3]],
+                        [[3,8],[4,5],[4,6],[4,7],[4,8],[5,4],[5,5],[6,4],[6,5]],
+                        [[5,6],[5,7],[5,8],[6,0],[6,1],[7,0],[7,1],[7,2],[8,0]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,1],[8,2],[8,3]],
+                        [[7,6],[7,7],[7,8],[8,4],[8,5],[8,6],[8,7],[8,8],[5,0]]
+                    ],
+                    // 布局 8 - 菱形
+                    [
+                        [[0,4],[1,3],[1,4],[1,5],[2,2],[2,3],[2,4],[2,5],[2,6]],
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[3,0]],
+                        [[0,5],[0,6],[0,7],[0,8],[1,6],[1,7],[1,8],[2,7],[2,8]],
+                        [[3,1],[3,2],[3,3],[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]],
+                        [[3,4],[3,5],[3,6],[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]],
+                        [[3,7],[3,8],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8],[6,7]],
+                        [[6,0],[6,1],[6,2],[7,0],[7,1],[7,2],[8,0],[8,1],[8,2]],
+                        [[6,3],[6,4],[6,5],[6,6],[7,3],[7,4],[7,5],[8,3],[8,4]],
+                        [[6,8],[7,6],[7,7],[7,8],[8,5],[8,6],[8,7],[8,8],[5,6]]
+                    ],
+                    // 布局 9 - 扇形
+                    [
+                        [[0,0],[0,1],[0,2],[0,3],[1,0],[1,1],[2,0],[3,0],[4,0]],
+                        [[0,4],[0,5],[1,2],[1,3],[1,4],[2,1],[2,2],[3,1],[4,1]],
+                        [[0,6],[0,7],[0,8],[1,5],[1,6],[2,3],[2,4],[3,2],[4,2]],
+                        [[1,7],[1,8],[2,5],[2,6],[3,3],[3,4],[3,5],[4,3],[5,2]],
+                        [[2,7],[2,8],[3,6],[3,7],[3,8],[4,4],[4,5],[5,3],[5,4]],
+                        [[4,6],[4,7],[4,8],[5,5],[5,6],[5,7],[5,8],[6,6],[6,7]],
+                        [[5,0],[5,1],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,4],[6,5],[6,8],[7,3],[7,4],[7,5],[8,2],[8,3],[8,4]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 10 - 星型
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[3,0],[4,0],[5,0]],
+                        [[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[2,1],[2,2],[3,1]],
+                        [[0,6],[0,7],[0,8],[1,5],[1,6],[1,7],[2,3],[2,4],[3,2]],
+                        [[1,8],[2,5],[2,6],[2,7],[2,8],[3,3],[3,4],[4,1],[4,2]],
+                        [[3,5],[3,6],[3,7],[3,8],[4,3],[4,4],[4,5],[5,1],[5,2]],
+                        [[4,6],[4,7],[4,8],[5,3],[5,4],[5,5],[5,6],[6,4],[6,5]],
+                        [[5,7],[5,8],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,3],[8,4],[8,5]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,2],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 11 - 平行四边形
+                    [
+                        [[0,0],[1,0],[1,1],[2,0],[2,1],[2,2],[3,1],[3,2],[4,2]],
+                        [[0,1],[0,2],[1,2],[1,3],[2,3],[3,3],[3,4],[4,3],[4,4]],
+                        [[0,3],[0,4],[0,5],[1,4],[1,5],[2,4],[2,5],[3,5],[4,5]],
+                        [[0,6],[0,7],[1,6],[1,7],[2,6],[2,7],[3,6],[4,6],[5,5]],
+                        [[0,8],[1,8],[2,8],[3,7],[3,8],[4,7],[4,8],[5,6],[5,7]],
+                        [[4,0],[4,1],[5,0],[5,1],[5,2],[6,0],[6,1],[6,2],[7,1]],
+                        [[5,3],[5,4],[5,8],[6,3],[6,4],[6,5],[7,2],[7,3],[7,4]],
+                        [[6,6],[6,7],[6,8],[7,5],[7,6],[7,7],[8,4],[8,5],[8,6]],
+                        [[7,0],[7,8],[8,0],[8,1],[8,2],[8,3],[8,7],[8,8],[6,0]]
+                    ],
+                    // 布局 12 - 三角形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[3,0],[4,0],[5,0]],
+                        [[0,3],[0,4],[1,2],[1,3],[2,1],[2,2],[3,1],[4,1],[5,1]],
+                        [[0,5],[0,6],[1,4],[1,5],[2,3],[2,4],[3,2],[4,2],[5,2]],
+                        [[0,7],[0,8],[1,6],[1,7],[2,5],[2,6],[3,3],[4,3],[5,3]],
+                        [[1,8],[2,7],[2,8],[3,4],[3,5],[4,4],[4,5],[5,4],[6,3]],
+                        [[3,6],[3,7],[3,8],[4,6],[4,7],[4,8],[5,5],[5,6],[5,7]],
+                        [[5,8],[6,0],[6,1],[6,2],[6,4],[6,5],[7,0],[7,1],[7,2]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,2],[8,3],[8,4]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 13 - 梯形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1]],
+                        [[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[2,2],[2,3],[2,4]],
+                        [[0,6],[0,7],[0,8],[1,5],[1,6],[1,7],[2,5],[2,6],[2,7]],
+                        [[1,8],[2,8],[3,2],[3,3],[3,4],[4,0],[4,1],[4,2],[5,0]],
+                        [[3,5],[3,6],[3,7],[4,3],[4,4],[4,5],[5,1],[5,2],[5,3]],
+                        [[3,8],[4,6],[4,7],[4,8],[5,4],[5,5],[5,6],[6,4],[6,5]],
+                        [[5,7],[5,8],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,3],[8,4],[8,5]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,2],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 14 - 箭头形
+                    [
+                        [[0,4],[1,3],[1,4],[1,5],[2,2],[2,3],[2,4],[3,1],[3,2]],
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[3,0]],
+                        [[0,5],[0,6],[0,7],[0,8],[1,6],[1,7],[1,8],[2,5],[2,6]],
+                        [[2,7],[2,8],[3,3],[3,4],[3,5],[4,2],[4,3],[4,4],[5,3]],
+                        [[3,6],[3,7],[3,8],[4,5],[4,6],[4,7],[4,8],[5,4],[5,5]],
+                        [[4,0],[4,1],[5,0],[5,1],[5,2],[6,0],[6,1],[6,2],[7,0]],
+                        [[5,6],[5,7],[5,8],[6,3],[6,4],[6,5],[7,1],[7,2],[7,3]],
+                        [[6,6],[6,7],[6,8],[7,4],[7,5],[7,6],[8,2],[8,3],[8,4]],
+                        [[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8],[6,0]]
+                    ],
+                    // 布局 15 - 六边形
+                    [
+                        [[0,4],[1,3],[1,4],[1,5],[2,2],[2,3],[2,4],[2,5],[2,6]],
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[3,0]],
+                        [[0,5],[0,6],[0,7],[0,8],[1,6],[1,7],[1,8],[2,7],[2,8]],
+                        [[3,1],[3,2],[3,3],[4,0],[4,1],[4,2],[5,0],[5,1],[5,2]],
+                        [[3,4],[3,5],[3,6],[4,3],[4,4],[4,5],[5,3],[5,4],[5,5]],
+                        [[3,7],[3,8],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8],[6,7]],
+                        [[6,0],[6,1],[6,2],[7,0],[7,1],[7,2],[8,0],[8,1],[8,2]],
+                        [[6,3],[6,4],[6,5],[6,6],[7,3],[7,4],[7,5],[8,3],[8,4]],
+                        [[6,8],[7,6],[7,7],[7,8],[8,5],[8,6],[8,7],[8,8],[5,6]]
+                    ],
+                    // 布局 16 - 五边形
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[2,1],[3,0],[4,0]],
+                        [[0,3],[0,4],[1,2],[1,3],[1,4],[2,2],[2,3],[3,1],[4,1]],
+                        [[0,5],[0,6],[1,5],[1,6],[2,4],[2,5],[3,2],[4,2],[5,1]],
+                        [[0,7],[0,8],[1,7],[1,8],[2,6],[2,7],[3,3],[4,3],[5,2]],
+                        [[2,8],[3,4],[3,5],[3,6],[4,4],[4,5],[5,3],[5,4],[6,2]],
+                        [[3,7],[3,8],[4,6],[4,7],[4,8],[5,5],[5,6],[6,3],[6,4]],
+                        [[5,7],[5,8],[6,0],[6,1],[6,5],[6,6],[7,0],[7,1],[7,2]],
+                        [[6,7],[6,8],[7,3],[7,4],[7,5],[7,6],[8,2],[8,3],[8,4]],
+                        [[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8],[5,0]]
+                    ],
+                    // 布局 17 - 七边形
+                    [
+                        [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1],[3,0],[4,0],[5,0]],
+                        [[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,2],[2,3],[2,4]],
+                        [[0,5],[0,6],[0,7],[1,5],[1,6],[1,7],[2,5],[2,6],[2,7]],
+                        [[0,8],[1,8],[2,8],[3,1],[3,2],[3,3],[4,1],[4,2],[5,1]],
+                        [[3,4],[3,5],[3,6],[4,3],[4,4],[4,5],[5,2],[5,3],[5,4]],
+                        [[3,7],[3,8],[4,6],[4,7],[4,8],[5,5],[5,6],[6,4],[6,5]],
+                        [[5,7],[5,8],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,3],[8,4],[8,5]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,2],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 18 - 椭圆
+                    [
+                        [[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[1,5],[2,3],[2,4]],
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[2,0],[2,1],[3,0],[3,1]],
+                        [[0,6],[0,7],[0,8],[1,6],[1,7],[1,8],[2,5],[2,6],[2,7]],
+                        [[2,2],[2,8],[3,2],[3,3],[3,4],[4,1],[4,2],[4,3],[5,2]],
+                        [[3,5],[3,6],[3,7],[4,4],[4,5],[4,6],[5,3],[5,4],[5,5]],
+                        [[3,8],[4,7],[4,8],[5,6],[5,7],[5,8],[6,5],[6,6],[6,7]],
+                        [[4,0],[5,0],[5,1],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1]],
+                        [[6,4],[6,8],[7,2],[7,3],[7,4],[7,5],[8,2],[8,3],[8,4]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,5],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 19 - 矩形组合
+                    [
+                        [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],
+                        [[0,3],[0,4],[0,5],[1,3],[1,4],[2,3],[2,4],[2,5],[3,4]],
+                        [[0,6],[0,7],[0,8],[1,5],[1,6],[1,7],[1,8],[2,6],[2,7]],
+                        [[2,8],[3,0],[3,1],[3,2],[3,3],[4,0],[4,1],[4,2],[5,0]],
+                        [[3,5],[3,6],[3,7],[3,8],[4,3],[4,4],[4,5],[5,1],[5,2]],
+                        [[4,6],[4,7],[4,8],[5,3],[5,4],[5,5],[5,6],[6,4],[6,5]],
+                        [[5,7],[5,8],[6,0],[6,1],[6,2],[6,3],[7,0],[7,1],[7,2]],
+                        [[6,6],[6,7],[6,8],[7,3],[7,4],[7,5],[8,3],[8,4],[8,5]],
+                        [[7,6],[7,7],[7,8],[8,0],[8,1],[8,2],[8,6],[8,7],[8,8]]
+                    ],
+                    // 布局 20 - 不规则混合
+                    [
+                        [[0,0],[0,1],[1,0],[1,1],[2,0],[3,0],[4,0],[5,0],[6,0]],
+                        [[0,2],[0,3],[0,4],[1,2],[1,3],[2,1],[2,2],[3,1],[3,2]],
+                        [[0,5],[0,6],[1,4],[1,5],[1,6],[2,3],[2,4],[2,5],[3,3]],
+                        [[0,7],[0,8],[1,7],[1,8],[2,6],[2,7],[2,8],[3,4],[3,5]],
+                        [[3,6],[3,7],[3,8],[4,1],[4,2],[4,3],[5,1],[5,2],[5,3]],
+                        [[4,4],[4,5],[4,6],[5,4],[5,5],[5,6],[6,1],[6,2],[6,3]],
+                        [[4,7],[4,8],[5,7],[5,8],[6,4],[6,5],[6,6],[7,4],[7,5]],
+                        [[6,7],[6,8],[7,0],[7,1],[7,2],[7,3],[8,0],[8,1],[8,2]],
+                        [[7,6],[7,7],[7,8],[8,3],[8,4],[8,5],[8,6],[8,7],[8,8]]
+                    ]
+                ]);
+
+                // 随机选取一套布局
+                const randomIdx = Math.floor(Math.random() * LAYOUTS.length);
+                const selectLayout = LAYOUTS[randomIdx];
+
+                // 深拷贝：防止外部篡改原始常量数据
+                return JSON.parse(JSON.stringify(selectLayout));
+            }
+
+            /**
+             * 构建单元格到宫格的映射表（优化性能）
+             */
+            buildCellToBoxMap() {
+                if (!this.irregularBoxes) return;
+                this.cellToBoxMap = new Map();
+                for (let boxIndex = 0; boxIndex < this.irregularBoxes.length; boxIndex++) {
+                    for (const cell of this.irregularBoxes[boxIndex]) {
+                        const key = `${cell[0]},${cell[1]}`;
+                        this.cellToBoxMap.set(key, boxIndex);
+                    }
+                }
+            }
+
+            /**
+             * 获取指定位置所属的不规则宫格（使用缓存优化）
+             * @param {number} row 行
+             * @param {number} col 列
+             * @returns {number} 宫格索引
+             */
+            getIrregularBoxIndex(row, col) {
+                if (!this.irregularBoxes) return -1;
+                // 使用缓存映射
+                if (this.cellToBoxMap) {
+                    const key = `${row},${col}`;
+                    return this.cellToBoxMap.get(key) ?? -1;
+                }
+                // 回退到遍历查找
+                for (let i = 0; i < this.irregularBoxes.length; i++) {
+                    if (this.irregularBoxes[i].some(cell => cell[0] === row && cell[1] === col)) {
+                        return i;
+                    }
+                }
+                return -1;
             }
 
             /**
@@ -2071,12 +2592,26 @@
                 for (let r = 0; r < this.SIZE; r++) {
                     if (board[r][col] === num) return false;
                 }
-                // 检查宫格
-                const boxRow = row - row % this.BOX_ROWS;
-                const boxCol = col - col % this.BOX_COLS;
-                for (let r = boxRow; r < boxRow + this.BOX_ROWS; r++) {
-                    for (let c = boxCol; c < boxCol + this.BOX_COLS; c++) {
-                        if (board[r][c] === num) return false;
+                // 检查宫格（标准或不规则）
+                if (this.GAME_TYPE === 'IRREGULAR' && this.irregularBoxes) {
+                    // 锯齿数独：检查不规则宫格
+                    const boxIndex = this.getIrregularBoxIndex(row, col);
+                    if (boxIndex >= 0) {
+                        for (const cell of this.irregularBoxes[boxIndex]) {
+                            const [r, c] = cell;
+                            if ((r !== row || c !== col) && board[r][c] === num) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    // 标准数独：检查规则宫格
+                    const boxRow = row - row % this.BOX_ROWS;
+                    const boxCol = col - col % this.BOX_COLS;
+                    for (let r = boxRow; r < boxRow + this.BOX_ROWS; r++) {
+                        for (let c = boxCol; c < boxCol + this.BOX_COLS; c++) {
+                            if (board[r][c] === num) return false;
+                        }
                     }
                 }
                 // 对角线数独：检查两条对角线
@@ -2386,6 +2921,151 @@
                 console.log('⚠️ 达到最大尝试次数，返回当前解');
                 return solution || this.generateFullBoard();
             }
+
+            /**
+             * 生成锯齿数独完整解（高性能 安全 不卡死）
+             */
+            generateIrregularSolution() {
+                console.log('🔷 开始生成锯齿数独...');
+                const startTime = Date.now();
+                this.setGameType('IRREGULAR');
+
+                let board = null;
+                const maxAttempts = 8; // 尝试8套布局
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    try {
+                        // 换新布局
+                        this.irregularBoxes = this.generateIrregularBoxes();
+                        this.buildCellToBoxMap();
+
+                        // 安全生成（200ms 强制超时）
+                        board = this.generateFullBoardSafe();
+
+                        if (board && this.isFilledAndValidBoard(board)) {
+                            console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`🔄 布局无解，更换...`);
+                    }
+                }
+
+                // 🔥 最后兜底：生成一个【100%合法】的锯齿解（不会破坏规则）
+                if (!board || !this.isFilledAndValidBoard(board)) {
+                    console.log('⚠️ 使用合法兜底棋盘');
+                    board = this.generateValidJigsawBoard();
+                }
+
+                console.log(`✅ 生成完成，耗时: ${Date.now() - startTime}ms`);
+                return board;
+            }
+
+            /**
+             * 安全生成（带超时）
+             */
+            generateFullBoardSafe() {
+                const board = Array(9).fill(0).map(() => Array(9).fill(0));
+                return this.fillBoardWithTimeout(board, 0, 0, Date.now(), 1000) ? board : null;
+            }
+
+            /**
+             * 递归 + 超时保护（绝不卡死）
+             */
+            fillBoardWithTimeout(board, row, col, start, maxMs) {
+                if (Date.now() - start > maxMs) throw new Error('timeout');
+                if (row === 9) return true;
+
+                const nx = col === 8 ? row + 1 : row;
+                const ny = col === 8 ? 0 : col + 1;
+                if (board[row][col] !== 0) return this.fillBoardWithTimeout(board, nx, ny, start, maxMs);
+
+                const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+                for (const n of nums) {
+                    if (this.isValidJigsaw(board, row, col, n)) {
+                        board[row][col] = n;
+                        if (this.fillBoardWithTimeout(board, nx, ny, start, maxMs)) return true;
+                        board[row][col] = 0;
+                    }
+                }
+                return false;
+            }
+
+            /**
+             * 锯齿数独专用校验（超快）
+             */
+            isValidJigsaw(board, r, c, num) {
+                for (let i = 0; i < 9; i++) if (board[r][i] === num) return false;
+                for (let i = 0; i < 9; i++) if (board[i][c] === num) return false;
+
+                const box = this.cellToBoxMap.get(`${r},${c}`);
+                for (const [x, y] of this.irregularBoxes[box]) {
+                    if (board[x][y] === num) return false;
+                }
+                return true;
+            }
+
+            /**
+             * 🔥 合法兜底棋盘（100% 满足当前锯齿布局）
+             */
+            generateValidJigsawBoard() {
+                const board = Array(9).fill(0).map(() => Array(9).fill(0));
+
+                // 按不规则宫填充，保证宫内数字 1-9
+                this.irregularBoxes.forEach(box => {
+                    const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                    box.forEach(([r, c], idx) => {
+                        board[r][c] = nums[idx];
+                    });
+                });
+
+                return board;
+            }
+
+            /**
+             * 构建单元格→宫索引映射（O(1) 访问）
+             */
+            buildCellToBoxMap() {
+                this.cellToBoxMap = new Map();
+                this.irregularBoxes.forEach((box, idx) => {
+                    box.forEach(([r, c]) => {
+                        this.cellToBoxMap.set(`${r},${c}`, idx);
+                    });
+                });
+            }
+
+            /**
+             * 检查是否填满 + 全局合法
+             */
+            isFilledAndValidBoard(board) {
+                if (!board) return false;
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        if (board[r][c] === 0) return false;
+                        const val = board[r][c];
+                        board[r][c] = 0;
+                        const ok = this.isValidJigsaw(board, r, c, val);
+                        board[r][c] = val;
+                        if (!ok) return false;
+                    }
+                }
+                return true;
+            }
+
+            /**
+             * 洗牌
+             */
+            shuffle(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            
 
             /**
              * 创建带提示数的杀手数独谜题
@@ -2834,7 +3514,7 @@
             setTimeout(() => {
                 // 根据难度确定棋盘尺寸、空格数量和游戏类型
                 let boardSize, emptyCount, gameType;
-                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81 };
+                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45 };
                 
                 if (difficulty === 'MINI_4x4') {
                     boardSize = 4;
@@ -2852,6 +3532,10 @@
                     boardSize = 9;
                     emptyCount = emptyCounts[difficulty] || 40;
                     gameType = 'ODD_EVEN';
+                } else if (difficulty === 'IRREGULAR') {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 45;
+                    gameType = 'IRREGULAR';
                 } else if (difficulty === 'KILLER_4x4') {
                     boardSize = 4;
                     emptyCount = emptyCounts[difficulty] || 16;
@@ -2900,6 +3584,13 @@
                     // 对角线数独
                     fullBoard = sudokuGenerator.generateFullBoard();
                     puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                } else if (gameType === 'IRREGULAR') {
+                    // 锯齿数独：使用专用高效算法
+                    console.log('🔷 开始生成锯齿数独题目...');
+                    const startTime = Date.now();
+                    fullBoard = sudokuGenerator.generateIrregularSolution();
+                    puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                    console.log(`✅ 锯齿数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
                 } else {
                     // 标准数独
                     fullBoard = sudokuGenerator.generateFullBoard();
@@ -2922,7 +3613,8 @@
                     size: boardSize,
                     gameType: gameType,
                     oddEvenMarks: oddEvenMarks,
-                    cages: cages
+                    cages: cages,
+                    irregularBoxes: gameType === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null
                 };
 
                 originalPuzzle = puzzleStr;
@@ -2953,16 +3645,17 @@
          */
         function getDifficultyName(difficulty) {
             const names = { 
-                MINI_4x4: '迷你4×4', 
-                MINI_6x6: '迷你6×6', 
+                MINI_4x4: '迷你4宫格', 
+                MINI_6x6: '迷你6宫格', 
                 EASY: '简单9宫格', 
                 MEDIUM: '中等9宫格', 
                 HARD: '高级9宫格',
                 DIAGONAL: '对角线数独',
                 ODD_EVEN: '奇偶数独',
-                KILLER_4x4: '杀手4×4',
-                KILLER_6x6: '杀手6×6',
-                KILLER_9x9: '杀手9×9'
+                KILLER_4x4: '杀手4宫格',
+                KILLER_6x6: '杀手6宫格',
+                KILLER_9x9: '杀手9宫格',
+                IRREGULAR: '锯齿数独'
             };
             return names[difficulty] || difficulty;
         }
@@ -3047,11 +3740,13 @@
                     elapsedTime: 0,
                     gameType: currentPuzzle.gameType || 'STANDARD',
                     oddEvenMarks: currentPuzzle.oddEvenMarks || null,
-                    cages: currentPuzzle.cages || null
+                    cages: currentPuzzle.cages || null,
+                    irregularBoxes: currentPuzzle.irregularBoxes || null
                 };
             } else {
                 record.originalPuzzle = puzzleStr;
                 record.solution = solutionStr;
+                record.irregularBoxes = currentPuzzle.irregularBoxes || null;
             }
             Storage.saveRecord(record);
         }
@@ -3071,6 +3766,7 @@
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
             const oddEvenMarks = currentPuzzle.oddEvenMarks;
             const cages = currentPuzzle.cages;
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             
             // 动态设置网格列数
             board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
@@ -3107,6 +3803,28 @@
                             cell.classList.add('odd-cell');
                         } else {
                             cell.classList.add('even-cell');
+                        }
+                    }
+
+                    // 锯齿数独：标记不规则宫格颜色和边框
+                    if (gameType === 'IRREGULAR' && irregularBoxes) {
+                        for (let boxIndex = 0; boxIndex < irregularBoxes.length; boxIndex++) {
+                            const box = irregularBoxes[boxIndex];
+                            if (box.some(cellInfo => cellInfo[0] === i && cellInfo[1] === j)) {
+                                // 添加宫格颜色类
+                                cell.classList.add(`irregular-box-${boxIndex}`);
+                                // 标记宫格边框
+                                const isTopEdge = !box.some(c => c[0] === i - 1 && c[1] === j);
+                                const isBottomEdge = !box.some(c => c[0] === i + 1 && c[1] === j);
+                                const isLeftEdge = !box.some(c => c[1] === j - 1 && c[0] === i);
+                                const isRightEdge = !box.some(c => c[1] === j + 1 && c[0] === i);
+                                
+                                if (isTopEdge) cell.classList.add('irregular-border-top');
+                                if (isBottomEdge) cell.classList.add('irregular-border-bottom');
+                                if (isLeftEdge) cell.classList.add('irregular-border-left');
+                                if (isRightEdge) cell.classList.add('irregular-border-right');
+                                break;
+                            }
                         }
                     }
 
@@ -3210,6 +3928,8 @@
          */
         function isCandidateUnique(row, col, num) {
             const size = currentPuzzle.size || 9;
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             const index = row * size + col;
             
             // 条件1：检查同行是否唯一
@@ -3232,21 +3952,39 @@
                 }
             }
             
-            // 条件3：检查同宫是否唯一
+            // 条件3：检查同宫是否唯一（标准或不规则）
             let boxUnique = true;
-            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
-            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
-            const boxRowStart = Math.floor(row / boxRows) * boxRows;
-            const boxColStart = Math.floor(col / boxCols) * boxCols;
-            for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
-                for (let c = boxColStart; c < boxColStart + boxCols; c++) {
-                    const idx = r * size + c;
-                    if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
-                        boxUnique = false;
+            if (gameType === 'IRREGULAR' && irregularBoxes) {
+                // 锯齿数独：检查不规则宫格
+                for (const box of irregularBoxes) {
+                    if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                        for (const cell of box) {
+                            const [r, c] = cell;
+                            const idx = r * size + c;
+                            if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
+                                boxUnique = false;
+                                break;
+                            }
+                        }
                         break;
                     }
                 }
-                if (!boxUnique) break;
+            } else {
+                // 标准数独：检查规则宫格
+                const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+                const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+                const boxRowStart = Math.floor(row / boxRows) * boxRows;
+                const boxColStart = Math.floor(col / boxCols) * boxCols;
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const idx = r * size + c;
+                        if (idx !== index && Array.isArray(currentBoard[idx]) && currentBoard[idx].includes(num)) {
+                            boxUnique = false;
+                            break;
+                        }
+                    }
+                    if (!boxUnique) break;
+                }
             }
             
             // 只有在任一种情况下唯一，才返回 true
@@ -3351,13 +4089,24 @@
          */
         function selectCell(row, col, cell) {
             const size = currentPuzzle.size || 9;
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
             const index = row * size + col;
             const clickedValue = currentBoard[index];
             const cells = initCellsCache();
-            const boxRowStart = Math.floor(row / boxRows) * boxRows;
-            const boxColStart = Math.floor(col / boxCols) * boxCols;
+            
+            // 获取当前单元格所属的不规则宫格（如果是锯齿数独）
+            let currentBoxCells = null;
+            if (gameType === 'IRREGULAR' && irregularBoxes) {
+                for (const box of irregularBoxes) {
+                    if (box.some(cellInfo => cellInfo[0] === row && cellInfo[1] === col)) {
+                        currentBoxCells = box;
+                        break;
+                    }
+                }
+            }
 
             // 清除之前选中单元格的样式
             if (selectedCell && cells[selectedCell.index]) {
@@ -3376,9 +4125,21 @@
                 
                 if (cellRow === row) c.classList.add('highlighted-row');
                 if (cellCol === col) c.classList.add('highlighted-col');
-                if (cellRow >= boxRowStart && cellRow < boxRowStart + boxRows &&
-                    cellCol >= boxColStart && cellCol < boxColStart + boxCols) {
-                    c.classList.add('highlighted-box');
+                
+                // 宫格高亮（支持标准和锯齿数独）
+                if (gameType === 'IRREGULAR' && currentBoxCells) {
+                    // 锯齿数独：检查是否在同一不规则宫格
+                    if (currentBoxCells.some(cellInfo => cellInfo[0] === cellRow && cellInfo[1] === cellCol)) {
+                        c.classList.add('highlighted-box');
+                    }
+                } else {
+                    // 标准数独：检查规则宫格
+                    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+                    const boxColStart = Math.floor(col / boxCols) * boxCols;
+                    if (cellRow >= boxRowStart && cellRow < boxRowStart + boxRows &&
+                        cellCol >= boxColStart && cellCol < boxColStart + boxCols) {
+                        c.classList.add('highlighted-box');
+                    }
                 }
             });
 
@@ -3659,6 +4420,8 @@
             const size = currentPuzzle.size || 9;
             const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
             const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            const gameType = currentPuzzle.gameType || 'STANDARD';
+            const irregularBoxes = currentPuzzle.irregularBoxes;
             const cells = initCellsCache();
             
             // 使用 Set 存储有冲突的索引
@@ -3691,15 +4454,33 @@
                     }
                 }
 
-                // 检查宫格冲突
-                const boxRow = Math.floor(row / boxRows) * boxRows;
-                const boxCol = Math.floor(col / boxCols) * boxCols;
-                for (let r = boxRow; r < boxRow + boxRows; r++) {
-                    for (let c = boxCol; c < boxCol + boxCols; c++) {
-                        const idx = r * size + c;
-                        if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
-                            conflictIndices.add(i);
-                            conflictIndices.add(idx);
+                // 检查宫格冲突（标准或不规则）
+                if (gameType === 'IRREGULAR' && irregularBoxes) {
+                    // 锯齿数独：检查不规则宫格
+                    for (const box of irregularBoxes) {
+                        if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                            for (const cell of box) {
+                                const [r, c] = cell;
+                                const idx = r * size + c;
+                                if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
+                                    conflictIndices.add(i);
+                                    conflictIndices.add(idx);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    // 标准数独：检查规则宫格
+                    const boxRow = Math.floor(row / boxRows) * boxRows;
+                    const boxCol = Math.floor(col / boxCols) * boxCols;
+                    for (let r = boxRow; r < boxRow + boxRows; r++) {
+                        for (let c = boxCol; c < boxCol + boxCols; c++) {
+                            const idx = r * size + c;
+                            if (idx !== i && typeof currentBoard[idx] === 'number' && currentBoard[idx] === value) {
+                                conflictIndices.add(i);
+                                conflictIndices.add(idx);
+                            }
                         }
                     }
                 }
@@ -3894,6 +4675,169 @@
             return `${month}-${day} ${hours}:${minutes}`;
         }
 
+        /**
+         * 当前查看的题目数据
+         */
+        let currentViewPuzzleData = null;
+
+        /**
+         * 查看已完成的题目
+         */
+        function viewPuzzle(puzzleId) {
+            const record = Storage.getRecord(puzzleId);
+            if (!record || !record.originalPuzzle) {
+                alert('无法找到题目数据');
+                return;
+            }
+
+            currentViewPuzzleData = {
+                puzzleId: record.puzzleId,
+                puzzle: record.originalPuzzle,
+                solution: record.solution,
+                difficulty: record.difficulty,
+                irregularBoxes: record.irregularBoxes || null
+            };
+
+            document.getElementById('viewPuzzleId').textContent = record.puzzleId;
+            document.getElementById('viewPuzzleDifficulty').textContent = getDifficultyName(record.difficulty);
+
+            renderViewPuzzleBoard(record.originalPuzzle);
+
+            // 激活题目标签
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.tab-btn:first-child').classList.add('active');
+
+            openModal('viewPuzzleModal');
+        }
+
+        /**
+         * 切换查看题目/答案
+         */
+        function switchViewPuzzleTab(tab) {
+            if (!currentViewPuzzleData) return;
+
+            // 更新标签状态
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 渲染对应内容
+            if (tab === 'puzzle') {
+                renderViewPuzzleBoard(currentViewPuzzleData.puzzle, false);
+            } else {
+                renderViewPuzzleBoard(currentViewPuzzleData.solution || currentViewPuzzleData.puzzle, true);
+            }
+        }
+
+        /**
+         * 渲染查看题目弹窗中的棋盘
+         * @param {string} boardStr - 棋盘数据
+         * @param {boolean} isAnswer - 是否是答案视图
+         */
+        function renderViewPuzzleBoard(boardStr, isAnswer = false) {
+            const boardContainer = document.getElementById('viewPuzzleBoard');
+            const puzzle = currentViewPuzzleData.puzzle;
+            const difficulty = currentViewPuzzleData.difficulty;
+            const solution = currentViewPuzzleData.solution;
+            let html = '';
+
+            // 根据难度设置棋盘样式类
+            let boardClass = '';
+            if (difficulty === 'DIAGONAL') {
+                boardClass = ' diagonal-board';
+            } else if (difficulty === 'ODD_EVEN') {
+                boardClass = ' odd-even-board';
+            } else if (difficulty === 'IRREGULAR') {
+                boardClass = ' irregular-board';
+            }
+            
+            // 更新棋盘容器类名
+            boardContainer.className = 'view-puzzle-board' + boardClass;
+
+            for (let i = 0; i < boardStr.length; i++) {
+                const row = Math.floor(i / 9);
+                const col = i % 9;
+                const value = boardStr[i];
+                const isOriginal = puzzle && puzzle[i] !== '0'; // 题目原始数字
+                const isEmpty = value === '0';
+                const solutionValue = solution && solution[i];
+
+                // 添加样式类
+                let cellClass = '';
+                
+                // 3x3边框（标准数独、对角线数独）
+                if (difficulty !== 'IRREGULAR') {
+                    if (col === 2 || col === 5) cellClass += ' border-right';
+                    if (row === 2 || row === 5) cellClass += ' border-bottom';
+                }
+
+                // 对角线数独 - 对角线高亮
+                if (difficulty === 'DIAGONAL') {
+                    if (row === col || row + col === 8) {
+                        cellClass += ' diagonal-cell';
+                    }
+                }
+
+                // 奇偶数独 - 奇偶标记
+                if (difficulty === 'ODD_EVEN') {
+                    if (solutionValue % 2 === 0) {
+                        cellClass += ' even-cell';
+                    } else {
+                        cellClass += ' odd-cell';
+                    }
+                }
+
+                // 锯齿数独 - 不规则宫格颜色
+                if (difficulty === 'IRREGULAR' && currentViewPuzzleData.irregularBoxes) {
+                    const boxIndex = getCellBoxIndex(row, col);
+                    cellClass += ` irregular-box-${boxIndex}`;
+                }
+
+                // 答案视图中区分原始数字和填入数字
+                let numberClass = '';
+                if (isAnswer) {
+                    if (isOriginal) {
+                        numberClass = ' original-number'; // 原始题目数字
+                    } else {
+                        numberClass = ' filled-number'; // 填入的数字
+                    }
+                }
+
+                html += `
+                    <div class="cell${isEmpty ? ' empty' : ''}${cellClass}">
+                        <span class="${isEmpty ? '' : (isAnswer ? numberClass : 'fixed')}">${isEmpty ? '' : value}</span>
+                    </div>
+                `;
+            }
+
+            boardContainer.innerHTML = html;
+        }
+
+        /**
+         * 获取单元格所属的不规则宫格索引
+         */
+        function getCellBoxIndex(row, col) {
+            if (!currentViewPuzzleData.irregularBoxes) return 0;
+            for (let i = 0; i < currentViewPuzzleData.irregularBoxes.length; i++) {
+                const box = currentViewPuzzleData.irregularBoxes[i];
+                if (box.some(([r, c]) => r === row && c === col)) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        /**
+         * 格式化日期时间（原函数）
+         */
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${month}-${day} ${hours}:${minutes}`;
+        }
+
         // ==================== 记录页面函数 ====================
 
         /**
@@ -3936,6 +4880,7 @@
             tbody.innerHTML = filteredRecords.map(record => {
                 const isLatestInProgress = latestInProgress && record.puzzleId === latestInProgress.puzzleId;
                 const canContinue = isLatestInProgress;
+                const canView = record.isCompleted && !record.isAbandoned && record.originalPuzzle;
                 const statusText = record.isAbandoned ? '已放弃' : (record.isCompleted ? '已完成' : '进行中');
                 const statusClass = record.isAbandoned ? 'abandoned' : (record.isCompleted ? 'completed' : 'in-progress');
                 
@@ -3950,7 +4895,7 @@
                         <td>${startTimeText}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${durationText}</td>
-                        <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.difficulty + '\')">继续</button>' : '-'}</td>
+                        <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.difficulty + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
                     </tr>
                 `;
             }).join('');
@@ -4092,6 +5037,8 @@
                 gameType = 'ODD_EVEN';
             } else if (record.difficulty === 'KILLER_4x4' || record.difficulty === 'KILLER_6x6' || record.difficulty === 'KILLER_9x9') {
                 gameType = 'KILLER';
+            } else if (record.difficulty === 'IRREGULAR') {
+                gameType = 'IRREGULAR';
             }
             
             // 恢复题目信息
@@ -4103,7 +5050,8 @@
                 size: boardSize,
                 gameType: gameType,
                 oddEvenMarks: record.oddEvenMarks || null,
-                cages: record.cages || null
+                cages: record.cages || null,
+                irregularBoxes: record.irregularBoxes || null
             };
             
             // 恢复棋盘状态（支持JSON格式的候选数字）
@@ -4220,6 +5168,16 @@
                     '每行、每列、每个2×3的小方格内都不能重复',
                     '初始数字为固定提示，不能修改'
                 ]
+            },
+            IRREGULAR: {
+                title: '锯齿数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列的数字都不能重复（1-9各出现一次）',
+                    '每个不规则形状的宫格内数字也不能重复（1-9各出现一次）',
+                    '不同颜色的区域代表不同的不规则宫格',
+                    '初始数字为固定提示，不能修改'
+                ]
             }
         };
 
@@ -4272,6 +5230,13 @@
             
             document.querySelector('#helpModal .help-content').innerHTML = helpHtml + commonHelp;
             document.getElementById('helpModal').style.display = 'block';
+        }
+
+        /**
+         * 打开弹窗
+         */
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
         }
 
         /**
