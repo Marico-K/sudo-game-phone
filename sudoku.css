@@ -1,0 +1,1877 @@
+/* ==================== 基础样式重置 ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.game-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* ==================== 页面头部样式 ==================== */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+header h1 {
+    font-size: 2.8em;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+header p {
+    font-size: 1.1em;
+    color: #666;
+    font-weight: 500;
+}
+
+/* ==================== 游戏页面头部样式 ==================== */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-left h1 {
+    font-size: 1.3em;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #333;
+    font-weight: 600;
+}
+
+/* ==================== 电脑端标题优化 ==================== */
+@media (min-width: 769px) {
+    .header-left h1 {
+        font-size: 1.1em;
+    }
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.game-main {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.timer {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #333;
+    font-family: 'SF Mono', 'Courier New', monospace;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 8px 16px;
+    border-radius: 10px;
+    min-width: 85px;
+    text-align: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.help-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.help-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(17, 153, 142, 0.5);
+}
+
+/* ==================== 难度选择页面样式 ==================== */
+.difficulty-selection {
+    text-align: center;
+    padding: 20px;
+}
+
+.difficulty-selection h2 {
+    color: #333;
+    margin-bottom: 28px;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.difficulty-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 35px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.difficulty-btn {
+    background: white;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+    min-width: 120px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
+.difficulty-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.difficulty-btn:nth-child(1):hover {
+    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+}
+
+.difficulty-btn:nth-child(2):hover {
+    box-shadow: 0 10px 25px rgba(255, 152, 0, 0.3);
+}
+
+.difficulty-btn:nth-child(3):hover {
+    box-shadow: 0 10px 25px rgba(244, 67, 54, 0.3);
+}
+
+.difficulty-icon {
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.difficulty-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.difficulty-name {
+    font-size: 1.15em;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 3px;
+    color: #333;
+}
+
+.difficulty-desc {
+    color: #666;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* ==================== 游戏主体区域样式 ==================== */
+.game-main {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.game-info {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.puzzle-info {
+    display: flex;
+    gap: 24px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95em;
+}
+
+.best-time {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.game-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-toggle-btn {
+    padding: 8px 14px;
+    font-size: 0.88em;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.3);
+}
+
+.action-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.action-toggle-btn.candidate-mode {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.help-btn-in-game {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 2px 8px rgba(17, 153, 142, 0.3);
+}
+
+.help-btn-in-game:hover {
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+/* ==================== 数独棋盘样式 ==================== */
+.sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 1px;
+    background: #2c3e50;
+    border: 3px solid #2c3e50;
+    margin: 0 auto 25px;
+    max-width: 500px;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* 对角线数独样式 */
+.sudoku-board.game-type-diagonal .cell.diagonal-cell {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+}
+
+/* 窗口数独样式 */
+.sudoku-board.game-type-windoku .cell.windoku-cell {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+}
+
+.sudoku-board.game-type-windoku .cell:not(.windoku-cell) {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+}
+
+/* 奇偶数独样式 */
+.sudoku-board.game-type-odd_even .cell.odd-cell,
+.sudoku-board.game-type-odd_even .cell.odd-cell.fixed,
+.sudoku-board.game-type-odd_even .cell.odd-cell.user-input {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
+}
+
+.sudoku-board.game-type-odd_even .cell.even-cell,
+.sudoku-board.game-type-odd_even .cell.even-cell.fixed,
+.sudoku-board.game-type-odd_even .cell.even-cell.user-input {
+    background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%) !important;
+}
+
+/* 杀手数独样式 */
+.sudoku-board.game-type-killer {
+    background: white;
+    border-color: #2c3e50;
+    gap: 0;
+}
+
+.sudoku-board.game-type-killer .cell {
+    background: white;
+    border: none;
+    position: relative;
+}
+
+/* 杀手数独笼子背景色 - 12种颜色轮询 */
+.sudoku-board.game-type-killer .cell.cage-color-0 { background-color: rgba(231, 76, 60, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-0 .cage-sum { color: #c0392b; border-color: #c0392b; }
+
+.sudoku-board.game-type-killer .cell.cage-color-1 { background-color: rgba(52, 152, 219, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-1 .cage-sum { color: #2980b9; border-color: #2980b9; }
+
+.sudoku-board.game-type-killer .cell.cage-color-2 { background-color: rgba(46, 204, 113, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-2 .cage-sum { color: #27ae60; border-color: #27ae60; }
+
+.sudoku-board.game-type-killer .cell.cage-color-3 { background-color: rgba(243, 156, 18, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-3 .cage-sum { color: #d68910; border-color: #d68910; }
+
+.sudoku-board.game-type-killer .cell.cage-color-4 { background-color: rgba(155, 89, 182, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-4 .cage-sum { color: #8e44ad; border-color: #8e44ad; }
+
+.sudoku-board.game-type-killer .cell.cage-color-5 { background-color: rgba(26, 188, 156, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-5 .cage-sum { color: #16a085; border-color: #16a085; }
+
+.sudoku-board.game-type-killer .cell.cage-color-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-6 .cage-sum { color: #c2185b; border-color: #c2185b; }
+
+.sudoku-board.game-type-killer .cell.cage-color-7 { background-color: rgba(96, 125, 139, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-7 .cage-sum { color: #546e7a; border-color: #546e7a; }
+
+.sudoku-board.game-type-killer .cell.cage-color-8 { background-color: rgba(241, 196, 15, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-8 .cage-sum { color: #f1c40f; border-color: #f1c40f; }
+
+.sudoku-board.game-type-killer .cell.cage-color-9 { background-color: rgba(127, 140, 141, 0.3) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-9 .cage-sum { color: #7f8c8d; border-color: #7f8c8d; }
+
+.sudoku-board.game-type-killer .cell.cage-color-10 { background-color: rgba(248, 148, 6, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-10 .cage-sum { color: #f89406; border-color: #f89406; }
+
+.sudoku-board.game-type-killer .cell.cage-color-11 { background-color: rgba(142, 68, 173, 0.2) !important; }
+.sudoku-board.game-type-killer .cell.cage-color-11 .cage-sum { color: #9b59b6; border-color: #9b59b6; }
+
+/* 杀手数独笼子边框（统一深灰色虚线） */
+.sudoku-board.game-type-killer .cell.cage-border-top { border-top: 1px dashed #ff8c8c; }
+.sudoku-board.game-type-killer .cell.cage-border-bottom { border-bottom: 1px dashed #ff8c8c; }
+.sudoku-board.game-type-killer .cell.cage-border-left { border-left: 1px dashed #ff8c8c; }
+.sudoku-board.game-type-killer .cell.cage-border-right { border-right: 1px dashed #ff8c8c; }
+
+/* 锯齿数独样式 */
+.sudoku-board.game-type-irregular {
+    background: #ffffff;
+    border-color: #333333;
+    gap: 0;
+}
+
+.sudoku-board.game-type-irregular .cell {
+    border: 1px solid #e0e0e0;
+    position: relative;
+}
+
+/* 锯齿数独不规则宫格背景色 - 9 种明显区分颜色 */
+.sudoku-board.game-type-irregular .cell.irregular-box-0 { background-color: rgba(255, 255, 255, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.50) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.35) !important; }
+
+/* 锯齿数独宫格边框（深灰色实线） */
+.sudoku-board.game-type-irregular .cell.irregular-border-top { border-top: 2px solid #333333 !important; }
+.sudoku-board.game-type-irregular .cell.irregular-border-bottom { border-bottom: 2px solid #333333 !important; }
+.sudoku-board.game-type-irregular .cell.irregular-border-left { border-left: 2px solid #333333 !important; }
+.sudoku-board.game-type-irregular .cell.irregular-border-right { border-right: 2px solid #333333 !important; }
+
+/* 杀手数独宫格边框（深灰色实线） */
+.sudoku-board.game-type-killer .cell.border-top {
+    border-top: 1.5px solid #2c3e50 !important;
+}
+
+.sudoku-board.game-type-killer .cell.border-left {
+    border-left: 1.5px solid #2c3e50 !important;
+}
+
+.cage-sum {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    font-size: 8px;
+    font-weight: 600;
+    color: #e74c3c;
+    background: white;
+    padding: 1px 4px;
+    border-radius: 3px;
+    z-index: 9999;
+    line-height: 1;
+    pointer-events: none;
+    border: 1px solid #e74c3c;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.cell.size-4x4 .cage-sum {
+    font-size: 10px;
+}
+
+.cell.size-6x6 .cage-sum {
+    font-size: 9px;
+}
+
+.cell {
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.55em;
+    font-weight: 600;
+    cursor: pointer;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: visible;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* 4宫格和6宫格的字体大小调整 */
+.cell.size-4x4 {
+    font-size: 2.5em;
+}
+
+.cell.size-6x6 {
+    font-size: 2em;
+}
+
+.cell:hover {
+    background: #f0f4f8;
+}
+
+.cell.selected {
+    background: #fff3cd !important;
+    border: 2px solid #e67e22 !important;
+    box-shadow: inset 0 0 12px rgba(230, 126, 34, 0.4);
+}
+
+.cell.fixed {
+    background: #f8fafc !important;
+    color: #2c3e50;
+    cursor: default;
+}
+
+.cell.user-input {
+    color: #3498db;
+}
+
+/* 高亮样式 - 同行/列/宫 */
+.cell.highlighted-row,
+.cell.highlighted-col,
+.cell.highlighted-box {
+    background: #e8f4fd;
+}
+
+.cell.fixed.highlighted-row,
+.cell.fixed.highlighted-col,
+.cell.fixed.highlighted-box {
+    background: #e8f4fd !important;
+}
+
+/* 相同数字高亮 */
+.cell.highlighted-num {
+    background: #d4edda !important;
+}
+
+.cell.fixed.highlighted-num {
+    background: #d4edda !important;
+}
+
+/* 冲突样式 */
+.cell.conflict {
+    background: #ffebee !important;
+    color: #e74c3c !important;
+    border: 3px solid #e74c3c !important;
+}
+
+/* ==================== 草稿模式样式 ==================== */
+/* 候选数字容器 */
+.cell-candidates {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 100%;
+    height: 100%;
+    padding: 3%;
+    gap: 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    justify-items: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* 4宫格候选数容器 */
+.cell-candidates.size-4x4 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+/* 6宫格候选数容器 */
+.cell-candidates.size-6x6 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+/* 单个候选数字 */
+.candidate-num {
+    font-size: 3vmin;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    line-height: 1;
+    overflow: hidden;
+    border-radius: 50%;
+    width: 55%;
+    max-width: 12px;
+    min-width: 7px;
+    aspect-ratio: 1;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* 4宫格候选数字体大小 */
+.cell-candidates.size-4x4 .candidate-num {
+    font-size: 4vmin;
+    width: 70%;
+    max-width: 20px;
+    min-width: 12px;
+}
+
+/* 6宫格候选数字体大小 */
+.cell-candidates.size-6x6 .candidate-num {
+    font-size: 3vmin;
+    width: 60%;
+    max-width: 16px;
+    min-width: 10px;
+}
+
+/* 不同数字的背景颜色（仅在同行/列/宫中唯一时显示） */
+.candidate-num.c1 { background: #4CAF50; }
+.candidate-num.c2 { background: #2196F3; }
+.candidate-num.c3 { background: #FF9800; }
+.candidate-num.c4 { background: #F44336; }
+.candidate-num.c5 { background: #9C27B0; }
+.candidate-num.c6 { background: #00BCD4; }
+.candidate-num.c7 { background: #FFEB3B; color: #333; }
+.candidate-num.c8 { background: #607D8B; }
+.candidate-num.c9 { background: #E91E63; }
+
+/* 非唯一候选数字样式（透明背景） */
+.candidate-num.candidate-normal {
+    background: transparent;
+    color: #333;
+}
+
+/* ==================== 电脑端候选数字优化 ==================== */
+@media (min-width: 769px) {
+    /* 候选数字容器 */
+    .cell-candidates {
+        padding: 4%;
+        gap: 2px;
+    }
+
+    /* 单个候选数字 - 电脑端优化 */
+    .candidate-num {
+        font-size: 11px;
+        width: 60%;
+        max-width: 16px;
+        min-width: 10px;
+    }
+
+    /* 4宫格候选数字 - 电脑端 */
+    .cell-candidates.size-4x4 .candidate-num {
+        font-size: 14px;
+        width: 75%;
+        max-width: 24px;
+        min-width: 14px;
+    }
+
+    /* 6宫格候选数字 - 电脑端 */
+    .cell-candidates.size-6x6 .candidate-num {
+        font-size: 12px;
+        width: 65%;
+        max-width: 20px;
+        min-width: 12px;
+    }
+}
+
+/* 草稿模式按钮样式 */
+.control-btn.candidate-mode {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border-color: #4CAF50;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.control-btn.candidate-mode:hover {
+    background: linear-gradient(135deg, #43a047, #388e3c);
+    border-color: #388e3c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+/* 3x3宫格边框 */
+.cell.border-top {
+    border-top: 1.5px solid #2c3e50;
+}
+
+.cell.border-left {
+    border-left: 1.5px solid #2c3e50;
+}
+
+/* ==================== 数字键盘样式 ==================== */
+.number-keypad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 360px;
+    margin: 0 auto 22px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 14px;
+}
+
+.num-btn {
+    background: white;
+    color: #333;
+    border: none;
+    padding: 14px;
+    cursor: pointer;
+    font-size: 1.3em;
+    font-weight: 700;
+    aspect-ratio: 1;
+    position: relative;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.num-btn:hover {
+    background: #f0f4f8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.num-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.num-btn.active {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+}
+
+.num-btn.disabled {
+    background: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.num-btn.disabled:hover {
+    background: #e9ecef;
+    transform: none;
+}
+
+.num-remaining {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.6em;
+    font-weight: normal;
+    color: #666;
+}
+
+.num-btn.active .num-remaining {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.num-btn.disabled .num-remaining {
+    color: #ccc;
+}
+
+.num-btn.min-remaining {
+    border-color: #e53935;
+    border-width: 3px;
+    box-shadow: 0 0 8px rgba(229, 57, 53, 0.5);
+}
+
+.num-btn.min-remaining .num-remaining {
+    color: #e53935;
+    font-weight: bold;
+}
+
+.num-btn.active.min-remaining {
+    border-color: #e53935;
+    box-shadow: 0 0 8px rgba(229, 57, 53, 0.5);
+}
+
+.num-btn-clear {
+    color: #666;
+}
+
+/* ==================== 游戏控制按钮样式 ==================== */
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    max-width: 480px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.control-btn {
+    padding: 13px 22px;
+    font-size: 0.92em;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transition: all 0.25s ease;
+    min-width: 105px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+}
+
+.control-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.5);
+}
+
+.control-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
+}
+
+.control-btn.abandon-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.35);
+}
+
+.control-btn.abandon-btn:hover {
+    box-shadow: 0 6px 18px rgba(245, 87, 108, 0.5);
+}
+
+/* ==================== 弹窗样式 ==================== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 24px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    color: #666;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+    transition: color 0.2s ease;
+}
+
+.close:hover {
+    color: #e74c3c;
+}
+
+.help-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.help-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.help-content h3:not(:first-child) {
+    margin-top: 20px;
+}
+
+.help-content ul {
+    margin-left: 22px;
+    margin-bottom: 18px;
+    padding-left: 0;
+}
+
+.help-content li {
+    margin-bottom: 8px;
+    line-height: 1.7;
+    color: #444;
+}
+
+.win-content {
+    text-align: center;
+    padding: 30px 24px;
+}
+
+.win-content h2 {
+    color: #333;
+    font-size: 2.2em;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.win-info {
+    margin: 24px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-radius: 12px;
+}
+
+.win-info p {
+    font-size: 1.25em;
+    margin: 12px 0;
+    color: #155724;
+    font-weight: 500;
+}
+
+.win-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 24px;
+    padding: 20px 24px;
+}
+
+.view-puzzle-content {
+    text-align: center;
+    padding: 24px;
+    max-width: 500px;
+}
+
+.view-puzzle-tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    font-size: 0.9em;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e0e0e0;
+    transition: all 0.3s;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.view-puzzle-board-container {
+    margin: 20px 0;
+}
+
+.view-puzzle-board {
+    display: inline-grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 0;
+    border: 2px solid #2c3e50;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ==================== 电脑端查看题目弹窗优化 ==================== */
+@media (min-width: 769px) {
+    .view-puzzle-content {
+        max-width: 600px;
+        padding: 30px;
+    }
+    
+    .view-puzzle-board-container {
+        margin: 30px 0;
+    }
+    
+    .view-puzzle-board {
+        border-radius: 10px;
+    }
+    
+    .view-puzzle-board .cell {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+    }
+    
+    .view-puzzle-board.mini-4-board .cell {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 28px !important;
+    }
+    
+    .view-puzzle-board.mini-6-board .cell {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 22px !important;
+    }
+    
+    .view-puzzle-board.killer-board .cage-sum {
+        font-size: 12px;
+        padding: 2px 4px;
+    }
+
+    /* 电脑端杀手4宫格笼和更大 */
+    .view-puzzle-board.killer-board.killer-4x4 .cage-sum {
+        font-size: 16px;
+        padding: 3px 5px;
+    }
+    
+    /* 电脑端杀手4宫格 */
+    .view-puzzle-board.killer-board.killer-4x4 .cell {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 28px !important;
+    }
+    
+    /* 电脑端杀手6宫格 */
+    .view-puzzle-board.killer-board.killer-6x6 .cell {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 22px !important;
+    }
+    
+    /* 电脑端杀手9宫格 */
+    .view-puzzle-board.killer-board.killer-9x9 .cell {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 16px !important;
+    }
+    
+    /* 电脑端答案数字样式 */
+    .view-puzzle-board.mini-4-board .original-number,
+    .view-puzzle-board.killer-board.killer-4x4 .original-number {
+        font-size: 28px !important;
+    }
+    
+    .view-puzzle-board.mini-4-board .filled-number,
+    .view-puzzle-board.killer-board.killer-4x4 .filled-number {
+        font-size: 26px !important;
+    }
+    
+    .view-puzzle-board.mini-6-board .original-number,
+    .view-puzzle-board.killer-board.killer-6x6 .original-number {
+        font-size: 22px !important;
+    }
+    
+    .view-puzzle-board.mini-6-board .filled-number,
+    .view-puzzle-board.killer-board.killer-6x6 .filled-number {
+        font-size: 20px !important;
+    }
+    
+    .view-puzzle-board.killer-board.killer-9x9 .original-number {
+        font-size: 16px !important;
+    }
+    
+    .view-puzzle-board.killer-board.killer-9x9 .filled-number {
+        font-size: 14px !important;
+    }
+}
+
+.view-puzzle-board .cell {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    background: white;
+    position: relative;
+}
+
+.view-puzzle-board .cell.fixed {
+    color: #2c3e50;
+}
+
+.view-puzzle-board .cell.empty {
+    color: #999;
+}
+
+/* 原始题目数字样式 */
+.view-puzzle-board .original-number {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* 填入的数字样式 */
+.view-puzzle-board .filled-number {
+    color: #e74c3c;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* 4宫格答案数字样式 */
+.view-puzzle-board.mini-4-board .original-number,
+.view-puzzle-board.killer-board.killer-4x4 .original-number {
+    font-size: 24px;
+}
+
+.view-puzzle-board.mini-4-board .filled-number,
+.view-puzzle-board.killer-board.killer-4x4 .filled-number {
+    font-size: 22px;
+}
+
+/* 6宫格答案数字样式 */
+.view-puzzle-board.mini-6-board .original-number,
+.view-puzzle-board.killer-board.killer-6x6 .original-number {
+    font-size: 20px;
+}
+
+.view-puzzle-board.mini-6-board .filled-number,
+.view-puzzle-board.killer-board.killer-6x6 .filled-number {
+    font-size: 18px;
+}
+
+.view-puzzle-board .cell.border-right {
+    border-right: 2px solid #2c3e50;
+}
+
+.view-puzzle-board .cell.border-bottom {
+    border-bottom: 2px solid #2c3e50;
+}
+
+/* 对角线数独样式 */
+.view-puzzle-board.diagonal-board .cell.diagonal-cell {
+    background-color: rgba(255, 193, 7, 0.25);
+}
+
+/* 奇偶数独样式 */
+.view-puzzle-board.odd-even-board .cell.odd-cell {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
+}
+
+.view-puzzle-board.odd-even-board .cell.even-cell {
+    background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%) !important;
+}
+
+/* 锯齿数独样式 */
+.view-puzzle-board.irregular-board {
+    border: 2px solid #2c3e50;
+}
+
+.view-puzzle-board.irregular-board .cell {
+    border: 1px solid #ddd;
+}
+
+.view-puzzle-board.windoku-board .cell.windoku-cell {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+}
+
+.view-puzzle-board.windoku-board .cell:not(.windoku-cell) {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-0 { background-color: rgba(255, 99, 71, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.25) !important; }
+
+/* 杀手数独样式 */
+.view-puzzle-board.killer-board .cell.killer-cage-0 { background-color: rgba(156, 39, 176, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-1 { background-color: rgba(0, 188, 212, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-2 { background-color: rgba(255, 152, 0, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-3 { background-color: rgba(76, 175, 80, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-4 { background-color: rgba(244, 67, 54, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-5 { background-color: rgba(33, 150, 243, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-7 { background-color: rgba(139, 195, 74, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-8 { background-color: rgba(205, 220, 57, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-9 { background-color: rgba(255, 87, 34, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-10 { background-color: rgba(63, 81, 181, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-11 { background-color: rgba(0, 150, 136, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-12 { background-color: rgba(255, 193, 7, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-13 { background-color: rgba(96, 125, 139, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-14 { background-color: rgba(121, 85, 72, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-15 { background-color: rgba(244, 143, 177, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-16 { background-color: rgba(129, 212, 250, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-17 { background-color: rgba(187, 222, 251, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-18 { background-color: rgba(165, 214, 167, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-19 { background-color: rgba(255, 213, 79, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-20 { background-color: rgba(255, 204, 188, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-21 { background-color: rgba(248, 187, 208, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-22 { background-color: rgba(179, 157, 219, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-23 { background-color: rgba(144, 164, 174, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-24 { background-color: rgba(161, 136, 127, 0.2) !important; }
+
+/* 杀手数独笼子边框样式 - 只在外边界显示 */
+.view-puzzle-board.killer-board .cell.killer-cage-border-top { border-top: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-border-bottom { border-bottom: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-border-left { border-left: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-border-right { border-right: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+
+/* 杀手数独棋盘不显示默认的宫边框 */
+.view-puzzle-board.killer-board .cell.border-right { border-right: none !important; }
+.view-puzzle-board.killer-board .cell.border-bottom { border-bottom: none !important; }
+
+/* 杀手数独笼和样式 */
+.view-puzzle-board.killer-board .cage-sum {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 8px;
+    font-weight: bold;
+    color: #333;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 1px 2px;
+    border-radius: 2px;
+}
+
+/* 杀手4宫格笼和样式更大 */
+.view-puzzle-board.killer-board.killer-4x4 .cage-sum {
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* 4宫格样式 */
+.view-puzzle-board.mini-4-board {
+    grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.view-puzzle-board.mini-4-board .cell {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 24px !important;
+}
+
+/* 6宫格样式 */
+.view-puzzle-board.mini-6-board {
+    grid-template-columns: repeat(6, 1fr) !important;
+}
+
+.view-puzzle-board.mini-6-board .cell {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 20px !important;
+}
+
+/* 杀手数独样式 - 根据棋盘大小调整 */
+.view-puzzle-board.killer-board {
+    grid-template-columns: repeat(9, 1fr) !important;
+}
+
+/* 杀手4宫格 */
+.view-puzzle-board.killer-board.killer-4x4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.view-puzzle-board.killer-board.killer-4x4 .cell {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 24px !important;
+}
+
+/* 杀手6宫格 */
+.view-puzzle-board.killer-board.killer-6x6 {
+    grid-template-columns: repeat(6, 1fr) !important;
+}
+
+.view-puzzle-board.killer-board.killer-6x6 .cell {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 20px !important;
+}
+
+/* 杀手9宫格 */
+.view-puzzle-board.killer-board.killer-9x9 {
+    grid-template-columns: repeat(9, 1fr) !important;
+}
+
+.view-puzzle-difficulty {
+    margin: 16px 0;
+    font-size: 1.1em;
+    color: #666;
+}
+
+.modal-btn {
+    padding: 13px 26px;
+    font-size: 0.95em;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transition: all 0.25s ease;
+    min-width: 110px;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.modal-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(102, 126, 234, 0.5);
+}
+
+.modal-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+}
+
+.modal-btn.color-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 4px 14px rgba(17, 153, 142, 0.4);
+}
+
+.modal-btn.color-btn:hover {
+    box-shadow: 0 7px 20px rgba(17, 153, 142, 0.5);
+}
+
+/* ==================== 电脑端按钮文字控制在一行 ==================== */
+@media (min-width: 769px) {
+    .modal-btn {
+        min-width: 130px;
+        white-space: nowrap;
+    }
+    
+    .win-buttons {
+        gap: 15px;
+    }
+}
+
+/* ==================== 记录页面样式 ==================== */
+.records-main {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 14px;
+    border-radius: 10px;
+    text-align: center;
+    flex: 1;
+    min-width: 85px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.stat-number {
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.75em;
+    opacity: 0.9;
+}
+
+.filter-section {
+    margin-bottom: 28px;
+}
+
+.filter-section h3 {
+    margin-bottom: 16px;
+    color: #333;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.filter-select {
+    width: 100%;
+    max-width: 220px;
+    padding: 12px 16px;
+    font-size: 0.92em;
+    font-weight: 500;
+    color: #444;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+.filter-select:hover {
+    border-color: #667eea;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.records-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 15px 0;
+    min-height: 300px;
+    flex: 1;
+    border-radius: 12px;
+    background: white;
+    position: relative;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+}
+
+.records-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+.records-table th,
+.records-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
+}
+
+.records-table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-weight: 600;
+    color: #444;
+    font-size: 0.92em;
+}
+
+.records-table tr:hover {
+    background: #f8fafc;
+}
+
+.difficulty-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.difficulty-badge.mini_4x4 {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #0d47a1;
+}
+
+.difficulty-badge.mini_6x6 {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    color: #4a148c;
+}
+
+.difficulty-badge.diagonal {
+    background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 100%);
+    color: #0d47a1;
+}
+
+.difficulty-badge.odd_even {
+    background: linear-gradient(135deg, #ffebee 0%, #ffab91 100%);
+    color: #bf360c;
+}
+
+.difficulty-badge.killer_4x4 {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+}
+
+.difficulty-badge.killer_6x6 {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #e65100;
+}
+
+.difficulty-badge.killer_9x9 {
+    background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+    color: #424242;
+}
+
+.difficulty-badge.easy {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.difficulty-badge.medium {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    color: #856404;
+}
+
+.difficulty-badge.hard {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.difficulty-badge.irregular {
+    background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+    color: #006064;
+}
+
+.difficulty-badge.windoku {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #0d47a1;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.status-badge.completed {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.status-badge.in-progress {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.status-badge.abandoned {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    cursor: pointer;
+    font-size: 0.88em;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 50px 20px;
+    color: #666;
+    min-height: 220px;
+}
+
+.empty-icon {
+    font-size: 3.5em;
+    margin-bottom: 18px;
+    opacity: 0.8;
+}
+
+.empty-state p {
+    font-size: 1.05em;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 30px;
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.5);
+}
+
+.secondary-btn {
+    background: #f8f9fa;
+    color: #444;
+    border: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    border-radius: 10px;
+    margin-top: 18px;
+    transition: all 0.25s ease;
+}
+
+.secondary-btn:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.additional-options {
+    margin-top: 25px;
+    text-align: center;
+}
+
+/* ==================== 页面底部样式 ==================== */
+footer {
+    text-align: center;
+    margin-top: 45px;
+    color: #666;
+    font-size: 0.95em;
+}
+
+/* ==================== 响应式样式 ==================== */
+@media (max-width: 768px) {
+    .difficulty-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .difficulty-btn {
+        width: 100%;
+        padding: 12px 15px;
+    }
+
+    .game-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 15px;
+    }
+
+    .header-left {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .header-left h1 {
+        font-size: 1.1em;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .sudoku-board {
+        max-width: 100%;
+    }
+
+    .game-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-btn {
+        width: 100%;
+        min-width: auto;
+        box-sizing: border-box;
+    }
+
+    .stats-summary {
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        min-width: 80px;
+    }
+
+    .filter-select {
+        max-width: 100%;
+    }
+
+    .records-table {
+        font-size: 0.9em;
+    }
+
+    .records-table th,
+    .records-table td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
+
+    .game-container {
+        padding: 8px;
+    }
+
+    .sudoku-board {
+        max-width: 350px !important;
+    }
+
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    header p {
+        font-size: 1em;
+    }
+
+    .difficulty-selection h2 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+    }
+
+    .difficulty-btn {
+        padding: 15px 15px;
+    }
+
+    .difficulty-icon {
+        font-size: 1.8em;
+    }
+
+    .difficulty-name {
+        font-size: 1.1em;
+    }
+
+    .continue-game-area {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .continue-game-area p {
+        margin: 10px 0;
+        color: #666;
+    }
+
+    .primary-btn {
+        width: 100%;
+        max-width: 280px;
+        padding: 15px 20px;
+        font-size: 1.1em;
+    }
+
+    .secondary-btn {
+        width: 100%;
+        max-width: 280px;
+        padding: 12px 20px;
+        font-size: 1em;
+    }
+
+    .additional-options {
+        margin-top: 25px;
+    }
+
+    .game-main {
+        padding: 12px;
+    }
+
+    .game-info {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .puzzle-info {
+        flex-direction: column;
+        gap: 5px;
+        font-size: 0.85em;
+    }
+
+    .cell {
+        font-size: 1.1em;
+    }
+
+    .cell-candidates {
+        padding: 2%;
+    }
+
+    .candidate-num {
+        font-size: 2vmin;
+        width: 55%;
+        max-width: 12px;
+        min-width: 7px;
+    }
+
+    .number-keypad {
+        gap: 5px;
+        padding: 8px;
+        max-width: 100%;
+    }
+
+    .num-btn {
+        padding: 10px;
+        font-size: 1em;
+    }
+
+    .control-btn {
+        padding: 12px 15px;
+        font-size: 0.85em;
+    }
+
+    .modal-content {
+        margin: 20% auto;
+        padding: 0;
+        width: 95%;
+        max-height: 85vh;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.1em;
+    }
+
+    .help-content {
+        padding: 15px;
+    }
+
+    .win-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .win-buttons button {
+        width: 100%;
+        padding: 15px;
+    }
+
+    footer {
+        margin-top: 30px;
+        font-size: 0.9em;
+    }
+}

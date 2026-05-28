@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>数独游戏</title>
+    <link rel="stylesheet" href="sudoku.css">
+</head>
+
+<body>
+
+    <!-- ==================== 游戏页面容器 ==================== -->
+    <div class="game-container" id="gamePage">
+        <header class="game-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goHome()">← 返回</button>
+            </div>
+            <div class="header-center">
+                <h1 id="difficultyTitle">数独游戏</h1>
+            </div>
+            <div class="header-right">
+                <div class="timer" id="timer">00:00</div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <!-- 游戏信息区 -->
+            <div class="game-info">
+                <div class="puzzle-info" style="display: none;">
+                    <span id="puzzleNumber">题目 #1</span>
+                    <span id="attemptInfo">第 1 次尝试</span>
+                </div>
+                <div class="best-time" id="bestTimeInfo" style="display: none;">
+                    最佳成绩: <span id="bestTime">--:--</span>
+                </div>
+                <div class="game-actions">
+                    <button class="action-toggle-btn" id="colorModeBtn" onclick="toggleColorMode()"
+                        style="display: none;">🎨 涂色模式</button>
+                    <button class="action-toggle-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
+                    <button class="action-toggle-btn help-btn-in-game" onclick="showHelp()">❓ 帮助</button>
+                </div>
+            </div>
+
+            <!-- 数独棋盘 -->
+            <div class="sudoku-board" id="sudokuBoard"></div>
+
+            <!-- 数字键盘 -->
+            <div id="numberKeyPad" class="number-keypad"></div>
+
+            <!-- 控制按钮 -->
+            <div id="gameControls" class="game-controls">
+                <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿（开挂）</button>
+                <button class="control-btn" onclick="fillUniqueCandidates()">✅ 一键答题</button>
+                <button class="control-btn" onclick="clearAllCandidates()">🗑️ 清除草稿</button>
+                <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
+                <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
+                <button class="control-btn abandon-btn" onclick="abandonGame()">❌ 放弃游戏</button>
+            </div>
+        </main>
+
+        <!-- 帮助弹窗 -->
+        <div class="modal" id="helpModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>游戏帮助</h2>
+                    <span class="close" onclick="closeModal('helpModal')">&times;</span>
+                </div>
+                <div class="help-content">
+                    <h3>游戏规则：</h3>
+                    <ul>
+                        <li>在9×9的方格内填入1-9的数字</li>
+                        <li>每行、每列、每个3×3的小方格内都不能重复</li>
+                        <li>初始数字为固定提示，不能修改</li>
+                    </ul>
+                    <h3>操作说明：</h3>
+                    <ul>
+                        <li>点击方格选中位置</li>
+                        <li>使用下方数字键盘输入数字</li>
+                        <li>点击 ✕ 清除当前格子的数字</li>
+                        <li>完成后点击"检查答案"验证</li>
+                    </ul>
+                    <h3>草稿模式：</h3>
+                    <ul>
+                        <li>点击"确定模式/草稿模式"按钮切换输入模式</li>
+                        <li><strong>确定模式</strong>：直接填入确定的数字</li>
+                        <li><strong>草稿模式</strong>：在格子中标记候选数字</li>
+                        <li>在草稿模式下，点击数字添加/移除候选</li>
+                        <li>确定数字会自动删除同行/列/宫的重复候选</li>
+                    </ul>
+                    <h3>候选数字样式：</h3>
+                    <ul>
+                        <li><strong>彩色背景</strong>：表示该候选数字是唯一可能（在同行/列/宫中只出现一次，或该格子只有一个候选）</li>
+                        <li><strong>白色背景</strong>：表示该候选数字在同行/列/宫中多次出现，需要进一步推理</li>
+                    </ul>
+                    <h3>快捷键：</h3>
+                    <ul>
+                        <li>数字键 1-9：填入数字</li>
+                        <li>Delete/Backspace：清除数字</li>
+                        <li>方向键：移动选中格</li>
+                        <li>E键：切换确定/草稿模式</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 胜利弹窗 -->
+        <div class="modal" id="winModal" style="display: none;">
+            <div class="modal-content win-content">
+                <span class="close" onclick="closeModal('winModal')">&times;</span>
+                <h2>🎉 恭喜完成！</h2>
+                <div class="win-info">
+                    <p>完成时间: <span id="completionTime">00:00</span></p>
+                    <p id="newRecordMsg" style="display: none; color: #4CAF50;">🏆 新纪录！</p>
+                    <p id="bestRecordMsg" style="display: none;">最佳成绩: <span id="finalBestTime">00:00</span></p>
+                </div>
+                <div class="win-buttons">
+                    <button class="modal-btn color-btn" onclick="toggleColorMode(); closeModal('winModal');">🎨
+                        涂色效果</button>
+                    <button class="modal-btn" onclick="newPuzzle(); closeModal('winModal');">再来一题</button>
+                    <button class="modal-btn" onclick="goHome(); closeModal('winModal');">返回主页</button>
+                </div>
+            </div>
+        </div>
+    </div> <!-- 关闭 gamePage 容器 -->
+
+    <script src="sudoku.js"></script>
+    <script>
+        // 游戏页初始化（自动处理：新游戏 + 继续游戏）
+        document.addEventListener("DOMContentLoaded", function () {
+            const diff = localStorage.getItem("currentDiff") || "EASY";
+            const continuePuzzleId = localStorage.getItem("continuePuzzleId");
+
+            currentDifficulty = diff;
+            document.getElementById("difficultyTitle").textContent = `数独游戏 - ${getDifficultyName(diff)}`;
+            resetGameControls();
+
+            // ==================== 自动判断：继续游戏 OR 新游戏 ====================
+            if (continuePuzzleId) {
+                // 继续游戏
+                const record = Storage.getRecord(continuePuzzleId);
+                if (record && record.currentBoard) {
+                    restoreGameState(record);
+                } else {
+                    generateNewPuzzle(diff);
+                }
+                // 用完清掉，避免下次刷新又继续
+                localStorage.removeItem("continuePuzzleId");
+            } else {
+                // 新游戏
+                generateNewPuzzle(diff);
+            }
+        });
+    </script>
+</body>
+
+</html>
