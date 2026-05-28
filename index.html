@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>数独 - 首页</title>
+    <link rel="stylesheet" href="sudoku.css">
+</head>
+
+<body>
+    <!-- 只留原来的首页：难度选择、继续游戏、我的记录按钮 -->
+    <div class="container" id="homePage">
+        <header>
+            <h1>🎯 数独游戏</h1>
+            <p>单机版本 - 无竞技功能</p>
+        </header>
+
+        <main class="difficulty-selection">
+            <!-- 继续上一局按钮（有未完成游戏时显示） -->
+            <div id="continueGameSection" style="display: none;">
+                <h2>继续上一局游戏</h2>
+                <div class="continue-game-area">
+                    <button class="primary-btn" onclick="continueLatestGame()">▶️ 继续游戏</button>
+                    <p>或</p>
+                    <button class="secondary-btn" onclick="clearProgressAndShowDifficulty()">🎲 开始新游戏</button>
+                </div>
+                <div class="additional-options">
+                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
+                </div>
+            </div>
+
+            <!-- 难度选择按钮区（无未完成游戏时显示） -->
+            <div id="difficultySection">
+                <h2>选择难度开始游戏</h2>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn" onclick="startGame('MINI_4x4')">
+                        <span class="difficulty-icon">🔢</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">迷你4宫格</span>
+                            <span class="difficulty-desc">12个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('MINI_6x6')">
+                        <span class="difficulty-icon">☕</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">迷你6宫格</span>
+                            <span class="difficulty-desc">22个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('EASY')">
+                        <span class="difficulty-icon">😊</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">简单9宫格</span>
+                            <span class="difficulty-desc">35个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('MEDIUM')">
+                        <span class="difficulty-icon">🤔</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">中等9宫格</span>
+                            <span class="difficulty-desc">45个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('HARD')">
+                        <span class="difficulty-icon">😰</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">高级9宫格</span>
+                            <span class="difficulty-desc">55个空格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('DIAGONAL')">
+                        <span class="difficulty-icon">✖️</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">对角线数独</span>
+                            <span class="difficulty-desc">两条对角线不重复</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('ODD_EVEN')">
+                        <span class="difficulty-icon">☯️</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">奇偶数独</span>
+                            <span class="difficulty-desc">按色块填奇偶</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_4x4')">
+                        <span class="difficulty-icon">🗡</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手4宫格</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_6x6')">
+                        <span class="difficulty-icon">⚔</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手6宫格</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('KILLER_9x9')">
+                        <span class="difficulty-icon">🕵</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">杀手9宫格</span>
+                            <span class="difficulty-desc">虚线框内数字之和</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('IRREGULAR')">
+                        <span class="difficulty-icon">〽️</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">锯齿数独</span>
+                            <span class="difficulty-desc">不规则宫格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('WINDOKU')">
+                        <span class="difficulty-icon">🏠</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">窗口数独</span>
+                            <span class="difficulty-desc">四个额外3x3区域</span>
+                        </span>
+                    </button>
+                    <!-- <button class="difficulty-btn" onclick="startGame('SANDWICH')">
+                        <span class="difficulty-icon">🥪</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">三明治数独</span>
+                            <span class="difficulty-desc">1和9之间数字之和</span>
+                        </span>
+                    </button> -->
+                </div>
+                <div class="additional-options">
+                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>💡 数据存储在本地浏览器中，清除浏览器数据会丢失记录</p>
+        </footer>
+    </div>
+
+    <!-- 只引入JS，不要执行游戏逻辑 -->
+    <script src="sudoku.js"></script>
+    <script>
+        // 首页一进来就执行
+        document.addEventListener("DOMContentLoaded", function () {
+            if (hasInProgressGame()) {
+                showContinueGameSection();
+            } else {
+                showDifficultySection();
+            }
+        });
+    </script>
+</body>
+
+</html>

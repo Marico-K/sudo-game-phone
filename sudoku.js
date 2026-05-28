@@ -772,7 +772,232 @@ class SudokuGenerator {
                 }
             }
         }
+        // 三明治数独：检查1和9的位置是否满足提示约束（验证阶段使用）
+        if (this.GAME_TYPE === 'SANDWICH' && this.sandwichClues) {
+            if (!this.isValidSandwichPlacement(board, row, col, num)) {
+                return false;
+            }
+        }
         return true;
+    }
+
+    /**
+     * 验证三明治数独中数字放置是否有效
+     * @param {number[][]} board 棋盘
+     * @param {number} row 行
+     * @param {number} col 列
+     * @param {number} num 数字
+     * @returns {boolean} 是否有效
+     */
+    isValidSandwichPlacement(board, row, col, num) {
+        // 复制棋盘并放置新数字
+        const testBoard = board.map(r => [...r]);
+        testBoard[row][col] = num;
+
+        // 检查行约束
+        const rowClue = this.sandwichClues.top[row];
+        if (!this.isValidSandwichRow(testBoard, row, rowClue)) {
+            return false;
+        }
+
+        // 检查列约束
+        const colClue = this.sandwichClues.left[col];
+        if (!this.isValidSandwichCol(testBoard, col, colClue)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 检查某行是否满足三明治约束
+     * @param {number[][]} board 棋盘
+     * @param {number} row 行号
+     * @param {number} clue 提示数字
+     * @returns {boolean} 是否满足约束
+     */
+    isValidSandwichRow(board, row, clue) {
+        const cells = board[row];
+        return this.isValidSandwichLine(cells, clue);
+    }
+
+    /**
+     * 检查某列是否满足三明治约束
+     * @param {number[][]} board 棋盘
+     * @param {number} col 列号
+     * @param {number} clue 提示数字
+     * @returns {boolean} 是否满足约束
+     */
+    isValidSandwichCol(board, col, clue) {
+        const cells = [];
+        for (let i = 0; i < this.SIZE; i++) {
+            cells.push(board[i][col]);
+        }
+        return this.isValidSandwichLine(cells, clue);
+    }
+
+    /**
+     * 检查一行/列是否满足三明治约束
+     * @param {number[]} line 行/列的数字数组
+     * @param {number} clue 提示数字
+     * @returns {boolean} 是否满足约束
+     */
+    isValidSandwichLine(line, clue) {
+        const emptyCount = line.filter(n => n === 0).length;
+        
+        // 如果该行/列还有空格，暂时跳过验证（只做基本检查）
+        if (emptyCount > 0) {
+            // 检查是否已经违反明显的约束
+            const ones = [];
+            const nines = [];
+            
+            for (let i = 0; i < line.length; i++) {
+                if (line[i] === 1) ones.push(i);
+                if (line[i] === 9) nines.push(i);
+            }
+            
+            // 如果已经有超过1个1或超过1个9，无效
+            if (ones.length > 1 || nines.length > 1) {
+                return false;
+            }
+            
+            // 如果1和9都已确定位置，检查约束
+            if (ones.length === 1 && nines.length === 1) {
+                const onePos = ones[0];
+                const ninePos = nines[0];
+                const minPos = Math.min(onePos, ninePos);
+                const maxPos = Math.max(onePos, ninePos);
+                
+                let sum = 0;
+                for (let i = minPos + 1; i < maxPos; i++) {
+                    if (line[i] !== 0) {
+                        sum += line[i];
+                    } else {
+                        // 如果中间有空格，无法计算，暂时视为有效
+                        return true;
+                    }
+                }
+                
+                return sum === clue;
+            }
+            
+            return true;
+        }
+        
+        // 该行/列已满，进行完整验证
+        const onePos = line.indexOf(1);
+        const ninePos = line.indexOf(9);
+        
+        // 如果没有1或9，无效
+        if (onePos === -1 || ninePos === -1) {
+            return false;
+        }
+        
+        const minPos = Math.min(onePos, ninePos);
+        const maxPos = Math.max(onePos, ninePos);
+        
+        let sum = 0;
+        for (let i = minPos + 1; i < maxPos; i++) {
+            sum += line[i];
+        }
+        
+        return sum === clue;
+    }
+
+    /**
+     * 计算一行的三明治和（1和9之间的数字之和）
+     * @param {number[]} line 行/列的数字数组
+     * @returns {number} 三明治和
+     */
+    calculateSandwichSum(line) {
+        const onePos = line.indexOf(1);
+        const ninePos = line.indexOf(9);
+        
+        if (onePos === -1 || ninePos === -1) {
+            return -1; // 未确定
+        }
+        
+        const minPos = Math.min(onePos, ninePos);
+        const maxPos = Math.max(onePos, ninePos);
+        
+        let sum = 0;
+        for (let i = minPos + 1; i < maxPos; i++) {
+            sum += line[i];
+        }
+        
+        return sum;
+    }
+
+    /**
+     * 生成三明治数独的完整解
+     * @returns {number[][]} 完整数独棋盘
+     */
+    generateSandwichSolution() {
+        console.log('🔷 开始生成三明治数独...');
+        const startTime = Date.now();
+        
+        this.setGameType('SANDWICH');
+        let board = null;
+        const maxAttempts = 50;
+        
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                // 生成标准数独解
+                board = this.generateFullBoard();
+                
+                // 计算三明治提示
+                const clues = this.generateSandwichClues(board);
+                this.sandwichClues = clues;
+                
+                console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                break;
+            } catch (e) {
+                console.log(`🔄 第 ${attempt + 1} 次尝试失败，重试...`);
+            }
+        }
+        
+        if (!board) {
+            console.log('⚠️ 三明治数独生成失败，使用标准数独解');
+            board = this.generateFullBoard();
+            this.sandwichClues = this.generateSandwichClues(board);
+        }
+        
+        console.log(`✅ 三明治数独生成完成，耗时: ${Date.now() - startTime}ms`);
+        return board;
+    }
+
+    /**
+     * 生成三明治数独的外部提示
+     * @param {number[][]} board 完整棋盘
+     * @returns {object} 包含top, bottom, left, right提示的对象
+     */
+    generateSandwichClues(board) {
+        const clues = {
+            top: [],
+            bottom: [],
+            left: [],
+            right: []
+        };
+        
+        // 计算每行的提示（顶部和底部相同）
+        for (let r = 0; r < this.SIZE; r++) {
+            const sum = this.calculateSandwichSum(board[r]);
+            clues.top.push(sum);
+            clues.bottom.push(sum);
+        }
+        
+        // 计算每列的提示（左侧和右侧相同）
+        for (let c = 0; c < this.SIZE; c++) {
+            const col = [];
+            for (let r = 0; r < this.SIZE; r++) {
+                col.push(board[r][c]);
+            }
+            const sum = this.calculateSandwichSum(col);
+            clues.left.push(sum);
+            clues.right.push(sum);
+        }
+        
+        return clues;
     }
 
     /**
@@ -1628,7 +1853,13 @@ function renderColorBoard() {
  */
 function goHome() {
     stopTimer();
-    location.href = "sudoku-frontend-candidate.html";
+    
+    // 保存当前游戏进度
+    if (currentPuzzle) {
+        saveGameProgress();
+    }
+    
+    location.href = "index.html";
 }
 
 /**
@@ -1642,6 +1873,14 @@ function showRecords() {
  * 开始游戏（跳转到 game.html）
  */
 function startGame(difficulty) {
+    // 放弃之前未完成的游戏
+    const record = getLatestInProgressGame();
+    if (record) {
+        record.isAbandoned = true;
+        record.isCompleted = true;
+        Storage.saveRecord(record);
+    }
+    
     currentDifficulty = difficulty;
     localStorage.setItem("currentDiff", difficulty);
     location.href = "game.html";
@@ -1659,7 +1898,7 @@ function generateNewPuzzle(difficulty) {
     setTimeout(() => {
         // 根据难度确定棋盘尺寸、空格数量和游戏类型
         let boardSize, emptyCount, gameType;
-        const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45, WINDOKU: 45 };
+        const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45, WINDOKU: 45, SANDWICH: 45 };
 
         if (difficulty === 'MINI_4x4') {
             boardSize = 4;
@@ -1685,6 +1924,10 @@ function generateNewPuzzle(difficulty) {
             boardSize = 9;
             emptyCount = emptyCounts[difficulty] || 45;
             gameType = 'WINDOKU';
+        } else if (difficulty === 'SANDWICH') {
+            boardSize = 9;
+            emptyCount = emptyCounts[difficulty] || 45;
+            gameType = 'SANDWICH';
         } else if (difficulty === 'KILLER_4x4') {
             boardSize = 4;
             emptyCount = emptyCounts[difficulty] || 16;
@@ -1747,6 +1990,14 @@ function generateNewPuzzle(difficulty) {
             fullBoard = sudokuGenerator.generateWindokuSolution();
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
             console.log(`✅ 窗口数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameType === 'SANDWICH') {
+            // 三明治数独：生成完整解并计算外部提示
+            console.log('🔷 开始生成三明治数独题目...');
+            const startTime = Date.now();
+            fullBoard = sudokuGenerator.generateSandwichSolution();
+            puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+            const sandwichClues = sudokuGenerator.sandwichClues;
+            console.log(`✅ 三明治数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
         } else {
             // 标准数独
             fullBoard = sudokuGenerator.generateFullBoard();
@@ -1770,7 +2021,8 @@ function generateNewPuzzle(difficulty) {
             gameType: gameType,
             oddEvenMarks: oddEvenMarks,
             cages: cages,
-            irregularBoxes: gameType === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null
+            irregularBoxes: gameType === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null,
+            sandwichClues: gameType === 'SANDWICH' ? sudokuGenerator.sandwichClues : null
         };
 
         originalPuzzle = puzzleStr;
@@ -1805,6 +2057,7 @@ function getDifficultyName(difficulty) {
         MINI_6x6: '迷你6宫格',
         EASY: '简单9宫格',
         MEDIUM: '中等9宫格',
+        SANDWICH: '三明治数独',
         HARD: '高级9宫格',
         DIAGONAL: '对角线数独',
         ODD_EVEN: '奇偶数独',
@@ -1912,8 +2165,8 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
  * 渲染数独棋盘
  */
 function renderBoard() {
-    const board = document.getElementById('sudokuBoard');
-    board.innerHTML = '';
+    const boardContainer = document.getElementById('sudokuBoard');
+    boardContainer.innerHTML = '';
     cellsCache = [];
 
     // 获取当前棋盘尺寸和游戏类型
@@ -1924,6 +2177,15 @@ function renderBoard() {
     const oddEvenMarks = currentPuzzle.oddEvenMarks;
     const cages = currentPuzzle.cages;
     const irregularBoxes = currentPuzzle.irregularBoxes;
+    const sandwichClues = currentPuzzle.sandwichClues;
+
+    // 三明治数独需要特殊布局（外部提示）
+    if (gameType === 'SANDWICH' && sandwichClues) {
+        renderSandwichBoard(boardContainer, size, boxRows, boxCols, sandwichClues);
+        return;
+    }
+
+    const board = boardContainer;
 
     // 动态设置网格列数
     board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
@@ -2085,6 +2347,118 @@ function renderBoard() {
             cellsCache.push(cell);
         }
     }
+
+    // 生成数字键盘
+    generateNumberKeypad();
+
+    // 更新数字按钮状态
+    updateNumberButtons();
+}
+
+/**
+ * 渲染三明治数独棋盘（带外部提示）
+ * @param {HTMLElement} container - 容器元素
+ * @param {number} size - 棋盘尺寸
+ * @param {number} boxRows - 宫格行数
+ * @param {number} boxCols - 宫格列数
+ * @param {object} sandwichClues - 三明治提示
+ */
+function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
+    // 创建整体布局容器
+    const layout = document.createElement('div');
+    layout.className = 'sandwich-layout';
+
+    // 创建顶部提示行
+    const topClues = document.createElement('div');
+    topClues.className = 'sandwich-clues-top';
+    // 顶部提示（列提示）
+    for (let col = 0; col < size; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'sandwich-clue';
+        clue.textContent = sandwichClues.top[col];
+        topClues.appendChild(clue);
+    }
+    layout.appendChild(topClues);
+
+    // 创建主体区域（左侧提示 + 棋盘）
+    const mainArea = document.createElement('div');
+    mainArea.className = 'sandwich-main';
+
+    // 创建左侧提示列
+    const leftClues = document.createElement('div');
+    leftClues.className = 'sandwich-clues-left';
+    for (let row = 0; row < size; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'sandwich-clue';
+        clue.textContent = sandwichClues.left[row];
+        leftClues.appendChild(clue);
+    }
+    mainArea.appendChild(leftClues);
+
+    // 创建数独棋盘
+    const board = document.createElement('div');
+    board.className = 'sudoku-board game-type-sandwich';
+    board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+
+            // 根据尺寸添加不同的类名用于样式调整
+            if (size === 4) {
+                cell.classList.add('size-4x4');
+            } else if (size === 6) {
+                cell.classList.add('size-6x6');
+            }
+
+            // 宫格边框
+            if (i % boxRows === 0 && i !== 0) cell.classList.add('border-top');
+            if (j % boxCols === 0 && j !== 0) cell.classList.add('border-left');
+
+            const index = i * size + j;
+            const value = currentBoard[index];
+            const isFixed = originalPuzzle[index] !== '0';
+
+            // 存储单元格信息用于快速访问
+            cell.dataset.index = index;
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+
+            // 判断是确定值还是候选值
+            if (typeof value === 'number' && value !== 0) {
+                // 确定值
+                const valueEl = document.createElement('span');
+                valueEl.textContent = getIcon(value);
+                valueEl.style.position = 'absolute';
+                valueEl.style.top = '50%';
+                valueEl.style.left = '50%';
+                valueEl.style.transform = 'translate(-50%, -50%)';
+                valueEl.style.zIndex = '5';
+                cell.appendChild(valueEl);
+                if (isFixed) {
+                    cell.classList.add('fixed');
+                } else {
+                    cell.classList.add('user-input');
+                }
+            } else if (Array.isArray(value) && value.length > 0) {
+                // 候选值
+                const candidatesEl = createCandidatesElement(value, i, j);
+                cell.appendChild(candidatesEl);
+            }
+
+            if (!hasWon) {
+                cell.addEventListener('click', () => selectCell(i, j, cell));
+            }
+            board.appendChild(cell);
+            cellsCache.push(cell);
+        }
+    }
+    mainArea.appendChild(board);
+
+    layout.appendChild(mainArea);
+
+    container.appendChild(layout);
 
     // 生成数字键盘
     generateNumberKeypad();
@@ -3314,6 +3688,10 @@ function restoreGameState(record) {
         gameType = 'KILLER';
     } else if (record.difficulty === 'IRREGULAR') {
         gameType = 'IRREGULAR';
+    } else if (record.difficulty === 'WINDOKU') {
+        gameType = 'WINDOKU';
+    } else if (record.difficulty === 'SANDWICH') {
+        gameType = 'SANDWICH';
     }
 
     // 恢复题目信息
@@ -3326,7 +3704,8 @@ function restoreGameState(record) {
         gameType: gameType,
         oddEvenMarks: record.oddEvenMarks || null,
         cages: record.cages || null,
-        irregularBoxes: record.irregularBoxes || null
+        irregularBoxes: record.irregularBoxes || null,
+        sandwichClues: record.sandwichClues || null
     };
 
     // 恢复棋盘状态（支持JSON格式的候选数字）
@@ -3462,6 +3841,18 @@ const helpContent = {
             '四个额外的3×3阴影窗口区域内数字也不能重复',
             '四个窗口位于棋盘中心区域（行2-4列2-4、行2-4列6-8、行6-8列2-4、行6-8列6-8）',
             '阴影区域中的单元格同时属于四个单元（行、列、宫、窗口）',
+            '初始数字为固定提示，不能修改'
+        ]
+    },
+    SANDWICH: {
+        title: '三明治数独',
+        rules: [
+            '在9×9的方格内填入1-9的数字',
+            '每行、每列、每个3×3的小方格内都不能重复',
+            '数字1和9充当"面包"，位于三明治的两端',
+            '棋盘外部的提示数字表示该行/列中严格位于1和9之间的所有数字之和',
+            '如果提示为0，说明1和9必须相邻',
+            '如果提示为35，说明1和9必须位于两端（因为2-8的和为35）',
             '初始数字为固定提示，不能修改'
         ]
     }
