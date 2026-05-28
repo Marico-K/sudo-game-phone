@@ -85,6 +85,13 @@
             font-weight: 600;
         }
 
+        /* ==================== 电脑端标题优化 ==================== */
+        @media (min-width: 769px) {
+            .header-left h1 {
+                font-size: 1.1em;
+            }
+        }
+
         .header-center {
             flex: 1;
             display: flex;
@@ -618,6 +625,39 @@
             color: #333;
         }
 
+        /* ==================== 电脑端候选数字优化 ==================== */
+        @media (min-width: 769px) {
+            /* 候选数字容器 */
+            .cell-candidates {
+                padding: 4%;
+                gap: 2px;
+            }
+
+            /* 单个候选数字 - 电脑端优化 */
+            .candidate-num {
+                font-size: 11px;
+                width: 60%;
+                max-width: 16px;
+                min-width: 10px;
+            }
+
+            /* 4宫格候选数字 - 电脑端 */
+            .cell-candidates.size-4x4 .candidate-num {
+                font-size: 14px;
+                width: 75%;
+                max-width: 24px;
+                min-width: 14px;
+            }
+
+            /* 6宫格候选数字 - 电脑端 */
+            .cell-candidates.size-6x6 .candidate-num {
+                font-size: 12px;
+                width: 65%;
+                max-width: 20px;
+                min-width: 12px;
+            }
+        }
+
         /* 草稿模式按钮样式 */
         .control-btn.candidate-mode {
             background: linear-gradient(135deg, #4CAF50, #45a049);
@@ -952,6 +992,101 @@
             overflow: hidden;
         }
 
+        /* ==================== 电脑端查看题目弹窗优化 ==================== */
+        @media (min-width: 769px) {
+            .view-puzzle-content {
+                max-width: 600px;
+                padding: 30px;
+            }
+            
+            .view-puzzle-board-container {
+                margin: 30px 0;
+            }
+            
+            .view-puzzle-board {
+                border-radius: 10px;
+            }
+            
+            .view-puzzle-board .cell {
+                width: 42px;
+                height: 42px;
+                font-size: 16px;
+            }
+            
+            .view-puzzle-board.mini-4-board .cell {
+                width: 64px !important;
+                height: 64px !important;
+                font-size: 28px !important;
+            }
+            
+            .view-puzzle-board.mini-6-board .cell {
+                width: 52px !important;
+                height: 52px !important;
+                font-size: 22px !important;
+            }
+            
+            .view-puzzle-board.killer-board .cage-sum {
+                font-size: 12px;
+                padding: 2px 4px;
+            }
+
+            /* 电脑端杀手4宫格笼和更大 */
+            .view-puzzle-board.killer-board.killer-4x4 .cage-sum {
+                font-size: 16px;
+                padding: 3px 5px;
+            }
+            
+            /* 电脑端杀手4宫格 */
+            .view-puzzle-board.killer-board.killer-4x4 .cell {
+                width: 64px !important;
+                height: 64px !important;
+                font-size: 28px !important;
+            }
+            
+            /* 电脑端杀手6宫格 */
+            .view-puzzle-board.killer-board.killer-6x6 .cell {
+                width: 52px !important;
+                height: 52px !important;
+                font-size: 22px !important;
+            }
+            
+            /* 电脑端杀手9宫格 */
+            .view-puzzle-board.killer-board.killer-9x9 .cell {
+                width: 42px !important;
+                height: 42px !important;
+                font-size: 16px !important;
+            }
+            
+            /* 电脑端答案数字样式 */
+            .view-puzzle-board.mini-4-board .original-number,
+            .view-puzzle-board.killer-board.killer-4x4 .original-number {
+                font-size: 28px !important;
+            }
+            
+            .view-puzzle-board.mini-4-board .filled-number,
+            .view-puzzle-board.killer-board.killer-4x4 .filled-number {
+                font-size: 26px !important;
+            }
+            
+            .view-puzzle-board.mini-6-board .original-number,
+            .view-puzzle-board.killer-board.killer-6x6 .original-number {
+                font-size: 22px !important;
+            }
+            
+            .view-puzzle-board.mini-6-board .filled-number,
+            .view-puzzle-board.killer-board.killer-6x6 .filled-number {
+                font-size: 20px !important;
+            }
+            
+            .view-puzzle-board.killer-board.killer-9x9 .original-number {
+                font-size: 16px !important;
+            }
+            
+            .view-puzzle-board.killer-board.killer-9x9 .filled-number {
+                font-size: 14px !important;
+            }
+        }
+
         .view-puzzle-board .cell {
             width: 36px;
             height: 36px;
@@ -962,6 +1097,7 @@
             font-weight: 600;
             border: 1px solid #ddd;
             background: white;
+            position: relative;
         }
 
         .view-puzzle-board .cell.fixed {
@@ -986,6 +1122,28 @@
             font-size: 14px;
         }
 
+        /* 4宫格答案数字样式 */
+        .view-puzzle-board.mini-4-board .original-number,
+        .view-puzzle-board.killer-board.killer-4x4 .original-number {
+            font-size: 24px;
+        }
+
+        .view-puzzle-board.mini-4-board .filled-number,
+        .view-puzzle-board.killer-board.killer-4x4 .filled-number {
+            font-size: 22px;
+        }
+
+        /* 6宫格答案数字样式 */
+        .view-puzzle-board.mini-6-board .original-number,
+        .view-puzzle-board.killer-board.killer-6x6 .original-number {
+            font-size: 20px;
+        }
+
+        .view-puzzle-board.mini-6-board .filled-number,
+        .view-puzzle-board.killer-board.killer-6x6 .filled-number {
+            font-size: 18px;
+        }
+
         .view-puzzle-board .cell.border-right {
             border-right: 2px solid #2c3e50;
         }
@@ -1001,11 +1159,11 @@
 
         /* 奇偶数独样式 */
         .view-puzzle-board.odd-even-board .cell.odd-cell {
-            background-color: rgba(255, 87, 34, 0.2);
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
         }
 
         .view-puzzle-board.odd-even-board .cell.even-cell {
-            background-color: rgba(33, 150, 243, 0.2);
+            background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%) !important;
         }
 
         /* 锯齿数独样式 */
@@ -1026,6 +1184,117 @@
         .view-puzzle-board.irregular-board .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.25) !important; }
         .view-puzzle-board.irregular-board .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.25) !important; }
         .view-puzzle-board.irregular-board .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.25) !important; }
+
+        /* 杀手数独样式 */
+        .view-puzzle-board.killer-board .cell.killer-cage-0 { background-color: rgba(156, 39, 176, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-1 { background-color: rgba(0, 188, 212, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-2 { background-color: rgba(255, 152, 0, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-3 { background-color: rgba(76, 175, 80, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-4 { background-color: rgba(244, 67, 54, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-5 { background-color: rgba(33, 150, 243, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-7 { background-color: rgba(139, 195, 74, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-8 { background-color: rgba(205, 220, 57, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-9 { background-color: rgba(255, 87, 34, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-10 { background-color: rgba(63, 81, 181, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-11 { background-color: rgba(0, 150, 136, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-12 { background-color: rgba(255, 193, 7, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-13 { background-color: rgba(96, 125, 139, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-14 { background-color: rgba(121, 85, 72, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-15 { background-color: rgba(244, 143, 177, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-16 { background-color: rgba(129, 212, 250, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-17 { background-color: rgba(187, 222, 251, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-18 { background-color: rgba(165, 214, 167, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-19 { background-color: rgba(255, 213, 79, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-20 { background-color: rgba(255, 204, 188, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-21 { background-color: rgba(248, 187, 208, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-22 { background-color: rgba(179, 157, 219, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-23 { background-color: rgba(144, 164, 174, 0.2) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-24 { background-color: rgba(161, 136, 127, 0.2) !important; }
+
+        /* 杀手数独笼子边框样式 - 只在外边界显示 */
+        .view-puzzle-board.killer-board .cell.killer-cage-border-top { border-top: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-border-bottom { border-bottom: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-border-left { border-left: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+        .view-puzzle-board.killer-board .cell.killer-cage-border-right { border-right: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+
+        /* 杀手数独棋盘不显示默认的宫边框 */
+        .view-puzzle-board.killer-board .cell.border-right { border-right: none !important; }
+        .view-puzzle-board.killer-board .cell.border-bottom { border-bottom: none !important; }
+
+        /* 杀手数独笼和样式 */
+        .view-puzzle-board.killer-board .cage-sum {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 8px;
+            font-weight: bold;
+            color: #333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        /* 杀手4宫格笼和样式更大 */
+        .view-puzzle-board.killer-board.killer-4x4 .cage-sum {
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* 4宫格样式 */
+        .view-puzzle-board.mini-4-board {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .view-puzzle-board.mini-4-board .cell {
+            width: 56px !important;
+            height: 56px !important;
+            font-size: 24px !important;
+        }
+
+        /* 6宫格样式 */
+        .view-puzzle-board.mini-6-board {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+
+        .view-puzzle-board.mini-6-board .cell {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 20px !important;
+        }
+
+        /* 杀手数独样式 - 根据棋盘大小调整 */
+        .view-puzzle-board.killer-board {
+            grid-template-columns: repeat(9, 1fr) !important;
+        }
+
+        /* 杀手4宫格 */
+        .view-puzzle-board.killer-board.killer-4x4 {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .view-puzzle-board.killer-board.killer-4x4 .cell {
+            width: 56px !important;
+            height: 56px !important;
+            font-size: 24px !important;
+        }
+
+        /* 杀手6宫格 */
+        .view-puzzle-board.killer-board.killer-6x6 {
+            grid-template-columns: repeat(6, 1fr) !important;
+        }
+
+        .view-puzzle-board.killer-board.killer-6x6 .cell {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 20px !important;
+        }
+
+        /* 杀手9宫格 */
+        .view-puzzle-board.killer-board.killer-9x9 {
+            grid-template-columns: repeat(9, 1fr) !important;
+        }
 
         .view-puzzle-difficulty {
             margin: 16px 0;
@@ -1064,6 +1333,18 @@
 
         .modal-btn.color-btn:hover {
             box-shadow: 0 7px 20px rgba(17, 153, 142, 0.5);
+        }
+
+        /* ==================== 电脑端按钮文字控制在一行 ==================== */
+        @media (min-width: 769px) {
+            .modal-btn {
+                min-width: 130px;
+                white-space: nowrap;
+            }
+            
+            .win-buttons {
+                gap: 15px;
+            }
         }
 
         /* ==================== 记录页面样式 ==================== */
@@ -1800,7 +2081,7 @@
                     <p id="bestRecordMsg" style="display: none;">最佳成绩: <span id="finalBestTime">00:00</span></p>
                 </div>
                 <div class="win-buttons">
-                    <button class="modal-btn color-btn" onclick="toggleColorMode(); closeModal('winModal');">🎨 查看涂色效果</button>
+                    <button class="modal-btn color-btn" onclick="toggleColorMode(); closeModal('winModal');">🎨 涂色效果</button>
                     <button class="modal-btn" onclick="newPuzzle(); closeModal('winModal');">再来一题</button>
                     <button class="modal-btn" onclick="goHome(); closeModal('winModal');">返回主页</button>
                 </div>
@@ -4528,7 +4809,11 @@
                     difficulty: currentDifficulty,
                     attemptCount: attemptCount,
                     isCompleted: false,
-                    bestTime: null
+                    bestTime: null,
+                    originalPuzzle: currentPuzzle.originalPuzzle || '',
+                    solution: currentPuzzle.solution || '',
+                    cages: currentPuzzle.cages || null,
+                    irregularBoxes: currentPuzzle.irregularBoxes || null
                 };
 
                 const isNewRecord = !record.bestTime || seconds < record.bestTime;
@@ -4695,7 +4980,8 @@
                 puzzle: record.originalPuzzle,
                 solution: record.solution,
                 difficulty: record.difficulty,
-                irregularBoxes: record.irregularBoxes || null
+                irregularBoxes: record.irregularBoxes || null,
+                cages: record.cages || null
             };
 
             document.getElementById('viewPuzzleId').textContent = record.puzzleId;
@@ -4740,32 +5026,57 @@
             const solution = currentViewPuzzleData.solution;
             let html = '';
 
+            // 根据字符串长度确定棋盘大小（更可靠）
+            let gridSize = 9;
+            if (boardStr.length === 16) {
+                gridSize = 4;
+            } else if (boardStr.length === 36) {
+                gridSize = 6;
+            }
+
             // 根据难度设置棋盘样式类
             let boardClass = '';
-            if (difficulty === 'DIAGONAL') {
+            if (difficulty && difficulty.startsWith('KILLER')) {
+                boardClass = ' killer-board killer-' + gridSize + 'x' + gridSize;
+            } else if (difficulty === 'DIAGONAL') {
                 boardClass = ' diagonal-board';
             } else if (difficulty === 'ODD_EVEN') {
                 boardClass = ' odd-even-board';
             } else if (difficulty === 'IRREGULAR') {
                 boardClass = ' irregular-board';
+            } else if (gridSize === 4) {
+                boardClass = ' mini-4-board';
+            } else if (gridSize === 6) {
+                boardClass = ' mini-6-board';
             }
             
-            // 更新棋盘容器类名
+            // 更新棋盘容器类名和网格列数
             boardContainer.className = 'view-puzzle-board' + boardClass;
+            boardContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
 
             for (let i = 0; i < boardStr.length; i++) {
-                const row = Math.floor(i / 9);
-                const col = i % 9;
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
                 const value = boardStr[i];
                 const isOriginal = puzzle && puzzle[i] !== '0'; // 题目原始数字
                 const isEmpty = value === '0';
-                const solutionValue = solution && solution[i];
 
                 // 添加样式类
                 let cellClass = '';
-                
-                // 3x3边框（标准数独、对角线数独）
-                if (difficulty !== 'IRREGULAR') {
+
+                // 根据棋盘大小添加边框
+                if (difficulty === 'IRREGULAR') {
+                    // 锯齿数独无固定边框
+                } else if (gridSize === 4) {
+                    // 4宫格 2x2
+                    if (col === 1 || col === 3) cellClass += ' border-right';
+                    if (row === 1 || row === 3) cellClass += ' border-bottom';
+                } else if (gridSize === 6) {
+                    // 6宫格 2x3（每宫2行3列）
+                    if (col === 2 || col === 5) cellClass += ' border-right';
+                    if (row === 1 || row === 3) cellClass += ' border-bottom';
+                } else {
+                    // 9宫格 3x3
                     if (col === 2 || col === 5) cellClass += ' border-right';
                     if (row === 2 || row === 5) cellClass += ' border-bottom';
                 }
@@ -4777,9 +5088,10 @@
                     }
                 }
 
-                // 奇偶数独 - 奇偶标记
+                // 奇偶数独 - 根据数字值判断奇偶
                 if (difficulty === 'ODD_EVEN') {
-                    if (solutionValue % 2 === 0) {
+                    const numValue = parseInt(solution[i]);
+                    if (numValue % 2 === 0) {
                         cellClass += ' even-cell';
                     } else {
                         cellClass += ' odd-cell';
@@ -4790,6 +5102,51 @@
                 if (difficulty === 'IRREGULAR' && currentViewPuzzleData.irregularBoxes) {
                     const boxIndex = getCellBoxIndex(row, col);
                     cellClass += ` irregular-box-${boxIndex}`;
+                }
+
+                // 杀手数独 - 杀手笼样式
+                if (difficulty && difficulty.startsWith('KILLER') && currentViewPuzzleData.cages) {
+                    const cageIndex = getCellCageIndex(row, col, gridSize);
+                    if (cageIndex >= 0) {
+                        const cage = currentViewPuzzleData.cages[cageIndex];
+                        const cageColorIndex = cageIndex % 25; // 循环使用25种颜色
+                        cellClass += ` killer-cage-${cageColorIndex}`;
+                        
+                        // 只在笼子的外边界添加边框
+                        if (cage && cage.cells && cage.cells.length > 0) {
+                            let hasTop = true;
+                            let hasBottom = true;
+                            let hasLeft = true;
+                            let hasRight = true;
+                            
+                            for (const cell of cage.cells) {
+                                if (cell.row === row - 1 && cell.col === col) hasTop = false;
+                                if (cell.row === row + 1 && cell.col === col) hasBottom = false;
+                                if (cell.row === row && cell.col === col - 1) hasLeft = false;
+                                if (cell.row === row && cell.col === col + 1) hasRight = false;
+                            }
+                            
+                            if (hasTop) cellClass += ' killer-cage-border-top';
+                            if (hasBottom) cellClass += ' killer-cage-border-bottom';
+                            if (hasLeft) cellClass += ' killer-cage-border-left';
+                            if (hasRight) cellClass += ' killer-cage-border-right';
+                        }
+                    }
+                }
+
+                // 获取笼和（在笼子左上角显示）
+                let cageSum = '';
+                if (difficulty && difficulty.startsWith('KILLER') && currentViewPuzzleData.cages) {
+                    const cageIndex = getCellCageIndex(row, col, gridSize);
+                    if (cageIndex >= 0) {
+                        const cage = currentViewPuzzleData.cages[cageIndex];
+                        if (cage && cage.cells && cage.cells.length > 0) {
+                            const firstCell = cage.cells[0];
+                            if (firstCell.row === row && firstCell.col === col) {
+                                cageSum = cage.sum || '';
+                            }
+                        }
+                    }
                 }
 
                 // 答案视图中区分原始数字和填入数字
@@ -4804,6 +5161,7 @@
 
                 html += `
                     <div class="cell${isEmpty ? ' empty' : ''}${cellClass}">
+                        ${cageSum ? `<span class="cage-sum">${cageSum}</span>` : ''}
                         <span class="${isEmpty ? '' : (isAnswer ? numberClass : 'fixed')}">${isEmpty ? '' : value}</span>
                     </div>
                 `;
@@ -4824,6 +5182,25 @@
                 }
             }
             return 0;
+        }
+
+        /**
+         * 获取单元格所属的杀手笼索引
+         */
+        function getCellCageIndex(row, col, gridSize) {
+            if (!currentViewPuzzleData.cages || !Array.isArray(currentViewPuzzleData.cages)) return -1;
+            const index = row * gridSize + col;
+            for (let i = 0; i < currentViewPuzzleData.cages.length; i++) {
+                const cage = currentViewPuzzleData.cages[i];
+                // 杀手数独的cages是对象结构：{cells: [{row, col}, ...], sum: X}
+                if (cage && cage.cells && Array.isArray(cage.cells)) {
+                    const cellIndex = cage.cells.findIndex(cell => cell.row === row && cell.col === col);
+                    if (cellIndex >= 0) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
         }
 
         /**
