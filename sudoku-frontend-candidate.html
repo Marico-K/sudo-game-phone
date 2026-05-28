@@ -333,6 +333,15 @@
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
         }
 
+        /* 窗口数独样式 */
+        .sudoku-board.game-type-windoku .cell.windoku-cell {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        }
+
+        .sudoku-board.game-type-windoku .cell:not(.windoku-cell) {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+        }
+
         /* 奇偶数独样式 */
         .sudoku-board.game-type-odd_even .cell.odd-cell,
         .sudoku-board.game-type-odd_even .cell.odd-cell.fixed,
@@ -1175,6 +1184,14 @@
             border: 1px solid #ddd;
         }
 
+        .view-puzzle-board.windoku-board .cell.windoku-cell {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        }
+
+        .view-puzzle-board.windoku-board .cell:not(.windoku-cell) {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%) !important;
+        }
+
         .view-puzzle-board.irregular-board .cell.irregular-box-0 { background-color: rgba(255, 99, 71, 0.25) !important; }
         .view-puzzle-board.irregular-board .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.25) !important; }
         .view-puzzle-board.irregular-board .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.25) !important; }
@@ -1525,6 +1542,11 @@
         .difficulty-badge.irregular {
             background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
             color: #006064;
+        }
+
+        .difficulty-badge.windoku {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #0d47a1;
         }
 
         .status-badge {
@@ -1931,7 +1953,7 @@
                         </span>
                     </button>
                     <button class="difficulty-btn" onclick="startGame('ODD_EVEN')">
-                        <span class="difficulty-icon">◼◻</span>
+                        <span class="difficulty-icon">☯️</span>
                         <span class="difficulty-text">
                             <span class="difficulty-name">奇偶数独</span>
                             <span class="difficulty-desc">按色块填奇偶</span>
@@ -1963,6 +1985,13 @@
                         <span class="difficulty-text">
                             <span class="difficulty-name">锯齿数独</span>
                             <span class="difficulty-desc">不规则宫格</span>
+                        </span>
+                    </button>
+                    <button class="difficulty-btn" onclick="startGame('WINDOKU')">
+                        <span class="difficulty-icon">🏠</span>
+                        <span class="difficulty-text">
+                            <span class="difficulty-name">窗口数独</span>
+                            <span class="difficulty-desc">四个额外3x3区域</span>
                         </span>
                     </button>
                 </div>
@@ -2149,6 +2178,7 @@
                     <option value="KILLER_6x6">杀手6宫格</option>
                     <option value="KILLER_9x9">杀手9宫格</option>
                     <option value="IRREGULAR">锯齿数独</option>
+                    <option value="WINDOKU">窗口数独</option>
                 </select>
             </div>
 
@@ -2929,6 +2959,31 @@
                         }
                     }
                 }
+                // 窗口数独：检查四个额外的3x3窗口区域
+                if (this.GAME_TYPE === 'WINDOKU') {
+                    const windokuRegions = [
+                        // 左上窗口 (行1-3, 列1-3)
+                        { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },
+                        // 右上窗口 (行1-3, 列5-7)
+                        { startRow: 1, endRow: 3, startCol: 5, endCol: 7 },
+                        // 左下窗口 (行5-7, 列1-3)
+                        { startRow: 5, endRow: 7, startCol: 1, endCol: 3 },
+                        // 右下窗口 (行5-7, 列5-7)
+                        { startRow: 5, endRow: 7, startCol: 5, endCol: 7 }
+                    ];
+                    for (const region of windokuRegions) {
+                        if (row >= region.startRow && row <= region.endRow &&
+                            col >= region.startCol && col <= region.endCol) {
+                            for (let r = region.startRow; r <= region.endRow; r++) {
+                                for (let c = region.startCol; c <= region.endCol; c++) {
+                                    if ((r !== row || c !== col) && board[r][c] === num) {
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 return true;
             }
 
@@ -3243,6 +3298,43 @@
             }
 
             /**
+             * 生成窗口数独（Windoku）解
+             * 窗口数独规则：除标准数独规则外，四个额外的3x3窗口区域也必须包含1-9各一次
+             * @returns {number[][]} 完整棋盘
+             */
+            generateWindokuSolution() {
+                console.log('🔷 开始生成窗口数独...');
+                const startTime = Date.now();
+                this.setGameType('WINDOKU');
+
+                let board = null;
+                const maxAttempts = 10;
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    try {
+                        board = this.generateFullBoardSafe();
+                        if (board && this.isFilledAndValidBoard(board)) {
+                            console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`🔄 第 ${attempt + 1} 次尝试超时，重试...`);
+                    }
+                }
+
+                // 兜底：如果生成失败，使用标准数独解
+                if (!board || !this.isFilledAndValidBoard(board)) {
+                    console.log('⚠️ 窗口数独生成失败，使用标准数独解');
+                    this.setGameType('STANDARD');
+                    board = this.generateFullBoard();
+                    this.setGameType('WINDOKU');
+                }
+
+                console.log(`✅ 窗口数独生成完成，耗时: ${Date.now() - startTime}ms`);
+                return board;
+            }
+
+            /**
              * 安全生成（带超时）
              */
             generateFullBoardSafe() {
@@ -3264,7 +3356,14 @@
                 const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
                 for (const n of nums) {
-                    if (this.isValidJigsaw(board, row, col, n)) {
+                    // 根据游戏类型选择合适的验证方法
+                    let isValid;
+                    if (this.GAME_TYPE === 'IRREGULAR') {
+                        isValid = this.isValidJigsaw(board, row, col, n);
+                    } else {
+                        isValid = this.isValid(board, row, col, n);
+                    }
+                    if (isValid) {
                         board[row][col] = n;
                         if (this.fillBoardWithTimeout(board, nx, ny, start, maxMs)) return true;
                         board[row][col] = 0;
@@ -3326,7 +3425,13 @@
                         if (board[r][c] === 0) return false;
                         const val = board[r][c];
                         board[r][c] = 0;
-                        const ok = this.isValidJigsaw(board, r, c, val);
+                        // 根据游戏类型选择合适的验证方法
+                        let ok;
+                        if (this.GAME_TYPE === 'IRREGULAR') {
+                            ok = this.isValidJigsaw(board, r, c, val);
+                        } else {
+                            ok = this.isValid(board, r, c, val);
+                        }
                         board[r][c] = val;
                         if (!ok) return false;
                     }
@@ -3681,6 +3786,7 @@
             
             // 动态设置网格列数
             board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            board.className = 'sudoku-board';
             
             for (let i = 0; i < size; i++) {
                 for (let j = 0; j < size; j++) {
@@ -3691,12 +3797,10 @@
                 }
             }
             
-            
             // 先获取当前的格子元素
             const cells = board.querySelectorAll('.cell');
             cells.forEach(cell => {
                 cell.textContent = "";
-                cell.style.backgroundColor = "";
             });
             
             // 从中心点开始，一圈一圈向外扩散
@@ -3795,7 +3899,7 @@
             setTimeout(() => {
                 // 根据难度确定棋盘尺寸、空格数量和游戏类型
                 let boardSize, emptyCount, gameType;
-                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45 };
+                const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45, WINDOKU: 45 };
                 
                 if (difficulty === 'MINI_4x4') {
                     boardSize = 4;
@@ -3817,6 +3921,10 @@
                     boardSize = 9;
                     emptyCount = emptyCounts[difficulty] || 45;
                     gameType = 'IRREGULAR';
+                } else if (difficulty === 'WINDOKU') {
+                    boardSize = 9;
+                    emptyCount = emptyCounts[difficulty] || 45;
+                    gameType = 'WINDOKU';
                 } else if (difficulty === 'KILLER_4x4') {
                     boardSize = 4;
                     emptyCount = emptyCounts[difficulty] || 16;
@@ -3872,6 +3980,13 @@
                     fullBoard = sudokuGenerator.generateIrregularSolution();
                     puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
                     console.log(`✅ 锯齿数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+                } else if (gameType === 'WINDOKU') {
+                    // 窗口数独：生成满足窗口约束的解
+                    console.log('🔷 开始生成窗口数独题目...');
+                    const startTime = Date.now();
+                    fullBoard = sudokuGenerator.generateWindokuSolution();
+                    puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+                    console.log(`✅ 窗口数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
                 } else {
                     // 标准数独
                     fullBoard = sudokuGenerator.generateFullBoard();
@@ -3936,7 +4051,8 @@
                 KILLER_4x4: '杀手4宫格',
                 KILLER_6x6: '杀手6宫格',
                 KILLER_9x9: '杀手9宫格',
-                IRREGULAR: '锯齿数独'
+                IRREGULAR: '锯齿数独',
+                WINDOKU: '窗口数独'
             };
             return names[difficulty] || difficulty;
         }
@@ -4104,6 +4220,24 @@
                                 if (isBottomEdge) cell.classList.add('irregular-border-bottom');
                                 if (isLeftEdge) cell.classList.add('irregular-border-left');
                                 if (isRightEdge) cell.classList.add('irregular-border-right');
+                                break;
+                            }
+                        }
+                    }
+
+                    // 窗口数独：标记四个额外的3x3窗口区域
+                    if (gameType === 'WINDOKU') {
+                        // 定义四个窗口区域（位于棋盘中心，形成十字交叉）
+                        const windokuRegions = [
+                            { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },   // 左上窗口
+                            { startRow: 1, endRow: 3, startCol: 5, endCol: 7 },   // 右上窗口
+                            { startRow: 5, endRow: 7, startCol: 1, endCol: 3 },   // 左下窗口
+                            { startRow: 5, endRow: 7, startCol: 5, endCol: 7 }    // 右下窗口
+                        ];
+                        for (const region of windokuRegions) {
+                            if (i >= region.startRow && i <= region.endRow &&
+                                j >= region.startCol && j <= region.endCol) {
+                                cell.classList.add('windoku-cell');
                                 break;
                             }
                         }
@@ -5044,6 +5178,8 @@
                 boardClass = ' odd-even-board';
             } else if (difficulty === 'IRREGULAR') {
                 boardClass = ' irregular-board';
+            } else if (difficulty === 'WINDOKU') {
+                boardClass = ' windoku-board';
             } else if (gridSize === 4) {
                 boardClass = ' mini-4-board';
             } else if (gridSize === 6) {
@@ -5095,6 +5231,23 @@
                         cellClass += ' even-cell';
                     } else {
                         cellClass += ' odd-cell';
+                    }
+                }
+
+                // 窗口数独 - 窗口区域高亮
+                if (difficulty === 'WINDOKU') {
+                    const windokuRegions = [
+                        { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },
+                        { startRow: 1, endRow: 3, startCol: 5, endCol: 7 },
+                        { startRow: 5, endRow: 7, startCol: 1, endCol: 3 },
+                        { startRow: 5, endRow: 7, startCol: 5, endCol: 7 }
+                    ];
+                    for (const region of windokuRegions) {
+                        if (row >= region.startRow && row <= region.endRow &&
+                            col >= region.startCol && col <= region.endCol) {
+                            cellClass += ' windoku-cell';
+                            break;
+                        }
                     }
                 }
 
@@ -5553,6 +5706,17 @@
                     '每行、每列的数字都不能重复（1-9各出现一次）',
                     '每个不规则形状的宫格内数字也不能重复（1-9各出现一次）',
                     '不同颜色的区域代表不同的不规则宫格',
+                    '初始数字为固定提示，不能修改'
+                ]
+            },
+            WINDOKU: {
+                title: '窗口数独',
+                rules: [
+                    '在9×9的方格内填入1-9的数字',
+                    '每行、每列、每个3×3的小方格内都不能重复',
+                    '四个额外的3×3阴影窗口区域内数字也不能重复',
+                    '四个窗口位于棋盘中心区域（行2-4列2-4、行2-4列6-8、行6-8列2-4、行6-8列6-8）',
+                    '阴影区域中的单元格同时属于四个单元（行、列、宫、窗口）',
                     '初始数字为固定提示，不能修改'
                 ]
             }
