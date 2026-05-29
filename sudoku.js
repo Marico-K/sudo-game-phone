@@ -2176,7 +2176,7 @@ function getDifficultyTypeName(difficultyType) {
         MEDIUM: '中等',
         HARD: '高级'
     };
-    return names[difficultyType] || difficultyType;
+    return names[difficultyType] || "未知";
 }
 
 /**
