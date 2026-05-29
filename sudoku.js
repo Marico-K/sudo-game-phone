@@ -844,30 +844,30 @@ class SudokuGenerator {
      */
     isValidSandwichLine(line, clue) {
         const emptyCount = line.filter(n => n === 0).length;
-        
+
         // 如果该行/列还有空格，暂时跳过验证（只做基本检查）
         if (emptyCount > 0) {
             // 检查是否已经违反明显的约束
             const ones = [];
             const nines = [];
-            
+
             for (let i = 0; i < line.length; i++) {
                 if (line[i] === 1) ones.push(i);
                 if (line[i] === 9) nines.push(i);
             }
-            
+
             // 如果已经有超过1个1或超过1个9，无效
             if (ones.length > 1 || nines.length > 1) {
                 return false;
             }
-            
+
             // 如果1和9都已确定位置，检查约束
             if (ones.length === 1 && nines.length === 1) {
                 const onePos = ones[0];
                 const ninePos = nines[0];
                 const minPos = Math.min(onePos, ninePos);
                 const maxPos = Math.max(onePos, ninePos);
-                
+
                 let sum = 0;
                 for (let i = minPos + 1; i < maxPos; i++) {
                     if (line[i] !== 0) {
@@ -877,30 +877,30 @@ class SudokuGenerator {
                         return true;
                     }
                 }
-                
+
                 return sum === clue;
             }
-            
+
             return true;
         }
-        
+
         // 该行/列已满，进行完整验证
         const onePos = line.indexOf(1);
         const ninePos = line.indexOf(9);
-        
+
         // 如果没有1或9，无效
         if (onePos === -1 || ninePos === -1) {
             return false;
         }
-        
+
         const minPos = Math.min(onePos, ninePos);
         const maxPos = Math.max(onePos, ninePos);
-        
+
         let sum = 0;
         for (let i = minPos + 1; i < maxPos; i++) {
             sum += line[i];
         }
-        
+
         return sum === clue;
     }
 
@@ -912,19 +912,19 @@ class SudokuGenerator {
     calculateSandwichSum(line) {
         const onePos = line.indexOf(1);
         const ninePos = line.indexOf(9);
-        
+
         if (onePos === -1 || ninePos === -1) {
             return -1; // 未确定
         }
-        
+
         const minPos = Math.min(onePos, ninePos);
         const maxPos = Math.max(onePos, ninePos);
-        
+
         let sum = 0;
         for (let i = minPos + 1; i < maxPos; i++) {
             sum += line[i];
         }
-        
+
         return sum;
     }
 
@@ -935,33 +935,33 @@ class SudokuGenerator {
     generateSandwichSolution() {
         console.log('🔷 开始生成三明治数独...');
         const startTime = Date.now();
-        
+
         this.setGameType('SANDWICH');
         let board = null;
         const maxAttempts = 50;
-        
+
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 // 生成标准数独解
                 board = this.generateFullBoard();
-                
+
                 // 计算三明治提示
                 const clues = this.generateSandwichClues(board);
                 this.sandwichClues = clues;
-                
+
                 console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
                 break;
             } catch (e) {
                 console.log(`🔄 第 ${attempt + 1} 次尝试失败，重试...`);
             }
         }
-        
+
         if (!board) {
             console.log('⚠️ 三明治数独生成失败，使用标准数独解');
             board = this.generateFullBoard();
             this.sandwichClues = this.generateSandwichClues(board);
         }
-        
+
         console.log(`✅ 三明治数独生成完成，耗时: ${Date.now() - startTime}ms`);
         return board;
     }
@@ -978,14 +978,14 @@ class SudokuGenerator {
             left: [],
             right: []
         };
-        
+
         // 计算每行的提示（顶部和底部相同）
         for (let r = 0; r < this.SIZE; r++) {
             const sum = this.calculateSandwichSum(board[r]);
             clues.top.push(sum);
             clues.bottom.push(sum);
         }
-        
+
         // 计算每列的提示（左侧和右侧相同）
         for (let c = 0; c < this.SIZE; c++) {
             const col = [];
@@ -996,7 +996,7 @@ class SudokuGenerator {
             clues.left.push(sum);
             clues.right.push(sum);
         }
-        
+
         return clues;
     }
 
@@ -1692,7 +1692,9 @@ const Storage = {
      */
     getRecord(puzzleId) {
         const records = this.getRecords();
-        return records.find(r => r.puzzleId === puzzleId);
+        // 转换为数字类型进行比较，避免 localStorage 存储导致的类型不匹配
+        const puzzleIdNum = typeof puzzleId === 'string' ? parseInt(puzzleId, 10) : puzzleId;
+        return records.find(r => r.puzzleId === puzzleIdNum);
     },
 
     /**
@@ -1853,12 +1855,11 @@ function renderColorBoard() {
  */
 function goHome() {
     stopTimer();
-    
+
     // 保存当前游戏进度
     if (currentPuzzle) {
         saveGameProgress();
     }
-    
     location.href = "index.html";
 }
 
@@ -1880,9 +1881,11 @@ function startGame(difficulty) {
         record.isCompleted = true;
         Storage.saveRecord(record);
     }
-    
+
     currentDifficulty = difficulty;
     localStorage.setItem("currentDiff", difficulty);
+    // 清除继续游戏的记录ID
+    localStorage.removeItem("continuePuzzleId");
     location.href = "game.html";
 }
 
@@ -2159,6 +2162,8 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
         record.irregularBoxes = currentPuzzle.irregularBoxes || null;
     }
     Storage.saveRecord(record);
+    // 保存当前游戏ID，用于继续游戏
+    localStorage.setItem("continuePuzzleId", puzzleId);
 }
 
 /**
@@ -3519,7 +3524,7 @@ function loadRecords(filter = 'ALL') {
 
     // 更新统计
     const totalGames = records.length;
-    const completedGames = records.filter(r => r.isCompleted).length;
+    const completedGames = records.filter(r => r.isCompleted && !r.isAbandoned).length;
     const totalTime = records.reduce((sum, r) => sum + (r.completionTime || 0), 0);
 
     document.getElementById('totalGames').textContent = totalGames;
@@ -3544,7 +3549,7 @@ function loadRecords(filter = 'ALL') {
     tbody.innerHTML = filteredRecords.map(record => {
         const isLatestInProgress = latestInProgress && record.puzzleId === latestInProgress.puzzleId;
         const canContinue = isLatestInProgress;
-        const canView = record.isCompleted && !record.isAbandoned && record.originalPuzzle;
+        const canView = record.isCompleted && record.solution;
         const statusText = record.isAbandoned ? '已放弃' : (record.isCompleted ? '已完成' : '进行中');
         const statusClass = record.isAbandoned ? 'abandoned' : (record.isCompleted ? 'completed' : 'in-progress');
 
@@ -3611,6 +3616,7 @@ function clearProgressAndShowDifficulty() {
     const record = getLatestInProgressGame();
     if (record) {
         record.isAbandoned = true;
+        record.isCompleted = true;
         Storage.saveRecord(record);
     }
     showDifficultySection();
@@ -3967,22 +3973,4 @@ document.addEventListener('keydown', function (event) {
             modal.style.display = 'none';
         });
     }
-});
-
-// ==================== 初始化 ====================
-document.addEventListener('DOMContentLoaded', function () {
-    // 初始化会话ID
-    Storage.getSessionId();
-
-    // 检查是否有未完成的游戏
-    if (hasInProgressGame()) {
-        showContinueGameSection();
-    } else {
-        showDifficultySection();
-    }
-
-    // 页面离开时自动保存进度
-    window.addEventListener('beforeunload', function () {
-        saveGameProgress();
-    });
 });
