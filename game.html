@@ -133,6 +133,7 @@
             const continuePuzzleId = localStorage.getItem("continuePuzzleId");
 
             currentGameType = gameType;
+            currentDifficulty = difficultyType;
             document.getElementById("gameTypeTitle").textContent = `数独游戏 - ${getGameTypeName(gameType)}【${getDifficultyTypeName(difficultyType)}】`;
             resetGameControls();
 

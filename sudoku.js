@@ -1009,33 +1009,54 @@ class SudokuGenerator {
      */
     createPuzzle(fullBoard, emptyCount) {
         // 深拷贝棋盘
-        const puzzle = fullBoard.map(row => [...row]);
+        let bestPuzzle = fullBoard.map(row => [...row]);
+        let bestEmpty = 0;
 
-        // 生成所有位置并随机打乱
-        const positions = [];
-        for (let i = 0; i < this.SIZE; i++) {
-            for (let j = 0; j < this.SIZE; j++) {
-                positions.push([i, j]);
+        // 尝试多轮，每轮使用不同的随机顺序
+        const attempts = this.SIZE <= 6 ? 10 : 3;
+
+        for (let attempt = 0; attempt < attempts; attempt++) {
+            const puzzle = fullBoard.map(row => [...row]);
+
+            // 生成所有位置并随机打乱
+            const positions = [];
+            for (let i = 0; i < this.SIZE; i++) {
+                for (let j = 0; j < this.SIZE; j++) {
+                    positions.push([i, j]);
+                }
+            }
+            this.shuffleArray(positions);
+
+            let empty = 0;
+            for (const [r, c] of positions) {
+                if (empty >= emptyCount) break;
+                if (puzzle[r][c] === 0) continue;
+
+                const temp = puzzle[r][c];
+                puzzle[r][c] = 0;
+
+                // 确保只有唯一解
+                if (this.getSolutionCount(puzzle) === 1) {
+                    empty++;
+                } else {
+                    puzzle[r][c] = temp;
+                }
+            }
+
+            // 记录最佳结果
+            if (empty > bestEmpty) {
+                bestEmpty = empty;
+                bestPuzzle = puzzle.map(row => [...row]);
+            }
+
+            // 如果达到目标，直接返回
+            if (empty >= emptyCount) {
+                return puzzle;
             }
         }
-        this.shuffleArray(positions);
 
-        let empty = 0;
-        for (const [r, c] of positions) {
-            if (empty >= emptyCount) break;
-            if (puzzle[r][c] === 0) continue;
-
-            const temp = puzzle[r][c];
-            puzzle[r][c] = 0;
-
-            // 确保只有唯一解
-            if (this.getSolutionCount(puzzle) === 1) {
-                empty++;
-            } else {
-                puzzle[r][c] = temp;
-            }
-        }
-        return puzzle;
+        // 如果多次尝试都达不到目标，返回最佳结果
+        return bestPuzzle;
     }
 
     /**
@@ -2063,7 +2084,7 @@ function getEmptyCountByGameType(gameType, difficultyType = "EASY") {
         MINI_4x4: {
             EASY: 8,
             MEDIUM: 12,
-            HARD: 13
+            HARD: 14
         },
         MINI_6x6: {
             EASY: 12,
@@ -2191,6 +2212,7 @@ function saveAttemptRecord() {
     const record = Storage.getRecord(currentPuzzle.id) || {
         puzzleId: currentPuzzle.id,
         gameType: currentGameType,
+        difficultyType: currentDifficulty,
         startTime: Date.now(),
         attemptCount: 0,
         isCompleted: false,
@@ -2230,6 +2252,7 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
             originalPuzzle: puzzleStr,
             solution: solutionStr,
             gameType: currentGameType,
+            difficultyType: currentDifficulty,
             startTime: Date.now(),
             attemptCount: 0,
             isCompleted: false,
@@ -3168,6 +3191,7 @@ function checkSolution() {
         const record = Storage.getRecord(currentPuzzle.id) || {
             puzzleId: currentPuzzle.id,
             gameType: currentGameType,
+            difficultyType: currentDifficultyType,
             attemptCount: attemptCount,
             isCompleted: false,
             bestTime: null,
@@ -3341,6 +3365,7 @@ function viewPuzzle(puzzleId) {
         puzzle: record.originalPuzzle,
         solution: record.solution,
         gameType: record.gameType,
+        difficultyType: record.difficultyType,
         irregularBoxes: record.irregularBoxes || null,
         cages: record.cages || null,
         sandwichClues: record.sandwichClues || null
@@ -3348,6 +3373,7 @@ function viewPuzzle(puzzleId) {
 
     document.getElementById('viewPuzzleId').textContent = record.puzzleId;
     document.getElementById('viewPuzzleGameType').textContent = getGameTypeName(record.gameType);
+    document.getElementById('viewPuzzleDifficultyType').textContent = getDifficultyTypeName(record.difficultyType);
 
     renderViewPuzzleBoard(record.originalPuzzle);
 
@@ -3739,6 +3765,7 @@ function loadRecords(filter = 'ALL') {
             <tr>
                 <td>#${record.puzzleId}</td>
                 <td><span class="gameType-badge ${record.gameType.toLowerCase()}">${getGameTypeName(record.gameType)}</span></td>
+                <td>${getDifficultyTypeName(record.difficultyType)}</td>
                 <td>${startTimeText}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>${durationText}</td>
@@ -3884,6 +3911,7 @@ function restoreGameState(record) {
         puzzle: record.originalPuzzle || record.currentBoard.replace(/[^0]/g, '0'), // 如果没有原始题目，用当前状态生成
         solution: record.solution || '',
         gameType: record.gameType,
+        difficultyType: record.difficultyType,
         size: boardSize,
         gameTypeStr: gameTypeStr,
         oddEvenMarks: record.oddEvenMarks || null,
