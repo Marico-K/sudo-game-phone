@@ -17,7 +17,7 @@
                 <button class="back-btn" onclick="goHome()">← 返回</button>
             </div>
             <div class="header-center">
-                <h1 id="difficultyTitle">数独游戏</h1>
+                <h1 id="gameTypeTitle">数独游戏</h1>
             </div>
             <div class="header-right">
                 <div class="timer" id="timer">00:00</div>
@@ -128,11 +128,12 @@
     <script>
         // 游戏页初始化（自动处理：新游戏 + 继续游戏）
         document.addEventListener("DOMContentLoaded", function () {
-            const diff = localStorage.getItem("currentDiff") || "EASY";
+            const gameType = localStorage.getItem("currentGameType") || "STANDARD";
+            const difficultyType = localStorage.getItem("currentDifficultyType") || "EASY";
             const continuePuzzleId = localStorage.getItem("continuePuzzleId");
 
-            currentDifficulty = diff;
-            document.getElementById("difficultyTitle").textContent = `数独游戏 - ${getDifficultyName(diff)}`;
+            currentGameType = gameType;
+            document.getElementById("gameTypeTitle").textContent = `数独游戏 - ${getGameTypeName(gameType)}【${getDifficultyTypeName(difficultyType)}】`;
             resetGameControls();
 
             // ==================== 自动判断：继续游戏 OR 新游戏 ====================
@@ -142,11 +143,11 @@
                 if (record && record.currentBoard) {
                     restoreGameState(record);
                 } else {
-                    generateNewPuzzle(diff);
+                    generateNewPuzzle(gameType, difficultyType);
                 }
             } else {
                 // 新游戏
-                generateNewPuzzle(diff);
+                generateNewPuzzle(gameType, difficultyType);
             }
         });
     </script>

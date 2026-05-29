@@ -1,12 +1,13 @@
 // ==================== 全局变量声明 ====================
-let currentPuzzle = null;          // 当前数独题目信息 {id, puzzle, solution, difficulty}
+let currentPuzzle = null;          // 当前数独题目信息 {id, puzzle, solution, gameType}
 let originalPuzzle = '';           // 原始题目字符串（0表示空格）
 let currentBoard = [];             // 当前棋盘状态数组（支持数字或候选数字数组）
 let selectedCell = null;           // 选中的单元格 {row, col, index}
 let selectedNumber = null;         // 选中的数字（1-9）或清除（0）
 let timerInterval = null;          // 计时器定时器ID
 let seconds = 0;                   // 游戏耗时（秒）
-let currentDifficulty = '';        // 当前难度
+let currentGameType = '';        // 当前游戏类型
+let currentDifficulty = '';      // 当前难度等级
 let attemptCount = 0;              // 当前题目尝试次数
 let bestTime = null;               // 当前题目最佳成绩
 let puzzleIdCounter = 0;           // 题目ID计数器
@@ -149,7 +150,7 @@ function clearAllCandidates() {
  */
 function getCandidates(row, col) {
     const size = currentPuzzle.size || 9;
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
     const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
@@ -172,7 +173,7 @@ function getCandidates(row, col) {
     }
 
     // 获取同宫已使用的数字（支持标准数独和锯齿数独）
-    if (gameType === 'IRREGULAR' && irregularBoxes) {
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
         // 锯齿数独：遍历不规则宫格中的单元格
         for (const box of irregularBoxes) {
             if (box.some(cell => cell[0] === row && cell[1] === col)) {
@@ -253,12 +254,12 @@ function getCols(row, col) {
  */
 function getBoxes(row, col) {
     const size = currentPuzzle.size || 9;
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const excludeIndex = row * size + col;
     const indices = [];
 
-    if (gameType === 'IRREGULAR' && irregularBoxes) {
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
         // 锯齿数独：遍历不规则宫格中的单元格
         for (const box of irregularBoxes) {
             if (box.some(cell => cell[0] === row && cell[1] === col)) {
@@ -288,9 +289,9 @@ function getBoxes(row, col) {
 
 // ==================== 数独生成器类 ====================
 class SudokuGenerator {
-    constructor(size = 9, gameType = 'STANDARD') {
+    constructor(size = 9, gameTypeStr = 'STANDARD') {
         this.setSize(size);
-        this.setGameType(gameType);
+        this.setGameTypeStr(gameTypeStr);
     }
 
     /**
@@ -319,18 +320,18 @@ class SudokuGenerator {
 
     /**
      * 设置游戏类型
-     * @param {string} gameType 游戏类型（STANDARD, DIAGONAL, ODD_EVEN, KILLER, IRREGULAR）
+     * @param {string} gameTypeStr 游戏类型（STANDARD, DIAGONAL, ODD_EVEN, KILLER, IRREGULAR）
      */
-    setGameType(gameType) {
-        this.GAME_TYPE = gameType;
+    setGameTypeStr(gameTypeStr) {
+        this.GAME_TYPE_STR = gameTypeStr;
         // 奇偶数独的奇偶标记（true为奇数格，false为偶数格）
-        if (gameType !== 'ODD_EVEN') {
+        if (gameTypeStr !== 'ODD_EVEN') {
             this.oddEvenMarks = null;
         }
         // 杀手数独的笼子
         this.cages = null;
         // 锯齿数独的不规则宫格
-        if (gameType === 'IRREGULAR') {
+        if (gameTypeStr === 'IRREGULAR') {
             this.irregularBoxes = this.generateIrregularBoxes();
             // 预计算单元格到宫格的映射，提高验证性能
             this.buildCellToBoxMap();
@@ -692,7 +693,7 @@ class SudokuGenerator {
             if (board[r][col] === num) return false;
         }
         // 检查宫格（标准或不规则）
-        if (this.GAME_TYPE === 'IRREGULAR' && this.irregularBoxes) {
+        if (this.GAME_TYPE_STR === 'IRREGULAR' && this.irregularBoxes) {
             // 锯齿数独：检查不规则宫格
             const boxIndex = this.getIrregularBoxIndex(row, col);
             if (boxIndex >= 0) {
@@ -714,7 +715,7 @@ class SudokuGenerator {
             }
         }
         // 对角线数独：检查两条对角线
-        if (this.GAME_TYPE === 'DIAGONAL') {
+        if (this.GAME_TYPE_STR === 'DIAGONAL') {
             // 主对角线 (row == col)
             if (row === col) {
                 for (let i = 0; i < this.SIZE; i++) {
@@ -730,12 +731,12 @@ class SudokuGenerator {
             }
         }
         // 奇偶数独：检查奇偶性
-        if (this.GAME_TYPE === 'ODD_EVEN' && this.oddEvenMarks) {
+        if (this.GAME_TYPE_STR === 'ODD_EVEN' && this.oddEvenMarks) {
             const isOdd = num % 2 === 1;
             if (this.oddEvenMarks[row][col] !== isOdd) return false;
         }
         // 杀手数独：检查同笼不重复
-        if (this.GAME_TYPE === 'KILLER' && this.cages) {
+        if (this.GAME_TYPE_STR === 'KILLER' && this.cages) {
             for (const cage of this.cages) {
                 const hasCell = cage.cells.some(cell => cell.row === row && cell.col === col);
                 if (hasCell) {
@@ -748,7 +749,7 @@ class SudokuGenerator {
             }
         }
         // 窗口数独：检查四个额外的3x3窗口区域
-        if (this.GAME_TYPE === 'WINDOKU') {
+        if (this.GAME_TYPE_STR === 'WINDOKU') {
             const windokuRegions = [
                 // 左上窗口 (行1-3, 列1-3)
                 { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },
@@ -773,7 +774,7 @@ class SudokuGenerator {
             }
         }
         // 三明治数独：检查1和9的位置是否满足提示约束（验证阶段使用）
-        if (this.GAME_TYPE === 'SANDWICH' && this.sandwichClues) {
+        if (this.GAME_TYPE_STR === 'SANDWICH' && this.sandwichClues) {
             if (!this.isValidSandwichPlacement(board, row, col, num)) {
                 return false;
             }
@@ -936,7 +937,7 @@ class SudokuGenerator {
         console.log('🔷 开始生成三明治数独...');
         const startTime = Date.now();
 
-        this.setGameType('SANDWICH');
+        this.setGameTypeStr('SANDWICH');
         let board = null;
         const maxAttempts = 50;
 
@@ -1233,7 +1234,7 @@ class SudokuGenerator {
      * @returns {number[][]} 完整棋盘
      */
     generateKillerSolution() {
-        this.setGameType('KILLER');
+        this.setGameTypeStr('KILLER');
         let solution = null;
 
         // 根据棋盘大小设置提示数比例
@@ -1277,7 +1278,7 @@ class SudokuGenerator {
     generateIrregularSolution() {
         console.log('🔷 开始生成锯齿数独...');
         const startTime = Date.now();
-        this.setGameType('IRREGULAR');
+        this.setGameTypeStr('IRREGULAR');
 
         let board = null;
         const maxAttempts = 8; // 尝试8套布局
@@ -1318,7 +1319,7 @@ class SudokuGenerator {
     generateWindokuSolution() {
         console.log('🔷 开始生成窗口数独...');
         const startTime = Date.now();
-        this.setGameType('WINDOKU');
+        this.setGameTypeStr('WINDOKU');
 
         let board = null;
         const maxAttempts = 10;
@@ -1338,9 +1339,9 @@ class SudokuGenerator {
         // 兜底：如果生成失败，使用标准数独解
         if (!board || !this.isFilledAndValidBoard(board)) {
             console.log('⚠️ 窗口数独生成失败，使用标准数独解');
-            this.setGameType('STANDARD');
+            this.setGameTypeStr('STANDARD');
             board = this.generateFullBoard();
-            this.setGameType('WINDOKU');
+            this.setGameTypeStr('WINDOKU');
         }
 
         console.log(`✅ 窗口数独生成完成，耗时: ${Date.now() - startTime}ms`);
@@ -1371,7 +1372,7 @@ class SudokuGenerator {
         for (const n of nums) {
             // 根据游戏类型选择合适的验证方法
             let isValid;
-            if (this.GAME_TYPE === 'IRREGULAR') {
+            if (this.GAME_TYPE_STR === 'IRREGULAR') {
                 isValid = this.isValidJigsaw(board, row, col, n);
             } else {
                 isValid = this.isValid(board, row, col, n);
@@ -1440,7 +1441,7 @@ class SudokuGenerator {
                 board[r][c] = 0;
                 // 根据游戏类型选择合适的验证方法
                 let ok;
-                if (this.GAME_TYPE === 'IRREGULAR') {
+                if (this.GAME_TYPE_STR === 'IRREGULAR') {
                     ok = this.isValidJigsaw(board, r, c, val);
                 } else {
                     ok = this.isValid(board, r, c, val);
@@ -1873,7 +1874,7 @@ function showRecords() {
 /**
  * 开始游戏（跳转到 game.html）
  */
-function startGame(difficulty) {
+function startGame(gameType, difficultyType) {
     // 放弃之前未完成的游戏
     const record = getLatestInProgressGame();
     if (record) {
@@ -1882,8 +1883,10 @@ function startGame(difficulty) {
         Storage.saveRecord(record);
     }
 
-    currentDifficulty = difficulty;
-    localStorage.setItem("currentDiff", difficulty);
+    currentGameType = gameType;
+    currentDifficulty = difficultyType;
+    localStorage.setItem("currentGameType", gameType);
+    localStorage.setItem("currentDifficultyType", difficultyType);
     // 清除继续游戏的记录ID
     localStorage.removeItem("continuePuzzleId");
     location.href = "game.html";
@@ -1891,73 +1894,73 @@ function startGame(difficulty) {
 
 /**
  * 生成新题目
- * @param {string} difficulty 难度
+ * @param {string} gameType 游戏类型
  */
-function generateNewPuzzle(difficulty) {
+function generateNewPuzzle(gameType, difficultyType = "EASY") {
     // 显示加载提示
     document.getElementById('sudokuBoard').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 50px;">正在生成题目...</div>';
 
     // 使用setTimeout让UI有时间更新
     setTimeout(() => {
         // 根据难度确定棋盘尺寸、空格数量和游戏类型
-        let boardSize, emptyCount, gameType;
-        const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45, WINDOKU: 45, SANDWICH: 45 };
+        let boardSize, emptyCount, gameTypeStr;
+        // const emptyCounts = { MINI_4x4: 12, MINI_6x6: 22, EASY: 35, MEDIUM: 45, HARD: 55, DIAGONAL: 40, ODD_EVEN: 40, KILLER_4x4: 16, KILLER_6x6: 36, KILLER_9x9: 81, IRREGULAR: 45, WINDOKU: 45, SANDWICH: 45 };
 
-        if (difficulty === 'MINI_4x4') {
+        if (gameType === 'MINI_4x4') {
             boardSize = 4;
-            emptyCount = emptyCounts[difficulty] || 12;
-            gameType = 'MINI_4x4';
-        } else if (difficulty === 'MINI_6x6') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 12;
+            gameTypeStr = 'MINI_4x4';
+        } else if (gameType === 'MINI_6x6') {
             boardSize = 6;
-            emptyCount = emptyCounts[difficulty] || 22;
-            gameType = 'MINI_6x6';
-        } else if (difficulty === 'DIAGONAL') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 12;
+            gameTypeStr = 'MINI_6x6';
+        } else if (gameType === 'DIAGONAL') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 40;
-            gameType = 'DIAGONAL';
-        } else if (difficulty === 'ODD_EVEN') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 40;
+            gameTypeStr = 'DIAGONAL';
+        } else if (gameType === 'ODD_EVEN') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 40;
-            gameType = 'ODD_EVEN';
-        } else if (difficulty === 'IRREGULAR') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 40;
+            gameTypeStr = 'ODD_EVEN';
+        } else if (gameType === 'IRREGULAR') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 45;
-            gameType = 'IRREGULAR';
-        } else if (difficulty === 'WINDOKU') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
+            gameTypeStr = 'IRREGULAR';
+        } else if (gameType === 'WINDOKU') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 45;
-            gameType = 'WINDOKU';
-        } else if (difficulty === 'SANDWICH') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
+            gameTypeStr = 'WINDOKU';
+        } else if (gameType === 'SANDWICH') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 45;
-            gameType = 'SANDWICH';
-        } else if (difficulty === 'KILLER_4x4') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
+            gameTypeStr = 'SANDWICH';
+        } else if (gameType === 'KILLER_4x4') {
             boardSize = 4;
-            emptyCount = emptyCounts[difficulty] || 16;
-            gameType = 'KILLER';
-        } else if (difficulty === 'KILLER_6x6') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 16;
+            gameTypeStr = 'KILLER';
+        } else if (gameType === 'KILLER_6x6') {
             boardSize = 6;
-            emptyCount = emptyCounts[difficulty] || 36;
-            gameType = 'KILLER';
-        } else if (difficulty === 'KILLER_9x9') {
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 36;
+            gameTypeStr = 'KILLER';
+        } else if (gameType === 'KILLER_9x9') {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 81;
-            gameType = 'KILLER';
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 81;
+            gameTypeStr = 'KILLER';
         } else {
             boardSize = 9;
-            emptyCount = emptyCounts[difficulty] || 35;
-            gameType = 'STANDARD';
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 35;
+            gameTypeStr = 'STANDARD';
         }
 
         // 设置生成器尺寸和游戏类型
         sudokuGenerator.setSize(boardSize);
-        sudokuGenerator.setGameType(gameType);
+        sudokuGenerator.setGameTypeStr(gameTypeStr);
 
         let fullBoard, puzzleBoard, puzzleStr, solutionStr;
         let oddEvenMarks = null;
         let cages = null;
 
-        if (gameType === 'KILLER') {
+        if (gameTypeStr === 'KILLER') {
             // 杀手数独：生成完整解和笼子
             fullBoard = sudokuGenerator.generateKillerSolution();
             cages = sudokuGenerator.cages;
@@ -1968,32 +1971,32 @@ function generateNewPuzzle(difficulty) {
                 // 杀手数独没有初始数字，全部为空
                 puzzleBoard = Array(boardSize).fill(null).map(() => Array(boardSize).fill(0));
             }
-        } else if (gameType === 'ODD_EVEN') {
+        } else if (gameTypeStr === 'ODD_EVEN') {
             // 奇偶数独：先生成数独解，再根据解生成标记
             const oddEvenResult = sudokuGenerator.generateOddEvenPuzzle();
             fullBoard = oddEvenResult.solution;
             oddEvenMarks = oddEvenResult.marks;
             sudokuGenerator.oddEvenMarks = oddEvenMarks;
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
-        } else if (gameType === 'DIAGONAL') {
+        } else if (gameTypeStr === 'DIAGONAL') {
             // 对角线数独
             fullBoard = sudokuGenerator.generateFullBoard();
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
-        } else if (gameType === 'IRREGULAR') {
+        } else if (gameTypeStr === 'IRREGULAR') {
             // 锯齿数独：使用专用高效算法
             console.log('🔷 开始生成锯齿数独题目...');
             const startTime = Date.now();
             fullBoard = sudokuGenerator.generateIrregularSolution();
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
             console.log(`✅ 锯齿数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
-        } else if (gameType === 'WINDOKU') {
+        } else if (gameTypeStr === 'WINDOKU') {
             // 窗口数独：生成满足窗口约束的解
             console.log('🔷 开始生成窗口数独题目...');
             const startTime = Date.now();
             fullBoard = sudokuGenerator.generateWindokuSolution();
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
             console.log(`✅ 窗口数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
-        } else if (gameType === 'SANDWICH') {
+        } else if (gameTypeStr === 'SANDWICH') {
             // 三明治数独：生成完整解并计算外部提示
             console.log('🔷 开始生成三明治数独题目...');
             const startTime = Date.now();
@@ -2019,13 +2022,13 @@ function generateNewPuzzle(difficulty) {
             id: puzzleId,
             puzzle: puzzleStr,
             solution: solutionStr,
-            difficulty: difficulty,
-            size: boardSize,
             gameType: gameType,
+            size: boardSize,
+            gameTypeStr: gameTypeStr,
             oddEvenMarks: oddEvenMarks,
             cages: cages,
-            irregularBoxes: gameType === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null,
-            sandwichClues: gameType === 'SANDWICH' ? sudokuGenerator.sandwichClues : null
+            irregularBoxes: gameTypeStr === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null,
+            sandwichClues: gameTypeStr === 'SANDWICH' ? sudokuGenerator.sandwichClues : null
         };
 
         originalPuzzle = puzzleStr;
@@ -2050,18 +2053,86 @@ function generateNewPuzzle(difficulty) {
 }
 
 /**
- * 获取难度中文名称
- * @param {string} difficulty 难度标识
+ * 获取不同游戏类型的空格数量
+ * @param {string} gameType 游戏类型标识
+ * @param {string} difficultyType 难度类型标识
+ * @returns {number} 空格数量
+ */
+function getEmptyCountByGameType(gameType, difficultyType = "EASY") {
+    const emptyCounts = {
+        MINI_4x4: {
+            EASY: 8,
+            MEDIUM: 12,
+            HARD: 13
+        },
+        MINI_6x6: {
+            EASY: 12,
+            MEDIUM: 18,
+            HARD: 26
+        },
+        STANDARD: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        SANDWICH: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        DIAGONAL: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        ODD_EVEN: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        KILLER_4x4: {
+            EASY: 8,
+            MEDIUM: 12,
+            HARD: 16
+        },
+        KILLER_6x6: {
+            EASY: 12,
+            MEDIUM: 18,
+            HARD: 24
+        },
+        KILLER_9x9: {
+            EASY: 32,
+            MEDIUM: 44,
+            HARD: 56
+        },
+        IRREGULAR: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        WINDOKU: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        }
+    };
+    return emptyCounts[gameType][difficultyType] || 10;
+}
+
+/**
+ * 获取游戏类型中文名称
+ * @param {string} gameType 游戏类型标识
  * @returns {string} 中文名称
  */
-function getDifficultyName(difficulty) {
+function getGameTypeName(gameType) {
     const names = {
         MINI_4x4: '迷你4宫格',
         MINI_6x6: '迷你6宫格',
         EASY: '简单9宫格',
         MEDIUM: '中等9宫格',
-        SANDWICH: '三明治数独',
         HARD: '高级9宫格',
+        STANDARD: '标准9宫格',
+        SANDWICH: '三明治数独',
         DIAGONAL: '对角线数独',
         ODD_EVEN: '奇偶数独',
         KILLER_4x4: '杀手4宫格',
@@ -2070,7 +2141,21 @@ function getDifficultyName(difficulty) {
         IRREGULAR: '锯齿数独',
         WINDOKU: '窗口数独'
     };
-    return names[difficulty] || difficulty;
+    return names[gameType] || gameType;
+}
+
+/**
+ * 获取难度类型中文名称
+ * @param {string} difficultyType 难度类型标识
+ * @returns {string} 中文名称
+ */
+function getDifficultyTypeName(difficultyType) {
+    const names = {
+        EASY: '简单',
+        MEDIUM: '中等',
+        HARD: '高级'
+    };
+    return names[difficultyType] || difficultyType;
 }
 
 /**
@@ -2105,7 +2190,7 @@ function loadUserRecord() {
 function saveAttemptRecord() {
     const record = Storage.getRecord(currentPuzzle.id) || {
         puzzleId: currentPuzzle.id,
-        difficulty: currentDifficulty,
+        gameType: currentGameType,
         startTime: Date.now(),
         attemptCount: 0,
         isCompleted: false,
@@ -2144,22 +2229,24 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
             puzzleId: puzzleId,
             originalPuzzle: puzzleStr,
             solution: solutionStr,
-            difficulty: currentDifficulty,
+            gameType: currentGameType,
             startTime: Date.now(),
             attemptCount: 0,
             isCompleted: false,
             bestTime: null,
             currentBoard: puzzleStr,
             elapsedTime: 0,
-            gameType: currentPuzzle.gameType || 'STANDARD',
+            gameTypeStr: currentPuzzle.gameTypeStr || 'STANDARD',
             oddEvenMarks: currentPuzzle.oddEvenMarks || null,
             cages: currentPuzzle.cages || null,
-            irregularBoxes: currentPuzzle.irregularBoxes || null
+            irregularBoxes: currentPuzzle.irregularBoxes || null,
+            sandwichClues: currentPuzzle.sandwichClues || null
         };
     } else {
         record.originalPuzzle = puzzleStr;
         record.solution = solutionStr;
         record.irregularBoxes = currentPuzzle.irregularBoxes || null;
+        record.sandwichClues = currentPuzzle.sandwichClues || null;
     }
     Storage.saveRecord(record);
     // 保存当前游戏ID，用于继续游戏
@@ -2176,7 +2263,7 @@ function renderBoard() {
 
     // 获取当前棋盘尺寸和游戏类型
     const size = currentPuzzle.size || 9;
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
     const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
     const oddEvenMarks = currentPuzzle.oddEvenMarks;
@@ -2185,7 +2272,7 @@ function renderBoard() {
     const sandwichClues = currentPuzzle.sandwichClues;
 
     // 三明治数独需要特殊布局（外部提示）
-    if (gameType === 'SANDWICH' && sandwichClues) {
+    if (gameTypeStr === 'SANDWICH' && sandwichClues) {
         renderSandwichBoard(boardContainer, size, boxRows, boxCols, sandwichClues);
         return;
     }
@@ -2196,7 +2283,7 @@ function renderBoard() {
     board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
     // 根据游戏类型添加样式类
-    board.className = `sudoku-board game-type-${gameType.toLowerCase()}`;
+    board.className = `sudoku-board game-type-${gameTypeStr.toLowerCase()}`;
 
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
@@ -2215,14 +2302,14 @@ function renderBoard() {
             if (j % boxCols === 0 && j !== 0) cell.classList.add('border-left');
 
             // 对角线数独：标记对角线上的格子
-            if (gameType === 'DIAGONAL') {
+            if (gameTypeStr === 'DIAGONAL') {
                 if (i === j || i + j === size - 1) {
                     cell.classList.add('diagonal-cell');
                 }
             }
 
             // 奇偶数独：根据奇偶性标记格子
-            if (gameType === 'ODD_EVEN' && oddEvenMarks) {
+            if (gameTypeStr === 'ODD_EVEN' && oddEvenMarks) {
                 if (oddEvenMarks[i][j]) {
                     cell.classList.add('odd-cell');
                 } else {
@@ -2231,7 +2318,7 @@ function renderBoard() {
             }
 
             // 锯齿数独：标记不规则宫格颜色和边框
-            if (gameType === 'IRREGULAR' && irregularBoxes) {
+            if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
                 for (let boxIndex = 0; boxIndex < irregularBoxes.length; boxIndex++) {
                     const box = irregularBoxes[boxIndex];
                     if (box.some(cellInfo => cellInfo[0] === i && cellInfo[1] === j)) {
@@ -2253,7 +2340,7 @@ function renderBoard() {
             }
 
             // 窗口数独：标记四个额外的3x3窗口区域
-            if (gameType === 'WINDOKU') {
+            if (gameTypeStr === 'WINDOKU') {
                 // 定义四个窗口区域（位于棋盘中心，形成十字交叉）
                 const windokuRegions = [
                     { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },   // 左上窗口
@@ -2271,7 +2358,7 @@ function renderBoard() {
             }
 
             // 杀手数独：标记笼子信息和边框
-            if (gameType === 'KILLER' && cages) {
+            if (gameTypeStr === 'KILLER' && cages) {
                 for (let cageIndex = 0; cageIndex < cages.length; cageIndex++) {
                     const cage = cages[cageIndex];
                     if (cage.cells.some(cellInfo => cellInfo.row === i && cellInfo.col === j)) {
@@ -2306,7 +2393,7 @@ function renderBoard() {
 
             // 杀手数独：创建笼子和元素
             let cageSumEl = null;
-            if (gameType === 'KILLER' && cages && cages.length > 0) {
+            if (gameTypeStr === 'KILLER' && cages && cages.length > 0) {
                 const cage = cages.find(c => c.cells.some(cellInfo => cellInfo.row === i && cellInfo.col === j));
                 if (cage) {
                     const isFirstCell = cage.cells[0].row === i && cage.cells[0].col === j;
@@ -2373,32 +2460,34 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
     const layout = document.createElement('div');
     layout.className = 'sandwich-layout';
 
+    // 创建左上角空白占位
+    const topLeftEmpty = document.createElement('div');
+    topLeftEmpty.className = 'sandwich-top-left-empty';
+    layout.appendChild(topLeftEmpty);
+
     // 创建顶部提示行
     const topClues = document.createElement('div');
     topClues.className = 'sandwich-clues-top';
-    // 顶部提示（列提示）
+    // 顶部提示（列提示）- 确保只渲染与棋盘列数相同数量的提示
     for (let col = 0; col < size; col++) {
         const clue = document.createElement('div');
         clue.className = 'sandwich-clue';
-        clue.textContent = sandwichClues.top[col];
+        clue.textContent = sandwichClues.left[col] || 0;
         topClues.appendChild(clue);
     }
     layout.appendChild(topClues);
 
-    // 创建主体区域（左侧提示 + 棋盘）
-    const mainArea = document.createElement('div');
-    mainArea.className = 'sandwich-main';
-
     // 创建左侧提示列
     const leftClues = document.createElement('div');
     leftClues.className = 'sandwich-clues-left';
+    // 左侧提示（行提示）- 确保只渲染与棋盘行数相同数量的提示
     for (let row = 0; row < size; row++) {
         const clue = document.createElement('div');
         clue.className = 'sandwich-clue';
-        clue.textContent = sandwichClues.left[row];
+        clue.textContent = sandwichClues.top[row] || 0;
         leftClues.appendChild(clue);
     }
-    mainArea.appendChild(leftClues);
+    layout.appendChild(leftClues);
 
     // 创建数独棋盘
     const board = document.createElement('div');
@@ -2459,9 +2548,8 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
             cellsCache.push(cell);
         }
     }
-    mainArea.appendChild(board);
-
-    layout.appendChild(mainArea);
+    // 将棋盘添加到布局容器
+    layout.appendChild(board);
 
     container.appendChild(layout);
 
@@ -2482,7 +2570,7 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
     */
 function isCandidateUnique(row, col, num) {
     const size = currentPuzzle.size || 9;
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const index = row * size + col;
 
@@ -2508,7 +2596,7 @@ function isCandidateUnique(row, col, num) {
 
     // 条件3：检查同宫是否唯一（标准或不规则）
     let boxUnique = true;
-    if (gameType === 'IRREGULAR' && irregularBoxes) {
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
         // 锯齿数独：检查不规则宫格
         for (const box of irregularBoxes) {
             if (box.some(cell => cell[0] === row && cell[1] === col)) {
@@ -2643,7 +2731,7 @@ function initCellsCache() {
     */
 function selectCell(row, col, cell) {
     const size = currentPuzzle.size || 9;
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
     const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
@@ -2653,7 +2741,7 @@ function selectCell(row, col, cell) {
 
     // 获取当前单元格所属的不规则宫格（如果是锯齿数独）
     let currentBoxCells = null;
-    if (gameType === 'IRREGULAR' && irregularBoxes) {
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
         for (const box of irregularBoxes) {
             if (box.some(cellInfo => cellInfo[0] === row && cellInfo[1] === col)) {
                 currentBoxCells = box;
@@ -2681,7 +2769,7 @@ function selectCell(row, col, cell) {
         if (cellCol === col) c.classList.add('highlighted-col');
 
         // 宫格高亮（支持标准和锯齿数独）
-        if (gameType === 'IRREGULAR' && currentBoxCells) {
+        if (gameTypeStr === 'IRREGULAR' && currentBoxCells) {
             // 锯齿数独：检查是否在同一不规则宫格
             if (currentBoxCells.some(cellInfo => cellInfo[0] === cellRow && cellInfo[1] === cellCol)) {
                 c.classList.add('highlighted-box');
@@ -2974,7 +3062,7 @@ function checkConflicts() {
     const size = currentPuzzle.size || 9;
     const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
     const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
-    const gameType = currentPuzzle.gameType || 'STANDARD';
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const cells = initCellsCache();
 
@@ -3009,7 +3097,7 @@ function checkConflicts() {
         }
 
         // 检查宫格冲突（标准或不规则）
-        if (gameType === 'IRREGULAR' && irregularBoxes) {
+        if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
             // 锯齿数独：检查不规则宫格
             for (const box of irregularBoxes) {
                 if (box.some(cell => cell[0] === row && cell[1] === col)) {
@@ -3079,7 +3167,7 @@ function checkSolution() {
         // 保存完成记录
         const record = Storage.getRecord(currentPuzzle.id) || {
             puzzleId: currentPuzzle.id,
-            difficulty: currentDifficulty,
+            gameType: currentGameType,
             attemptCount: attemptCount,
             isCompleted: false,
             bestTime: null,
@@ -3155,7 +3243,7 @@ function newPuzzle() {
     }
 
     // 生成新题目
-    generateNewPuzzle(currentDifficulty);
+    generateNewPuzzle(currentGameType, currentDifficulty);
     selectedNumber = null;
     document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
 
@@ -3252,13 +3340,14 @@ function viewPuzzle(puzzleId) {
         puzzleId: record.puzzleId,
         puzzle: record.originalPuzzle,
         solution: record.solution,
-        difficulty: record.difficulty,
+        gameType: record.gameType,
         irregularBoxes: record.irregularBoxes || null,
-        cages: record.cages || null
+        cages: record.cages || null,
+        sandwichClues: record.sandwichClues || null
     };
 
     document.getElementById('viewPuzzleId').textContent = record.puzzleId;
-    document.getElementById('viewPuzzleDifficulty').textContent = getDifficultyName(record.difficulty);
+    document.getElementById('viewPuzzleGameType').textContent = getGameTypeName(record.gameType);
 
     renderViewPuzzleBoard(record.originalPuzzle);
 
@@ -3295,8 +3384,16 @@ function switchViewPuzzleTab(tab) {
 function renderViewPuzzleBoard(boardStr, isAnswer = false) {
     const boardContainer = document.getElementById('viewPuzzleBoard');
     const puzzle = currentViewPuzzleData.puzzle;
-    const difficulty = currentViewPuzzleData.difficulty;
+    const gameType = currentViewPuzzleData.gameType;
     const solution = currentViewPuzzleData.solution;
+    const sandwichClues = currentViewPuzzleData.sandwichClues;
+
+    // 三明治数独需要特殊布局
+    if (gameType === 'SANDWICH' && sandwichClues) {
+        renderViewSandwichPuzzle(boardContainer, boardStr, puzzle, sandwichClues, isAnswer);
+        return;
+    }
+
     let html = '';
 
     // 根据字符串长度确定棋盘大小（更可靠）
@@ -3309,15 +3406,15 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
 
     // 根据难度设置棋盘样式类
     let boardClass = '';
-    if (difficulty && difficulty.startsWith('KILLER')) {
+    if (gameType && gameType.startsWith('KILLER')) {
         boardClass = ' killer-board killer-' + gridSize + 'x' + gridSize;
-    } else if (difficulty === 'DIAGONAL') {
+    } else if (gameType === 'DIAGONAL') {
         boardClass = ' diagonal-board';
-    } else if (difficulty === 'ODD_EVEN') {
+    } else if (gameType === 'ODD_EVEN') {
         boardClass = ' odd-even-board';
-    } else if (difficulty === 'IRREGULAR') {
+    } else if (gameType === 'IRREGULAR') {
         boardClass = ' irregular-board';
-    } else if (difficulty === 'WINDOKU') {
+    } else if (gameType === 'WINDOKU') {
         boardClass = ' windoku-board';
     } else if (gridSize === 4) {
         boardClass = ' mini-4-board';
@@ -3340,7 +3437,7 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
         let cellClass = '';
 
         // 根据棋盘大小添加边框
-        if (difficulty === 'IRREGULAR') {
+        if (gameType === 'IRREGULAR') {
             // 锯齿数独无固定边框
         } else if (gridSize === 4) {
             // 4宫格 2x2
@@ -3357,14 +3454,14 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
         }
 
         // 对角线数独 - 对角线高亮
-        if (difficulty === 'DIAGONAL') {
+        if (gameType === 'DIAGONAL') {
             if (row === col || row + col === 8) {
                 cellClass += ' diagonal-cell';
             }
         }
 
         // 奇偶数独 - 根据数字值判断奇偶
-        if (difficulty === 'ODD_EVEN') {
+        if (gameType === 'ODD_EVEN') {
             const numValue = parseInt(solution[i]);
             if (numValue % 2 === 0) {
                 cellClass += ' even-cell';
@@ -3374,7 +3471,7 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
         }
 
         // 窗口数独 - 窗口区域高亮
-        if (difficulty === 'WINDOKU') {
+        if (gameType === 'WINDOKU') {
             const windokuRegions = [
                 { startRow: 1, endRow: 3, startCol: 1, endCol: 3 },
                 { startRow: 1, endRow: 3, startCol: 5, endCol: 7 },
@@ -3391,13 +3488,13 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
         }
 
         // 锯齿数独 - 不规则宫格颜色
-        if (difficulty === 'IRREGULAR' && currentViewPuzzleData.irregularBoxes) {
+        if (gameType === 'IRREGULAR' && currentViewPuzzleData.irregularBoxes) {
             const boxIndex = getCellBoxIndex(row, col);
             cellClass += ` irregular-box-${boxIndex}`;
         }
 
         // 杀手数独 - 杀手笼样式
-        if (difficulty && difficulty.startsWith('KILLER') && currentViewPuzzleData.cages) {
+        if (gameType && gameType.startsWith('KILLER') && currentViewPuzzleData.cages) {
             const cageIndex = getCellCageIndex(row, col, gridSize);
             if (cageIndex >= 0) {
                 const cage = currentViewPuzzleData.cages[cageIndex];
@@ -3428,7 +3525,7 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
 
         // 获取笼和（在笼子左上角显示）
         let cageSum = '';
-        if (difficulty && difficulty.startsWith('KILLER') && currentViewPuzzleData.cages) {
+        if (gameType && gameType.startsWith('KILLER') && currentViewPuzzleData.cages) {
             const cageIndex = getCellCageIndex(row, col, gridSize);
             if (cageIndex >= 0) {
                 const cage = currentViewPuzzleData.cages[cageIndex];
@@ -3460,6 +3557,87 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
     }
 
     boardContainer.innerHTML = html;
+}
+
+/**
+    * 渲染三明治数独查看题目弹窗中的棋盘
+    */
+function renderViewSandwichPuzzle(boardContainer, boardStr, puzzle, sandwichClues, isAnswer) {
+    // 添加三明治数独查看模式的类，覆盖默认grid样式
+    boardContainer.className = 'view-puzzle-board sandwich-view-board';
+
+    // 创建整体布局容器
+    const layout = document.createElement('div');
+    layout.className = 'sandwich-layout';
+
+    // 创建左上角空白占位
+    const topLeftEmpty = document.createElement('div');
+    topLeftEmpty.className = 'sandwich-top-left-empty';
+    layout.appendChild(topLeftEmpty);
+
+    // 创建顶部提示行
+    const topClues = document.createElement('div');
+    topClues.className = 'sandwich-clues-top';
+    for (let col = 0; col < 9; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'sandwich-clue';
+        clue.textContent = sandwichClues.left[col] || 0;
+        topClues.appendChild(clue);
+    }
+    layout.appendChild(topClues);
+
+    // 创建左侧提示列
+    const leftClues = document.createElement('div');
+    leftClues.className = 'sandwich-clues-left';
+    for (let row = 0; row < 9; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'sandwich-clue';
+        clue.textContent = sandwichClues.top[row] || 0;
+        leftClues.appendChild(clue);
+    }
+    layout.appendChild(leftClues);
+
+    // 创建数独棋盘
+    const board = document.createElement('div');
+    board.className = 'sudoku-board game-type-sandwich';
+
+    for (let i = 0; i < boardStr.length; i++) {
+        const row = Math.floor(i / 9);
+        const col = i % 9;
+        const value = boardStr[i];
+        const isOriginal = puzzle && puzzle[i] !== '0';
+        const isEmpty = value === '0';
+
+        let cellClass = '';
+
+        // 宫格边框
+        if (col === 2 || col === 5) cellClass += ' border-right';
+        if (row === 2 || row === 5) cellClass += ' border-bottom';
+
+        // 答案视图中区分原始数字和填入数字
+        let numberClass = '';
+        if (isAnswer) {
+            if (isOriginal) {
+                numberClass = ' original-number';
+            } else {
+                numberClass = ' filled-number';
+            }
+        }
+
+        const cell = document.createElement('div');
+        cell.className = `cell${isEmpty ? ' empty' : ''}${cellClass}`;
+
+        const span = document.createElement('span');
+        span.className = isEmpty ? '' : (isAnswer ? numberClass : 'fixed');
+        span.textContent = isEmpty ? '' : value;
+        cell.appendChild(span);
+
+        board.appendChild(cell);
+    }
+
+    layout.appendChild(board);
+    boardContainer.innerHTML = '';
+    boardContainer.appendChild(layout);
 }
 
 /**
@@ -3520,7 +3698,7 @@ function loadRecords(filter = 'ALL') {
     // 筛选记录
     const filteredRecords = filter === 'ALL'
         ? records
-        : records.filter(r => r.difficulty === filter);
+        : records.filter(r => r.gameType === filter);
 
     // 更新统计
     const totalGames = records.length;
@@ -3560,11 +3738,11 @@ function loadRecords(filter = 'ALL') {
         return `
             <tr>
                 <td>#${record.puzzleId}</td>
-                <td><span class="difficulty-badge ${record.difficulty.toLowerCase()}">${getDifficultyName(record.difficulty)}</span></td>
+                <td><span class="gameType-badge ${record.gameType.toLowerCase()}">${getGameTypeName(record.gameType)}</span></td>
                 <td>${startTimeText}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>${durationText}</td>
-                <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.difficulty + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
+                <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.gameType + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
             </tr>
         `;
     }).join('');
@@ -3605,29 +3783,29 @@ function getLatestInProgressGame() {
 function continueLatestGame() {
     const record = getLatestInProgressGame();
     if (record) {
-        continuePuzzle(record.puzzleId, record.difficulty);
+        continuePuzzle(record.puzzleId, record.gameType);
     }
 }
 
 /**
     * 清除进度并显示难度选择
     */
-function clearProgressAndShowDifficulty() {
+function clearProgressAndShowGameType() {
     const record = getLatestInProgressGame();
     if (record) {
         record.isAbandoned = true;
         record.isCompleted = true;
         Storage.saveRecord(record);
     }
-    showDifficultySection();
+    showGameTypeSection();
 }
 
 /**
     * 显示难度选择区域
     */
-function showDifficultySection() {
+function showGameTypeSection() {
     document.getElementById('continueGameSection').style.display = 'none';
-    document.getElementById('difficultySection').style.display = 'block';
+    document.getElementById('gameTypeSelectionSection').style.display = 'block';
 }
 
 /**
@@ -3635,7 +3813,7 @@ function showDifficultySection() {
     */
 function showContinueGameSection() {
     document.getElementById('continueGameSection').style.display = 'block';
-    document.getElementById('difficultySection').style.display = 'none';
+    document.getElementById('gameTypeSelectionSection').style.display = 'none';
 }
 
 /**
@@ -3663,9 +3841,9 @@ function abandonGame() {
 /**
  * 继续题目（拆分页面专用）
  */
-function continuePuzzle(puzzleId, difficulty) {
+function continuePuzzle(puzzleId, gameType) {
     // 存起来，跳过去再恢复
-    localStorage.setItem("currentDiff", difficulty);
+    localStorage.setItem("currentGameType", gameType);
     localStorage.setItem("continuePuzzleId", puzzleId);
 
     // 跳转到游戏页，不再操作 DOM
@@ -3678,26 +3856,26 @@ function continuePuzzle(puzzleId, difficulty) {
 function restoreGameState(record) {
     // 根据难度确定棋盘尺寸
     let boardSize = 9;
-    if (record.difficulty === 'MINI_4x4' || record.difficulty === 'KILLER_4x4') {
+    if (record.gameType === 'MINI_4x4' || record.gameType === 'KILLER_4x4') {
         boardSize = 4;
-    } else if (record.difficulty === 'MINI_6x6' || record.difficulty === 'KILLER_6x6') {
+    } else if (record.gameType === 'MINI_6x6' || record.gameType === 'KILLER_6x6') {
         boardSize = 6;
     }
 
     // 根据难度确定游戏类型
-    let gameType = 'STANDARD';
-    if (record.difficulty === 'DIAGONAL') {
-        gameType = 'DIAGONAL';
-    } else if (record.difficulty === 'ODD_EVEN') {
-        gameType = 'ODD_EVEN';
-    } else if (record.difficulty === 'KILLER_4x4' || record.difficulty === 'KILLER_6x6' || record.difficulty === 'KILLER_9x9') {
-        gameType = 'KILLER';
-    } else if (record.difficulty === 'IRREGULAR') {
-        gameType = 'IRREGULAR';
-    } else if (record.difficulty === 'WINDOKU') {
-        gameType = 'WINDOKU';
-    } else if (record.difficulty === 'SANDWICH') {
-        gameType = 'SANDWICH';
+    let gameTypeStr = 'STANDARD';
+    if (record.gameType === 'DIAGONAL') {
+        gameTypeStr = 'DIAGONAL';
+    } else if (record.gameType === 'ODD_EVEN') {
+        gameTypeStr = 'ODD_EVEN';
+    } else if (record.gameType === 'KILLER_4x4' || record.gameType === 'KILLER_6x6' || record.gameType === 'KILLER_9x9') {
+        gameTypeStr = 'KILLER';
+    } else if (record.gameType === 'IRREGULAR') {
+        gameTypeStr = 'IRREGULAR';
+    } else if (record.gameType === 'WINDOKU') {
+        gameTypeStr = 'WINDOKU';
+    } else if (record.gameType === 'SANDWICH') {
+        gameTypeStr = 'SANDWICH';
     }
 
     // 恢复题目信息
@@ -3705,9 +3883,9 @@ function restoreGameState(record) {
         id: record.puzzleId,
         puzzle: record.originalPuzzle || record.currentBoard.replace(/[^0]/g, '0'), // 如果没有原始题目，用当前状态生成
         solution: record.solution || '',
-        difficulty: record.difficulty,
+        gameType: record.gameType,
         size: boardSize,
-        gameType: gameType,
+        gameTypeStr: gameTypeStr,
         oddEvenMarks: record.oddEvenMarks || null,
         cages: record.cages || null,
         irregularBoxes: record.irregularBoxes || null,
@@ -3864,8 +4042,8 @@ const helpContent = {
     }
 };
 
-function getGameHelpContent(gameType) {
-    const info = helpContent[gameType] || helpContent.STANDARD;
+function getGameHelpContent(gameTypeStr) {
+    const info = helpContent[gameTypeStr] || helpContent.STANDARD;
     let html = `<h3>【${info.title}】游戏规则：</h3><ul>`;
     info.rules.forEach(rule => {
         html += `<li>${rule}</li>`;
@@ -3878,8 +4056,8 @@ function getGameHelpContent(gameType) {
     * 显示帮助弹窗
     */
 function showHelp() {
-    const gameType = currentPuzzle.gameType || 'STANDARD';
-    const helpHtml = getGameHelpContent(gameType);
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
+    const helpHtml = getGameHelpContent(gameTypeStr);
 
     const commonHelp = `
         <h3>操作说明：</h3>
@@ -3919,7 +4097,7 @@ function showHelp() {
     * 打开弹窗
     */
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'block';
+    document.getElementById(modalId).style.display = 'flex';
 }
 
 /**
@@ -3927,6 +4105,21 @@ function openModal(modalId) {
     */
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+}
+
+/**
+ * 显示9宫格难度选择弹窗
+ */
+function showDifficultyModal(gameType) {
+    currentGameType = gameType;
+    openModal('DifficultyModal');
+}
+
+/**
+ * 关闭9宫格难度选择弹窗
+ */
+function closeDifficultyModal() {
+    closeModal('DifficultyModal');
 }
 
 // 点击弹窗外部关闭
