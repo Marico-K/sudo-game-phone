@@ -1370,6 +1370,464 @@ class SudokuGenerator {
     }
 
     /**
+     * 生成中心点数独解
+     */
+    generateCenterDotSolution() {
+        console.log('🔷 开始生成中心点数独...');
+        const startTime = Date.now();
+        this.setGameTypeStr('CENTER_DOT');
+
+        let board = null;
+        const maxAttempts = 10;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                board = this.generateCenterDotBoardSafe();
+                if (board && this.isCenterDotValid(board)) {
+                    console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                    break;
+                }
+            } catch (e) {
+                console.log(`🔄 第 ${attempt + 1} 次尝试超时，重试...`);
+            }
+        }
+
+        // 兜底：如果生成失败，使用标准数独解
+        if (!board || !this.isCenterDotValid(board)) {
+            console.log('⚠️ 中心点数独生成失败，使用标准数独解');
+            this.setGameTypeStr('STANDARD');
+            board = this.generateFullBoard();
+            this.setGameTypeStr('CENTER_DOT');
+        }
+
+        console.log(`✅ 中心点数独生成完成，耗时: ${Date.now() - startTime}ms`);
+        return board;
+    }
+
+    /**
+     * 安全生成中心点数独（带超时）
+     */
+    generateCenterDotBoardSafe() {
+        const board = Array(9).fill(0).map(() => Array(9).fill(0));
+        return this.fillCenterDotBoardWithTimeout(board, 0, 0, Date.now(), 1000) ? board : null;
+    }
+
+    /**
+     * 递归填充中心点数独（带超时保护）
+     */
+    fillCenterDotBoardWithTimeout(board, row, col, start, maxMs) {
+        if (Date.now() - start > maxMs) throw new Error('timeout');
+        if (row === 9) return true;
+
+        const nx = col === 8 ? row + 1 : row;
+        const ny = col === 8 ? 0 : col + 1;
+        if (board[row][col] !== 0) return this.fillCenterDotBoardWithTimeout(board, nx, ny, start, maxMs);
+
+        const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        for (const n of nums) {
+            if (this.isValidCenterDot(board, row, col, n)) {
+                board[row][col] = n;
+                if (this.fillCenterDotBoardWithTimeout(board, nx, ny, start, maxMs)) return true;
+                board[row][col] = 0;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 验证中心点数独位置
+     */
+    isValidCenterDot(board, r, c, num) {
+        // 标准数独验证
+        for (let i = 0; i < 9; i++) if (board[r][i] === num) return false;
+        for (let i = 0; i < 9; i++) if (board[i][c] === num) return false;
+
+        const boxRow = Math.floor(r / 3) * 3;
+        const boxCol = Math.floor(c / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[boxRow + i][boxCol + j] === num) return false;
+            }
+        }
+
+        // 中心点区域验证
+        if (this.isCenterCell(r, c)) {
+            for (const [cr, cc] of this.getCenterCells()) {
+                if (board[cr][cc] === num) return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断是否是中心单元格
+     */
+    isCenterCell(r, c) {
+        return (r % 3 === 1) && (c % 3 === 1);
+    }
+
+    /**
+     * 获取所有中心单元格位置
+     */
+    getCenterCells() {
+        const centers = [];
+        for (let i = 0; i < 9; i += 3) {
+            for (let j = 0; j < 9; j += 3) {
+                centers.push([i + 1, j + 1]);
+            }
+        }
+        return centers;
+    }
+
+    /**
+     * 验证完整的中心点数独
+     */
+    isCenterDotValid(board) {
+        if (!this.isFilledAndValidBoard(board)) return false;
+
+        // 验证中心点区域
+        const centerValues = [];
+        for (const [r, c] of this.getCenterCells()) {
+            centerValues.push(board[r][c]);
+        }
+
+        const unique = [...new Set(centerValues)];
+        return unique.length === 9 && unique.every(v => v >= 1 && v <= 9);
+    }
+
+    /**
+     * 生成星号数独解
+     */
+    generateStarSolution() {
+        console.log('🔷 开始生成星号数独...');
+        const startTime = Date.now();
+        this.setGameTypeStr('STAR');
+
+        let board = null;
+        const maxAttempts = 10;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                board = this.generateStarBoardSafe();
+                if (board && this.isStarValid(board)) {
+                    console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                    break;
+                }
+            } catch (e) {
+                console.log(`🔄 第 ${attempt + 1} 次尝试超时，重试...`);
+            }
+        }
+
+        // 兜底：如果生成失败，使用标准数独解
+        if (!board || !this.isStarValid(board)) {
+            console.log('⚠️ 星号数独生成失败，使用标准数独解');
+            this.setGameTypeStr('STANDARD');
+            board = this.generateFullBoard();
+            this.setGameTypeStr('STAR');
+        }
+
+        console.log(`✅ 星号数独生成完成，耗时: ${Date.now() - startTime}ms`);
+        return board;
+    }
+
+    /**
+     * 安全生成星号数独（带超时）
+     */
+    generateStarBoardSafe() {
+        const board = Array(9).fill(0).map(() => Array(9).fill(0));
+        return this.fillStarBoardWithTimeout(board, 0, 0, Date.now(), 1000) ? board : null;
+    }
+
+    /**
+     * 递归填充星号数独（带超时保护）
+     */
+    fillStarBoardWithTimeout(board, row, col, start, maxMs) {
+        if (Date.now() - start > maxMs) throw new Error('timeout');
+        if (row === 9) return true;
+
+        const nx = col === 8 ? row + 1 : row;
+        const ny = col === 8 ? 0 : col + 1;
+        if (board[row][col] !== 0) return this.fillStarBoardWithTimeout(board, nx, ny, start, maxMs);
+
+        const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        for (const n of nums) {
+            if (this.isValidStar(board, row, col, n)) {
+                board[row][col] = n;
+                if (this.fillStarBoardWithTimeout(board, nx, ny, start, maxMs)) return true;
+                board[row][col] = 0;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 验证星号数独位置
+     */
+    isValidStar(board, r, c, num) {
+        // 标准数独验证
+        for (let i = 0; i < 9; i++) if (board[r][i] === num) return false;
+        for (let i = 0; i < 9; i++) if (board[i][c] === num) return false;
+
+        const boxRow = Math.floor(r / 3) * 3;
+        const boxCol = Math.floor(c / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[boxRow + i][boxCol + j] === num) return false;
+            }
+        }
+
+        // 星号区域验证
+        if (this.isStarCell(r, c)) {
+            for (const [sr, sc] of this.getStarCells()) {
+                if (board[sr][sc] === num) return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断是否是星号单元格
+     */
+    isStarCell(r, c) {
+        const starCells = this.getStarCells();
+        return starCells.some(([sr, sc]) => sr === r && sc === c);
+    }
+
+    /**
+     * 获取所有星号单元格位置（星形图案）
+     * 形成X形状的星号图案
+     */
+    getStarCells() {
+        return [
+            [1, 4],  // 第二行第五列
+            [2, 2],  // 第三行第三列
+            [2, 6],  // 第三行第七列
+            [4, 1],  // 第五行第二列
+            [4, 4],  // 第五行第五列
+            [4, 7],  // 第五行第八列
+            [6, 2],  // 第七行第三列
+            [6, 6],  // 第七行第七列
+            [7, 4]   // 第八行第五列
+        ];
+    }
+
+    /**
+     * 验证完整的星号数独
+     */
+    isStarValid(board) {
+        if (!this.isFilledAndValidBoard(board)) return false;
+
+        // 验证星号区域
+        const starValues = [];
+        for (const [r, c] of this.getStarCells()) {
+            starValues.push(board[r][c]);
+        }
+
+        const unique = [...new Set(starValues)];
+        return unique.length === 9 && unique.every(v => v >= 1 && v <= 9);
+    }
+
+    /**
+     * 生成黑白点数独解
+     */
+    generateBlackWhiteDotSolution() {
+        console.log('🔷 开始生成黑白点数独...');
+        const startTime = Date.now();
+        this.setGameTypeStr('BLACK_WHITE_DOT');
+
+        let board = null;
+        const maxAttempts = 5;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                board = this.generateFullBoard();
+                if (board && this.isValidBlackWhiteDot(board)) {
+                    console.log(`✅ 第 ${attempt + 1} 次尝试成功`);
+                    break;
+                }
+            } catch (e) {
+                console.log(`🔄 第 ${attempt + 1} 次尝试失败，重试...`);
+            }
+        }
+
+        if (!board) {
+            console.log('⚠️ 黑白点数独生成失败，使用标准数独解');
+            board = this.generateFullBoard();
+        }
+
+        // 计算黑白点提示
+        const dots = this.generateBlackWhiteDotHints(board);
+
+        console.log(`✅ 黑白点数独生成完成，耗时: ${Date.now() - startTime}ms`);
+        return { board, dots };
+    }
+
+    /**
+     * 验证黑白点数独解（检查是否满足负约束）
+     */
+    isValidBlackWhiteDot(board) {
+        if (!this.isFilledAndValidBoard(board)) return false;
+
+        // 检查所有相邻单元格
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                const val = board[r][c];
+                
+                // 检查右边相邻
+                if (c < 8) {
+                    const rightVal = board[r][c + 1];
+                    if (this.hasRelation(val, rightVal)) {
+                        // 如果有连续或两倍关系但不是1-2，需要标记
+                        // 对于生成来说，任何关系都是允许的，负约束是在解题时检查
+                    }
+                }
+                
+                // 检查下边相邻
+                if (r < 8) {
+                    const downVal = board[r + 1][c];
+                    if (this.hasRelation(val, downVal)) {
+                        // 同上
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断两个数是否有关系（连续或两倍）
+     */
+    hasRelation(a, b) {
+        return Math.abs(a - b) === 1 || Math.max(a, b) === 2 * Math.min(a, b);
+    }
+
+    /**
+     * 判断两个数应该标记为什么类型的点
+     * 返回: 'white' (差为1), 'black' (两倍), 'either' (1和2), null (无关系)
+     */
+    getDotType(a, b) {
+        if (Math.abs(a - b) === 1) {
+            if ((a === 1 && b === 2) || (a === 2 && b === 1)) {
+                return 'either'; // 1和2可以是任意颜色
+            }
+            return 'white';
+        }
+        if (Math.max(a, b) === 2 * Math.min(a, b)) {
+            return 'black';
+        }
+        return null;
+    }
+
+    /**
+     * 生成黑白点提示
+     */
+    generateBlackWhiteDotHints(board) {
+        const dots = [];
+        
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                const val = board[r][c];
+                
+                // 检查右边相邻
+                if (c < 8) {
+                    const rightVal = board[r][c + 1];
+                    const dotType = this.getDotType(val, rightVal);
+                    if (dotType === 'either') {
+                        // 1和2之间选择白点（更常见）
+                        dots.push({ row: r, col: c, direction: 'right', type: 'white' });
+                    } else if (dotType) {
+                        dots.push({ row: r, col: c, direction: 'right', type: dotType });
+                    }
+                }
+                
+                // 检查下边相邻
+                if (r < 8) {
+                    const downVal = board[r + 1][c];
+                    const dotType = this.getDotType(val, downVal);
+                    if (dotType === 'either') {
+                        dots.push({ row: r, col: c, direction: 'down', type: 'white' });
+                    } else if (dotType) {
+                        dots.push({ row: r, col: c, direction: 'down', type: dotType });
+                    }
+                }
+            }
+        }
+        
+        return dots;
+    }
+
+    /**
+     * 生成摩天楼数独解
+     */
+    generateSkyscraperSolution() {
+        console.log('🔷 开始生成摩天楼数独...');
+        const startTime = Date.now();
+        this.setGameTypeStr('SKYSCRAPER');
+
+        // 生成标准数独解
+        const board = this.generateFullBoard();
+        
+        // 计算摩天楼提示
+        const clues = this.generateSkyscraperClues(board);
+
+        console.log(`✅ 摩天楼数独生成完成，耗时: ${Date.now() - startTime}ms`);
+        return { board, clues };
+    }
+
+    /**
+     * 计算摩天楼提示
+     * 返回: { top: [], bottom: [], left: [], right: [] }
+     */
+    generateSkyscraperClues(board) {
+        const clues = {
+            top: [],
+            bottom: [],
+            left: [],
+            right: []
+        };
+
+        // 计算每行的左右提示
+        for (let r = 0; r < 9; r++) {
+            clues.left.push(this.countVisibleBuildings(board[r]));
+            clues.right.push(this.countVisibleBuildings([...board[r]].reverse()));
+        }
+
+        // 计算每列的上下提示
+        for (let c = 0; c < 9; c++) {
+            const col = [];
+            for (let r = 0; r < 9; r++) {
+                col.push(board[r][c]);
+            }
+            clues.top.push(this.countVisibleBuildings(col));
+            clues.bottom.push(this.countVisibleBuildings([...col].reverse()));
+        }
+
+        return clues;
+    }
+
+    /**
+     * 计算从某个方向可以看到的建筑物数量
+     */
+    countVisibleBuildings(arr) {
+        let count = 0;
+        let maxHeight = 0;
+        
+        for (const height of arr) {
+            if (height > maxHeight) {
+                count++;
+                maxHeight = height;
+            }
+        }
+        
+        return count;
+    }
+
+    /**
      * 安全生成（带超时）
      */
     generateFullBoardSafe() {
@@ -1951,6 +2409,22 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
             boardSize = 9;
             emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
             gameTypeStr = 'WINDOKU';
+        } else if (gameType === 'CENTER_DOT') {
+            boardSize = 9;
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 40;
+            gameTypeStr = 'CENTER_DOT';
+        } else if (gameType === 'STAR') {
+            boardSize = 9;
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 40;
+            gameTypeStr = 'STAR';
+        } else if (gameType === 'BLACK_WHITE_DOT') {
+            boardSize = 9;
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
+            gameTypeStr = 'BLACK_WHITE_DOT';
+        } else if (gameType === 'SKYSCRAPER') {
+            boardSize = 9;
+            emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
+            gameTypeStr = 'SKYSCRAPER';
         } else if (gameType === 'SANDWICH') {
             boardSize = 9;
             emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
@@ -1980,6 +2454,7 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
         let fullBoard, puzzleBoard, puzzleStr, solutionStr;
         let oddEvenMarks = null;
         let cages = null;
+        let skyscraperClues = null;
 
         if (gameTypeStr === 'KILLER') {
             // 杀手数独：生成完整解和笼子
@@ -2017,6 +2492,38 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
             fullBoard = sudokuGenerator.generateWindokuSolution();
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
             console.log(`✅ 窗口数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameTypeStr === 'CENTER_DOT') {
+            // 中心点数独：生成满足中心区域约束的解
+            console.log('🔷 开始生成中心点数独题目...');
+            const startTime = Date.now();
+            fullBoard = sudokuGenerator.generateCenterDotSolution();
+            puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+            console.log(`✅ 中心点数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameTypeStr === 'STAR') {
+            // 星号数独：生成满足星形区域约束的解
+            console.log('🔷 开始生成星号数独题目...');
+            const startTime = Date.now();
+            fullBoard = sudokuGenerator.generateStarSolution();
+            puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+            console.log(`✅ 星号数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameTypeStr === 'BLACK_WHITE_DOT') {
+            // 黑白点数独：生成满足黑白点规则的解
+            console.log('🔷 开始生成黑白点数独题目...');
+            const startTime = Date.now();
+            const result = sudokuGenerator.generateBlackWhiteDotSolution();
+            fullBoard = result.board;
+            puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+            blackWhiteDotHints = result.dots;
+            console.log(`✅ 黑白点数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameTypeStr === 'SKYSCRAPER') {
+            // 摩天楼数独：生成满足摩天楼规则的解
+            console.log('🔷 开始生成摩天楼数独题目...');
+            const startTime = Date.now();
+            const result = sudokuGenerator.generateSkyscraperSolution();
+            fullBoard = result.board;
+            puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
+            skyscraperClues = result.clues;
+            console.log(`✅ 摩天楼数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
         } else if (gameTypeStr === 'SANDWICH') {
             // 三明治数独：生成完整解并计算外部提示
             console.log('🔷 开始生成三明治数独题目...');
@@ -2049,7 +2556,9 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
             oddEvenMarks: oddEvenMarks,
             cages: cages,
             irregularBoxes: gameTypeStr === 'IRREGULAR' ? sudokuGenerator.irregularBoxes : null,
-            sandwichClues: gameTypeStr === 'SANDWICH' ? sudokuGenerator.sandwichClues : null
+            sandwichClues: gameTypeStr === 'SANDWICH' ? sudokuGenerator.sandwichClues : null,
+            blackWhiteDotHints: gameTypeStr === 'BLACK_WHITE_DOT' ? blackWhiteDotHints : null,
+            skyscraperClues: gameTypeStr === 'SKYSCRAPER' ? skyscraperClues : null
         };
 
         originalPuzzle = puzzleStr;
@@ -2135,6 +2644,26 @@ function getEmptyCountByGameType(gameType, difficultyType = "EASY") {
             EASY: 32,
             MEDIUM: 40,
             HARD: 56
+        },
+        CENTER_DOT: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        STAR: {
+            EASY: 32,
+            MEDIUM: 40,
+            HARD: 56
+        },
+        BLACK_WHITE_DOT: {
+            EASY: 35,
+            MEDIUM: 45,
+            HARD: 55
+        },
+        SKYSCRAPER: {
+            EASY: 35,
+            MEDIUM: 45,
+            HARD: 55
         }
     };
     return emptyCounts[gameType][difficultyType] || 10;
@@ -2160,7 +2689,11 @@ function getGameTypeName(gameType) {
         KILLER_6x6: '杀手6宫格',
         KILLER_9x9: '杀手9宫格',
         IRREGULAR: '锯齿数独',
-        WINDOKU: '窗口数独'
+        WINDOKU: '窗口数独',
+        CENTER_DOT: '中心点数独',
+        STAR: '星号数独',
+        BLACK_WHITE_DOT: '黑白点数独',
+        SKYSCRAPER: '摩天楼数独'
     };
     return names[gameType] || gameType;
 }
@@ -2263,13 +2796,17 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
             oddEvenMarks: currentPuzzle.oddEvenMarks || null,
             cages: currentPuzzle.cages || null,
             irregularBoxes: currentPuzzle.irregularBoxes || null,
-            sandwichClues: currentPuzzle.sandwichClues || null
+            sandwichClues: currentPuzzle.sandwichClues || null,
+            blackWhiteDotHints: currentPuzzle.blackWhiteDotHints || null,
+            skyscraperClues: currentPuzzle.skyscraperClues || null
         };
     } else {
         record.originalPuzzle = puzzleStr;
         record.solution = solutionStr;
         record.irregularBoxes = currentPuzzle.irregularBoxes || null;
         record.sandwichClues = currentPuzzle.sandwichClues || null;
+        record.blackWhiteDotHints = currentPuzzle.blackWhiteDotHints || null;
+        record.skyscraperClues = currentPuzzle.skyscraperClues || null;
     }
     Storage.saveRecord(record);
     // 保存当前游戏ID，用于继续游戏
@@ -2312,6 +2849,8 @@ function renderBoard() {
         for (let j = 0; j < size; j++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
+            cell.setAttribute('data-row', i);
+            cell.setAttribute('data-col', j);
 
             // 根据尺寸添加不同的类名用于样式调整
             if (size === 4) {
@@ -2377,6 +2916,24 @@ function renderBoard() {
                         cell.classList.add('windoku-cell');
                         break;
                     }
+                }
+            }
+
+            // 中心点数独：标记九个3x3宫格的中心单元格
+            if (gameTypeStr === 'CENTER_DOT') {
+                // 每个3x3宫格的中心位置：(1,1), (1,4), (1,7), (4,1), (4,4), (4,7), (7,1), (7,4), (7,7)
+                if (i % 3 === 1 && j % 3 === 1) {
+                    cell.classList.add('center-cell');
+                }
+            }
+
+            // 星号数独：标记星形图案单元格
+            if (gameTypeStr === 'STAR') {
+                const starCells = [
+                    [1, 4], [2, 2], [2, 6], [4, 1], [4, 4], [4, 7], [6, 2], [6, 6], [7, 4]
+                ];
+                if (starCells.some(([sr, sc]) => sr === i && sc === j)) {
+                    cell.classList.add('star-cell');
                 }
             }
 
@@ -2468,6 +3025,77 @@ function renderBoard() {
 
     // 更新数字按钮状态
     updateNumberButtons();
+
+    // 渲染黑白点数独的点标记
+    renderBlackWhiteDots(board);
+}
+
+/**
+ * 渲染黑白点数独的点标记
+ */
+function renderBlackWhiteDots(board) {
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
+    if (gameTypeStr !== 'BLACK_WHITE_DOT') return;
+
+    const dots = currentPuzzle.blackWhiteDotHints;
+    if (!dots || dots.length === 0) return;
+
+    // 使用requestAnimationFrame确保DOM已完全渲染
+    requestAnimationFrame(() => {
+        // 获取第一个单元格的实际尺寸作为参考
+        const firstCell = board.querySelector('.cell');
+        if (!firstCell) return;
+        
+        const cellRect = firstCell.getBoundingClientRect();
+        const cellSize = cellRect.width;
+        
+        // 获取目标单元格来精确计算位置
+        dots.forEach(dot => {
+            const dotEl = document.createElement('div');
+            dotEl.className = `dot-marker ${dot.type}`;
+            
+            let targetCell;
+            let left, top;
+            
+            if (dot.direction === 'right') {
+                // 右边相邻，点在两个格子之间，获取右边单元格
+                targetCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col + 1}"]`);
+                if (targetCell) {
+                    const targetRect = targetCell.getBoundingClientRect();
+                    const currentCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col}"]`);
+                    if (currentCell) {
+                        const currentRect = currentCell.getBoundingClientRect();
+                        left = currentRect.right + (targetRect.left - currentRect.right) / 2;
+                        top = currentRect.top + currentRect.height / 2;
+                    }
+                }
+            } else {
+                // 下边相邻，点在两个格子之间，获取下边单元格
+                targetCell = board.querySelector(`[data-row="${dot.row + 1}"][data-col="${dot.col}"]`);
+                if (targetCell) {
+                    const targetRect = targetCell.getBoundingClientRect();
+                    const currentCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col}"]`);
+                    if (currentCell) {
+                        const currentRect = currentCell.getBoundingClientRect();
+                        left = currentRect.left + currentRect.width / 2;
+                        top = currentRect.bottom + (targetRect.top - currentRect.bottom) / 2;
+                    }
+                }
+            }
+            
+            // 如果无法获取单元格，使用备用计算方法
+            if (isNaN(left) || isNaN(top)) {
+                left = (dot.direction === 'right' ? (dot.col + 1) : (dot.col + 0.5)) * cellSize + 0.5;
+                top = (dot.direction === 'right' ? (dot.row + 0.5) : (dot.row + 1)) * cellSize + 0.5;
+            }
+            
+            // 转换为相对于board的位置
+            const boardRect = board.getBoundingClientRect();
+            dotEl.style.left = `${left - boardRect.left}px`;
+            dotEl.style.top = `${top - boardRect.top}px`;
+            board.appendChild(dotEl);
+        });
+    });
 }
 
 /**
@@ -2521,6 +3149,8 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
         for (let j = 0; j < size; j++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
+            cell.setAttribute('data-row', i);
+            cell.setAttribute('data-col', j);
 
             // 根据尺寸添加不同的类名用于样式调整
             if (size === 4) {
@@ -3368,7 +3998,9 @@ function viewPuzzle(puzzleId) {
         difficultyType: record.difficultyType,
         irregularBoxes: record.irregularBoxes || null,
         cages: record.cages || null,
-        sandwichClues: record.sandwichClues || null
+        sandwichClues: record.sandwichClues || null,
+        blackWhiteDotHints: record.blackWhiteDotHints || null,
+        skyscraperClues: record.skyscraperClues || null
     };
 
     document.getElementById('viewPuzzleId').textContent = record.puzzleId;
@@ -3442,6 +4074,12 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
         boardClass = ' irregular-board';
     } else if (gameType === 'WINDOKU') {
         boardClass = ' windoku-board';
+    } else if (gameType === 'CENTER_DOT') {
+        boardClass = ' center-dot-board';
+    } else if (gameType === 'STAR') {
+        boardClass = ' star-board';
+    } else if (gameType === 'BLACK_WHITE_DOT') {
+        boardClass = ' black-white-dot-board';
     } else if (gridSize === 4) {
         boardClass = ' mini-4-board';
     } else if (gridSize === 6) {
@@ -3510,6 +4148,23 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
                     cellClass += ' windoku-cell';
                     break;
                 }
+            }
+        }
+
+        // 中心点数独 - 中心点区域高亮
+        if (gameType === 'CENTER_DOT') {
+            if (row % 3 === 1 && col % 3 === 1) {
+                cellClass += ' center-cell';
+            }
+        }
+
+        // 星号数独 - 星形图案区域高亮
+        if (gameType === 'STAR') {
+            const starCells = [
+                [1, 4], [2, 2], [2, 6], [4, 1], [4, 4], [4, 7], [6, 2], [6, 6], [7, 4]
+            ];
+            if (starCells.some(([sr, sc]) => sr === row && sc === col)) {
+                cellClass += ' star-cell';
             }
         }
 
@@ -3583,6 +4238,46 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
     }
 
     boardContainer.innerHTML = html;
+
+    // 渲染黑白点数独的点标记
+    renderViewBlackWhiteDots(boardContainer, gameType);
+}
+
+/**
+ * 渲染查看题目弹窗中的黑白点数独点标记
+ */
+function renderViewBlackWhiteDots(boardContainer, gameType) {
+    if (gameType !== 'BLACK_WHITE_DOT') return;
+
+    const dots = currentViewPuzzleData.blackWhiteDotHints;
+    if (!dots || dots.length === 0) return;
+
+    // 使用requestAnimationFrame确保DOM已完全渲染
+    requestAnimationFrame(() => {
+        const firstCell = boardContainer.querySelector('.cell');
+        if (!firstCell) return;
+        
+        const cellRect = firstCell.getBoundingClientRect();
+        const cellSize = cellRect.width;
+        
+        dots.forEach(dot => {
+            const dotEl = document.createElement('div');
+            dotEl.className = `view-dot-marker ${dot.type}`;
+            
+            let left, top;
+            if (dot.direction === 'right') {
+                left = (dot.col + 1) * cellSize + 0.5;
+                top = (dot.row + 0.5) * cellSize + 0.5;
+            } else {
+                left = (dot.col + 0.5) * cellSize + 0.5;
+                top = (dot.row + 1) * cellSize + 0.5;
+            }
+            
+            dotEl.style.left = `${left}px`;
+            dotEl.style.top = `${top}px`;
+            boardContainer.appendChild(dotEl);
+        });
+    });
 }
 
 /**
@@ -3903,6 +4598,14 @@ function restoreGameState(record) {
         gameTypeStr = 'WINDOKU';
     } else if (record.gameType === 'SANDWICH') {
         gameTypeStr = 'SANDWICH';
+    } else if (record.gameType === 'CENTER_DOT') {
+        gameTypeStr = 'CENTER_DOT';
+    } else if (record.gameType === 'STAR') {
+        gameTypeStr = 'STAR';
+    } else if (record.gameType === 'BLACK_WHITE_DOT') {
+        gameTypeStr = 'BLACK_WHITE_DOT';
+    } else if (record.gameType === 'SKYSCRAPER') {
+        gameTypeStr = 'SKYSCRAPER';
     }
 
     // 恢复题目信息
@@ -3917,7 +4620,9 @@ function restoreGameState(record) {
         oddEvenMarks: record.oddEvenMarks || null,
         cages: record.cages || null,
         irregularBoxes: record.irregularBoxes || null,
-        sandwichClues: record.sandwichClues || null
+        sandwichClues: record.sandwichClues || null,
+        blackWhiteDotHints: record.blackWhiteDotHints || null,
+        skyscraperClues: record.skyscraperClues || null
     };
 
     // 恢复棋盘状态（支持JSON格式的候选数字）

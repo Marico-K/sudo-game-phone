@@ -104,11 +104,32 @@
                             <span class="gameType-desc">四个额外3x3区域</span>
                         </span>
                     </button>
+                    <button class="gameType-btn" onclick="showDifficultyModal('CENTER_DOT')">
+                        <span class="gameType-icon">🎯</span>
+                        <span class="gameType-text">
+                            <span class="gameType-name">中心点数独</span>
+                            <span class="gameType-desc">九个中心格不重复</span>
+                        </span>
+                    </button>
+                    <button class="gameType-btn" onclick="showDifficultyModal('STAR')">
+                        <span class="gameType-icon">⭐️</span>
+                        <span class="gameType-text">
+                            <span class="gameType-name">星号数独</span>
+                            <span class="gameType-desc">星形图案不重复</span>
+                        </span>
+                    </button>
+                    <button class="gameType-btn" onclick="showDifficultyModal('BLACK_WHITE_DOT')">
+                        <span class="gameType-icon">⚫⚪</span>
+                        <span class="gameType-text">
+                            <span class="gameType-name">黑白点数独</span>
+                            <span class="gameType-desc">相邻数关系标记</span>
+                        </span>
+                    </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('SANDWICH')">
                         <span class="gameType-icon">🥪</span>
                         <span class="gameType-text">
                             <span class="gameType-name">三明治数独</span>
-                            <span class="gameType-desc">1和9之间数字之和</span> 
+                            <span class="gameType-desc">1和9之间数字之和</span>
                         </span>
                     </button>
                 </div>
@@ -145,13 +166,16 @@
             </div>
             <div class="help-content">
                 <div style="display: grid; gap: 15px;">
-                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'EASY')" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'EASY')"
+                        style="background: linear-gradient(135deg, #4CAF50, #45a049);">
                         😊 简单
                     </button>
-                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'MEDIUM')" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
+                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'MEDIUM')"
+                        style="background: linear-gradient(135deg, #FF9800, #F57C00);">
                         🤔 中等
                     </button>
-                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'HARD')" style="background: linear-gradient(135deg, #F44336, #D32F2F);">
+                    <button class="control-btn" onclick="closeDifficultyModal(); startGame(currentGameType, 'HARD')"
+                        style="background: linear-gradient(135deg, #F44336, #D32F2F);">
                         😰 高级
                     </button>
                 </div>
