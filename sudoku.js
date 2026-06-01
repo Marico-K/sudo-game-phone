@@ -1785,7 +1785,7 @@ class SudokuGenerator {
      */
     generateSkyscraperClues(board) {
         const clues = {
-            top: [],
+            top: [],  // 第一个为空，用于对齐
             bottom: [],
             left: [],
             right: []
@@ -1796,6 +1796,9 @@ class SudokuGenerator {
             clues.left.push(this.countVisibleBuildings(board[r]));
             clues.right.push(this.countVisibleBuildings([...board[r]].reverse()));
         }
+        // 最后添加一个空元素
+        // clues.left.push(null);
+        // clues.right.push(null);
 
         // 计算每列的上下提示
         for (let c = 0; c < 9; c++) {
@@ -1806,6 +1809,9 @@ class SudokuGenerator {
             clues.top.push(this.countVisibleBuildings(col));
             clues.bottom.push(this.countVisibleBuildings([...col].reverse()));
         }
+        // 最后添加一个空元素
+        // clues.top.push(null);
+        // clues.bottom.push(null);
 
         return clues;
     }
@@ -2831,6 +2837,13 @@ function renderBoard() {
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const sandwichClues = currentPuzzle.sandwichClues;
 
+    // 摩天楼数独需要特殊布局（四个方向外部提示）
+    const skyscraperClues = currentPuzzle.skyscraperClues;
+    if (gameTypeStr === 'SKYSCRAPER' && skyscraperClues) {
+        renderSkyscraperBoard(boardContainer, size, boxRows, boxCols, skyscraperClues);
+        return;
+    }
+
     // 三明治数独需要特殊布局（外部提示）
     if (gameTypeStr === 'SANDWICH' && sandwichClues) {
         renderSandwichBoard(boardContainer, size, boxRows, boxCols, sandwichClues);
@@ -3096,6 +3109,141 @@ function renderBlackWhiteDots(board) {
             board.appendChild(dotEl);
         });
     });
+}
+
+/**
+ * 渲染摩天楼数独棋盘（带四个方向外部提示）
+ * @param {HTMLElement} container - 容器元素
+ * @param {number} size - 棋盘尺寸
+ * @param {number} boxRows - 宫格行数
+ * @param {number} boxCols - 宫格列数
+ * @param {object} skyscraperClues - 摩天楼提示 {top, bottom, left, right}
+ */
+function renderSkyscraperBoard(container, size, boxRows, boxCols, skyscraperClues) {
+    // 创建整体布局容器
+    const layout = document.createElement('div');
+    layout.className = 'skyscraper-layout';
+
+    // 创建顶部提示行（11个元素，首尾为空）
+    const topClues = document.createElement('div');
+    topClues.className = 'skyscraper-clues-top';
+    for (let col = 0; col < skyscraperClues.top.length; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.top[col] || '';
+        topClues.appendChild(clue);
+    }
+    layout.appendChild(topClues);
+
+    // 创建中间行（左侧提示 + 棋盘 + 右侧提示）
+    const middleRow = document.createElement('div');
+    middleRow.className = 'skyscraper-middle-row';
+
+    // 创建左侧提示列（11个元素，首尾为空）
+    const leftClues = document.createElement('div');
+    leftClues.className = 'skyscraper-clues-left';
+    for (let row = 0; row < skyscraperClues.left.length; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.left[row] || '';
+        leftClues.appendChild(clue);
+    }
+    middleRow.appendChild(leftClues);
+
+    // 创建数独棋盘
+    const board = document.createElement('div');
+    board.className = 'sudoku-board game-type-skyscraper';
+    board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.setAttribute('data-row', i);
+            cell.setAttribute('data-col', j);
+
+            // 根据尺寸添加不同的类名用于样式调整
+            if (size === 4) {
+                cell.classList.add('size-4x4');
+            } else if (size === 6) {
+                cell.classList.add('size-6x6');
+            }
+
+            // 宫格边框
+            if (i % boxRows === 0 && i !== 0) cell.classList.add('border-top');
+            if (j % boxCols === 0 && j !== 0) cell.classList.add('border-left');
+
+            const index = i * size + j;
+            const value = currentBoard[index];
+            const isFixed = originalPuzzle[index] !== '0';
+
+            // 存储单元格信息用于快速访问
+            cell.dataset.index = index;
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+
+            // 判断是确定值还是候选值
+            if (typeof value === 'number' && value !== 0) {
+                // 确定值
+                const valueEl = document.createElement('span');
+                valueEl.textContent = getIcon(value);
+                valueEl.style.position = 'absolute';
+                valueEl.style.top = '50%';
+                valueEl.style.left = '50%';
+                valueEl.style.transform = 'translate(-50%, -50%)';
+                valueEl.style.zIndex = '5';
+                cell.appendChild(valueEl);
+                if (isFixed) {
+                    cell.classList.add('fixed');
+                } else {
+                    cell.classList.add('user-input');
+                }
+            } else if (Array.isArray(value) && value.length > 0) {
+                // 候选值
+                const candidatesEl = createCandidatesElement(value, i, j);
+                cell.appendChild(candidatesEl);
+            }
+
+            if (!hasWon) {
+                cell.addEventListener('click', () => selectCell(i, j, cell));
+            }
+            board.appendChild(cell);
+            cellsCache.push(cell);
+        }
+    }
+    middleRow.appendChild(board);
+
+    // 创建右侧提示列（11个元素，首尾为空）
+    const rightClues = document.createElement('div');
+    rightClues.className = 'skyscraper-clues-right';
+    for (let row = 0; row < skyscraperClues.right.length; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.right[row] || '';
+        rightClues.appendChild(clue);
+    }
+    middleRow.appendChild(rightClues);
+
+    layout.appendChild(middleRow);
+
+    // 创建底部提示行（11个元素，首尾为空）
+    const bottomClues = document.createElement('div');
+    bottomClues.className = 'skyscraper-clues-bottom';
+    for (let col = 0; col < skyscraperClues.bottom.length; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.bottom[col] || '';
+        bottomClues.appendChild(clue);
+    }
+    layout.appendChild(bottomClues);
+
+    container.appendChild(layout);
+
+    // 生成数字键盘
+    generateNumberKeypad();
+
+    // 更新数字按钮状态
+    updateNumberButtons();
 }
 
 /**
@@ -4046,6 +4194,14 @@ function renderViewPuzzleBoard(boardStr, isAnswer = false) {
     const solution = currentViewPuzzleData.solution;
     const sandwichClues = currentViewPuzzleData.sandwichClues;
 
+    const skyscraperClues = currentViewPuzzleData.skyscraperClues;
+
+    // 摩天楼数独需要特殊布局（四个方向外部提示）
+    if (gameType === 'SKYSCRAPER' && skyscraperClues) {
+        renderViewSkyscraperPuzzle(boardContainer, boardStr, puzzle, skyscraperClues, isAnswer);
+        return;
+    }
+
     // 三明治数独需要特殊布局
     if (gameType === 'SANDWICH' && sandwichClues) {
         renderViewSandwichPuzzle(boardContainer, boardStr, puzzle, sandwichClues, isAnswer);
@@ -4357,6 +4513,110 @@ function renderViewSandwichPuzzle(boardContainer, boardStr, puzzle, sandwichClue
     }
 
     layout.appendChild(board);
+    boardContainer.innerHTML = '';
+    boardContainer.appendChild(layout);
+}
+
+/**
+    * 渲染摩天楼数独查看题目弹窗中的棋盘
+    */
+function renderViewSkyscraperPuzzle(boardContainer, boardStr, puzzle, skyscraperClues, isAnswer) {
+    // 添加摩天楼数独查看模式的类，覆盖默认grid样式
+    boardContainer.className = 'view-puzzle-board skyscraper-view-board';
+
+    // 创建整体布局容器
+    const layout = document.createElement('div');
+    layout.className = 'skyscraper-layout';
+
+    // 创建顶部提示行（11个元素，首尾为空）
+    const topClues = document.createElement('div');
+    topClues.className = 'skyscraper-clues-top';
+    for (let col = 0; col < skyscraperClues.top.length; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.top[col] || '';
+        topClues.appendChild(clue);
+    }
+    layout.appendChild(topClues);
+
+    // 创建中间行（左侧提示 + 棋盘 + 右侧提示）
+    const middleRow = document.createElement('div');
+    middleRow.className = 'skyscraper-middle-row';
+
+    // 创建左侧提示列（11个元素，首尾为空）
+    const leftClues = document.createElement('div');
+    leftClues.className = 'skyscraper-clues-left';
+    for (let row = 0; row < skyscraperClues.left.length; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.left[row] || '';
+        leftClues.appendChild(clue);
+    }
+    middleRow.appendChild(leftClues);
+
+    // 创建数独棋盘
+    const board = document.createElement('div');
+    board.className = 'sudoku-board game-type-skyscraper';
+
+    for (let i = 0; i < boardStr.length; i++) {
+        const row = Math.floor(i / 9);
+        const col = i % 9;
+        const value = boardStr[i];
+        const isOriginal = puzzle && puzzle[i] !== '0';
+        const isEmpty = value === '0';
+
+        let cellClass = '';
+
+        // 宫格边框
+        if (col === 2 || col === 5) cellClass += ' border-right';
+        if (row === 2 || row === 5) cellClass += ' border-bottom';
+
+        // 答案视图中区分原始数字和填入数字
+        let numberClass = '';
+        if (isAnswer) {
+            if (isOriginal) {
+                numberClass = ' original-number';
+            } else {
+                numberClass = ' filled-number';
+            }
+        }
+
+        const cell = document.createElement('div');
+        cell.className = `cell${isEmpty ? ' empty' : ''}${cellClass}`;
+
+        const span = document.createElement('span');
+        span.className = isEmpty ? '' : (isAnswer ? numberClass : 'fixed');
+        span.textContent = isEmpty ? '' : value;
+        cell.appendChild(span);
+
+        board.appendChild(cell);
+    }
+    middleRow.appendChild(board);
+
+    // 创建右侧提示列（11个元素，首尾为空）
+    const rightClues = document.createElement('div');
+    rightClues.className = 'skyscraper-clues-right';
+    for (let row = 0; row < skyscraperClues.right.length; row++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.right[row] || '';
+        rightClues.appendChild(clue);
+    }
+    middleRow.appendChild(rightClues);
+
+    layout.appendChild(middleRow);
+
+    // 创建底部提示行（11个元素，首尾为空）
+    const bottomClues = document.createElement('div');
+    bottomClues.className = 'skyscraper-clues-bottom';
+    for (let col = 0; col < skyscraperClues.bottom.length; col++) {
+        const clue = document.createElement('div');
+        clue.className = 'skyscraper-clue';
+        clue.textContent = skyscraperClues.bottom[col] || '';
+        bottomClues.appendChild(clue);
+    }
+    layout.appendChild(bottomClues);
+
     boardContainer.innerHTML = '';
     boardContainer.appendChild(layout);
 }
@@ -4770,6 +5030,49 @@ const helpContent = {
             '棋盘外部的提示数字表示该行/列中严格位于1和9之间的所有数字之和',
             '如果提示为0，说明1和9必须相邻',
             '如果提示为35，说明1和9必须位于两端（因为2-8的和为35）',
+            '初始数字为固定提示，不能修改'
+        ]
+    },
+    CENTER_DOT: {
+        title: '中心点数独',
+        rules: [
+            '在9×9的方格内填入1-9的数字',
+            '每行、每列、每个3×3的小方格内都不能重复',
+            '中心点约束：存在由九个3x3块的正中心单元格组成的第十个“额外”区域。',
+            '额外区域完成：这个高亮显示的九个中心单元格集合也必须包含数字1到9各一次。',
+            '初始数字为固定提示，不能修改'
+        ]
+    },
+    STAR: {
+        title: '星号数独',
+        rules: [
+            '在9×9的方格内填入1-9的数字',
+            '每行、每列、每个3×3的小方格内都不能重复',
+            '星号约束：九个特定的阴影单元格（在网格中形成星形图案）也必须恰好包含数字1到9各一次。',
+            '交叉逻辑：填入星号单元格的数字必须同时满足四个约束：其所在行、所在列、所在3x3宫以及星号集合本身。',
+            '初始数字为固定提示，不能修改'
+        ]
+    },
+    BLACK_WHITE_DOT: {
+        title: '黑白点数独',
+        rules: [
+            '在9×9的方格内填入1-9的数字',
+            '每行、每列、每个3×3的小方格内都不能重复',
+            '白点表示相邻两格数字相差1（如3和4、7和8）',
+            '黑点表示相邻两格数字为两倍关系（如2和4、3和6）',
+            '1和2之间可能是白点也可能是黑点（因为既相差1又是两倍关系）',
+            '没有标记点的相邻格子不能有上述关系',
+            '初始数字为固定提示，不能修改'
+        ]
+    },
+    SKYSCRAPER: {
+        title: '摩天楼数独',
+        rules: [
+            '在9×9的方格内填入1-9的数字',
+            '每行、每列、每个3×3的小方格内都不能重复',
+            '每个单元格中的数字代表摩天楼的高度',
+            '网格外部的提示表示从该视角可以看到多少栋建筑物。例如：从某方向看到3，表示能看到3栋楼房',
+            '只有当所有前面的建筑物都矮于它时，该建筑物才是可见的。较高的建筑物总是遮挡其后面的较矮建筑物。',
             '初始数字为固定提示，不能修改'
         ]
     }
