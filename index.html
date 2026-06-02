@@ -14,6 +14,30 @@
         <header>
             <h1>🎯 数独游戏</h1>
             <p>单机版本 - 无竞技功能</p>
+            <!-- 玩家等级信息 -->
+            <div class="player-level-info" id="playerLevelInfo">
+                <div class="level-badge">
+                    <span class="level-icon" id="levelIcon"></span>
+                    <span class="level-number" id="levelNumber">L1</span>
+                    <span class="level-name" id="levelName">初学萌新</span>
+                </div>
+                <div class="level-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0 / 15 分</span>
+                </div>
+                <div class="player-stats">
+                    <span class="stat-item">
+                        <span class="stat-icon">🔥</span>
+                        <span class="stat-value" id="continueDay">0</span>天
+                    </span>
+                    <span class="stat-item achievement-btn" id="achievementBtn" onclick="showAchievementModal()">
+                        <span class="stat-icon">🏆</span>
+                        <span class="stat-value" id="achievementCount">0</span>成就
+                    </span>
+                </div>
+            </div>
         </header>
 
         <main class="gameType-selection">
@@ -30,9 +54,204 @@
                 </div>
             </div>
 
-            <!-- 难度选择按钮区（无未完成游戏时显示） -->
-            <div id="gameTypeSelectionSection">
+            <!-- 默认显示区域：开始挑战按钮 + 我的记录 -->
+            <div id="defaultSection">
+                <div class="action-area">
+                    <button class="primary-btn large-btn" onclick="showGameTypeModal()">🎮 开始挑战</button>
+                </div>
+                <div class="additional-options">
+                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>💡 数据存储在本地浏览器中，清除浏览器数据会丢失记录</p>
+        </footer>
+    </div>
+
+    <!-- 只引入JS，不要执行游戏逻辑 -->
+    <script src="sudoku.js"></script>
+    <script>
+        // 加载玩家等级信息
+        function loadPlayerLevelInfo() {
+            const playerData = Storage.getPlayerData();
+            const levelInfo = getLevelInfo(playerData.totalScore);
+            const scoreToNext = getScoreToNextLevel(playerData.level);
+            
+            // 更新等级信息
+            document.getElementById('levelNumber').textContent = `L${playerData.level}`;
+            const levelNameElement = document.getElementById('levelName');
+            levelNameElement.textContent = levelInfo.name;
+            
+            // 根据段位设置对应的样式class
+            const titleClassMap = {
+                '萌新': 'novice',
+                '爱好者': 'lover',
+                '高手': 'master',
+                '大师': 'grandmaster',
+                '宗师': 'legend'
+            };
+            const titleClass = titleClassMap[levelInfo.title] || 'novice';
+            levelNameElement.className = 'level-name ' + titleClass;
+            
+            // 根据等级计算图标显示（3个⭐=1个🌙，3个🌙=1个☀️，3个☀️=1个👑）
+            const level = playerData.level;
+            let crowns = 0, suns = 0, moons = 0, stars = 0;
+            
+            if (level >= 15) {
+                crowns = 1; // L15显示皇冠
+            } else {
+                const totalStars = level;
+                
+                // 计算皇冠数
+                crowns = Math.floor(totalStars / 27);
+                let remaining = totalStars % 27;
+                
+                // 计算太阳数
+                suns = Math.floor(remaining / 9);
+                remaining = remaining % 9;
+                
+                // 计算月亮数
+                moons = Math.floor(remaining / 3);
+                stars = remaining % 3;
+            }
+            
+            // 生成图标显示
+            let iconText = '';
+            if (crowns > 0) iconText += '👑'.repeat(crowns);
+            if (suns > 0) iconText += '☀️'.repeat(suns);
+            if (moons > 0) iconText += '🌙'.repeat(moons);
+            if (stars > 0) iconText += '⭐'.repeat(stars);
+            
+            const levelIconElement = document.getElementById('levelIcon');
+            levelIconElement.textContent = iconText;
+            
+            // 更新进度条
+            if (scoreToNext !== null) {
+                const currentLevelInfo = levelConfig.find(l => l.level === playerData.level);
+                const progress = ((playerData.totalScore - currentLevelInfo.minScore) / scoreToNext) * 100;
+                document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+                document.getElementById('progressText').textContent = `${playerData.totalScore - currentLevelInfo.minScore} / ${scoreToNext} 分`;
+            } else {
+                // 已达到最高等级
+                document.getElementById('progressFill').style.width = '100%';
+                document.getElementById('progressText').textContent = '已满级';
+            }
+            
+            // 更新连续打卡天数
+            document.getElementById('continueDay').textContent = playerData.continueDay;
+            
+            // 更新成就数量
+            document.getElementById('achievementCount').textContent = playerData.achievementList.length;
+        }
+        
+        // 显示继续游戏区域
+        function showContinueGameSection() {
+            document.getElementById('continueGameSection').style.display = 'block';
+            document.getElementById('defaultSection').style.display = 'none';
+        }
+        
+        // 显示默认区域（开始挑战按钮）
+        function showDefaultSection() {
+            document.getElementById('continueGameSection').style.display = 'none';
+            document.getElementById('defaultSection').style.display = 'block';
+        }
+        
+        // 显示游戏类型选择弹窗
+        function showGameTypeModal() {
+            document.getElementById('GameTypeModal').style.display = 'flex';
+        }
+        
+        // 关闭游戏类型选择弹窗
+        function closeGameTypeModal() {
+            document.getElementById('GameTypeModal').style.display = 'none';
+        }
+        
+        // 清除进度并显示游戏类型选择弹窗
+        function clearProgressAndShowGameType() {
+            // 不立即标记记录为放弃，只是显示弹窗
+            // 只有当用户真正开始新游戏时，才在 sudoku.js 的 startGame 函数中标记为放弃
+            showGameTypeModal();
+        }
+        
+        // 显示成就弹窗
+        function showAchievementModal() {
+            const playerData = Storage.getPlayerData();
+            const achievementList = document.getElementById('achievementList');
+            
+            // 清空列表
+            achievementList.innerHTML = '';
+            
+            // 所有成就配置
+            const allAchievements = [
+                { id: 'ACH001', name: '新手启程', reward: 5, condition: '通关10道入门题' },
+                { id: 'ACH002', name: '持之以恒', reward: 15, condition: '连续7天每日≥1通关' },
+                { id: 'ACH003', name: '速通达人', reward: 10, condition: '普通9宫3分钟内通关' },
+                { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' }
+            ];
+            
+            // 生成成就列表
+            allAchievements.forEach(achievement => {
+                const isUnlocked = playerData.achievementList.includes(achievement.id);
+                const achievementItem = document.createElement('div');
+                achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+                
+                achievementItem.innerHTML = `
+                    <div class="achievement-icon">${isUnlocked ? '🏆' : '🔒'}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-condition">${achievement.condition}</div>
+                        <div class="achievement-reward">奖励: +${achievement.reward}分</div>
+                    </div>
+                `;
+                
+                achievementList.appendChild(achievementItem);
+            });
+            
+            // 显示弹窗
+            document.getElementById('AchievementModal').style.display = 'flex';
+        }
+        
+        // 关闭成就弹窗
+        function closeAchievementModal() {
+            document.getElementById('AchievementModal').style.display = 'none';
+        }
+        
+        // 首页一进来就执行
+        document.addEventListener("DOMContentLoaded", function () {
+            loadPlayerLevelInfo();
+            if (hasInProgressGame()) {
+                showContinueGameSection();
+            } else {
+                showDefaultSection();
+            }
+        });
+    </script>
+
+    <!-- 成就弹窗 -->
+    <div id="AchievementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 我的成就</h2>
+                <span class="close" onclick="closeAchievementModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="achievementList">
+                    <!-- 成就列表将动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏类型选择弹窗 -->
+    <div id="GameTypeModal" class="modal">
+        <div class="modal-content gameType-modal-content">
+            <div class="modal-header">
                 <h2>选择玩法开始游戏</h2>
+                <span class="close" onclick="closeGameTypeModal()">&times;</span>
+            </div>
+            <div class="gameType-modal-body">
                 <div class="gameType-buttons">
                     <button class="gameType-btn" onclick="showDifficultyModal('MINI_4x4')">
                         <span class="gameType-icon">🔢</span>
@@ -84,24 +303,24 @@
                         </span>
                     </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('KILLER_9x9')">
-                        <span class="gameType-icon">🕵</span>
+                        <span class="gameType-icon">💀</span>
                         <span class="gameType-text">
                             <span class="gameType-name">杀手9宫格</span>
                             <span class="gameType-desc">虚线框内数字之和</span>
                         </span>
                     </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('IRREGULAR')">
-                        <span class="gameType-icon">⭐️</span>
+                        <span class="gameType-icon">〽️</span>
                         <span class="gameType-text">
                             <span class="gameType-name">锯齿数独</span>
-                            <span class="gameType-desc">不规则宫格</span>
+                            <span class="gameType-desc">不规则宫格划分</span>
                         </span>
                     </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('WINDOKU')">
                         <span class="gameType-icon">🏠</span>
                         <span class="gameType-text">
                             <span class="gameType-name">窗口数独</span>
-                            <span class="gameType-desc">四个额外3x3区域</span>
+                            <span class="gameType-desc">四个3x3窗口</span>
                         </span>
                     </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('CENTER_DOT')">
@@ -133,36 +352,16 @@
                         </span>
                     </button>
                     <button class="gameType-btn" onclick="showDifficultyModal('SKYSCRAPER')">
-                        <span class="gameType-icon">🏢</span>
+                        <span class="gameType-icon">🏙️</span>
                         <span class="gameType-text">
                             <span class="gameType-name">摩天楼数独</span>
                             <span class="gameType-desc">从外部看到的建筑数</span>
                         </span>
                     </button>
                 </div>
-                <div class="additional-options">
-                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
-                </div>
             </div>
-        </main>
-
-        <footer>
-            <p>💡 数据存储在本地浏览器中，清除浏览器数据会丢失记录</p>
-        </footer>
+        </div>
     </div>
-
-    <!-- 只引入JS，不要执行游戏逻辑 -->
-    <script src="sudoku.js"></script>
-    <script>
-        // 首页一进来就执行
-        document.addEventListener("DOMContentLoaded", function () {
-            if (hasInProgressGame()) {
-                showContinueGameSection();
-            } else {
-                showGameTypeSection();
-            }
-        });
-    </script>
 
     <!-- 难度选择弹窗 -->
     <div id="DifficultyModal" class="modal">

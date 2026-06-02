@@ -2136,7 +2136,9 @@ const Storage = {
     KEYS: {
         RECORDS: 'sudoku_records',
         SESSION: 'sudoku_session',
-        PUZZLE_ID: 'sudoku_puzzle_id'
+        PUZZLE_ID: 'sudoku_puzzle_id',
+        PLAYER_DATA: 'sudoku_player_data',
+        WEEKLY_TASKS: 'sudoku_weekly_tasks'
     },
 
     /**
@@ -2191,8 +2193,349 @@ const Storage = {
         id++;
         localStorage.setItem(this.KEYS.PUZZLE_ID, id.toString());
         return id;
+    },
+
+    /**
+     * 获取玩家数据
+     */
+    getPlayerData() {
+        const data = localStorage.getItem(this.KEYS.PLAYER_DATA);
+        if (data) {
+            return JSON.parse(data);
+        }
+        // 返回默认值
+        return {
+            totalScore: 0,
+            level: 1,
+            continueDay: 0,
+            achievementList: [],
+            lastPlayDate: null
+        };
+    },
+
+    /**
+     * 保存玩家数据
+     */
+    savePlayerData(data) {
+        localStorage.setItem(this.KEYS.PLAYER_DATA, JSON.stringify(data));
+    },
+
+    /**
+     * 获取周常任务
+     */
+    getWeeklyTasks() {
+        const data = localStorage.getItem(this.KEYS.WEEKLY_TASKS);
+        if (data) {
+            const tasks = JSON.parse(data);
+            // 检查是否需要刷新（每周一0点）
+            if (this.needsRefreshWeeklyTasks(tasks.lastRefreshDate)) {
+                return this.resetWeeklyTasks();
+            }
+            return tasks;
+        }
+        return this.resetWeeklyTasks();
+    },
+
+    /**
+     * 保存周常任务
+     */
+    saveWeeklyTasks(tasks) {
+        localStorage.setItem(this.KEYS.WEEKLY_TASKS, JSON.stringify(tasks));
+    },
+
+    /**
+     * 检查是否需要刷新周常任务
+     */
+    needsRefreshWeeklyTasks(lastRefreshDate) {
+        if (!lastRefreshDate) return true;
+        const lastDate = new Date(lastRefreshDate);
+        const now = new Date();
+        // 获取上周一0点
+        const lastMonday = new Date(now);
+        lastMonday.setDate(now.getDate() - (now.getDay() || 7) + 1);
+        lastMonday.setHours(0, 0, 0, 0);
+        return lastDate < lastMonday;
+    },
+
+    /**
+     * 重置周常任务
+     */
+    resetWeeklyTasks() {
+        const tasks = {
+            lastRefreshDate: new Date().toISOString(),
+            dailyQuiz: { progress: 0, target: 5, reward: 10, completed: false },
+            challengeAdvanced: { progress: 0, target: 3, reward: 25, completed: false },
+            hardcoreChallenge: { progress: 0, target: 2, reward: 40, completed: false }
+        };
+        this.saveWeeklyTasks(tasks);
+        return tasks;
     }
 };
+
+// ==================== 等级成长激励系统 ====================
+
+// 基础分数配置（分/题）
+const scoreConfig = {
+    MINI_4x4: { EASY: 1, MEDIUM: 2, HARD: 3 },
+    MINI_6x6: { EASY: 1, MEDIUM: 2, HARD: 3 },
+    STANDARD: { EASY: 2, MEDIUM: 3, HARD: 4 },
+    DIAGONAL: { EASY: 2, MEDIUM: 3, HARD: 4 },
+    ODD_EVEN: { EASY: 2, MEDIUM: 3, HARD: 4 },
+    KILLER_4x4: { EASY: 2, MEDIUM: 3, HARD: 4 },
+    KILLER_6x6: { EASY: 2, MEDIUM: 3, HARD: 4 },
+    KILLER_9x9: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    IRREGULAR: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    WINDOKU: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    CENTER_DOT: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    STAR: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    BLACK_WHITE_DOT: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    SANDWICH: { EASY: 2, MEDIUM: 4, HARD: 6 },
+    SKYSCRAPER: { EASY: 2, MEDIUM: 4, HARD: 6 }
+};
+
+// 等级配置
+const levelConfig = [
+    { level: 1, name: '初学萌新', minScore: 0, title: '萌新' },
+    { level: 2, name: '初学萌新', minScore: 15, title: '萌新' },
+    { level: 3, name: '初学萌新', minScore: 40, title: '萌新' },
+    { level: 4, name: '数独爱好者', minScore: 80, title: '爱好者' },
+    { level: 5, name: '数独爱好者', minScore: 140, title: '爱好者' },
+    { level: 6, name: '数独爱好者', minScore: 220, title: '爱好者' },
+    { level: 7, name: '资深高手', minScore: 330, title: '高手' },
+    { level: 8, name: '资深高手', minScore: 470, title: '高手' },
+    { level: 9, name: '资深高手', minScore: 650, title: '高手' },
+    { level: 10, name: '数独大师', minScore: 880, title: '大师' },
+    { level: 11, name: '数独大师', minScore: 1160, title: '大师' },
+    { level: 12, name: '数独大师', minScore: 1500, title: '大师' },
+    { level: 13, name: '传世宗师', minScore: 1900, title: '宗师' },
+    { level: 14, name: '传世宗师', minScore: 2380, title: '宗师' },
+    { level: 15, name: '封神宗师', minScore: 2950, title: '宗师' }
+];
+
+// 成就配置
+const achievementConfig = [
+    { id: 'ACH001', name: '新手启程', reward: 5, condition: '通关10道入门题' },
+    { id: 'ACH002', name: '持之以恒', reward: 15, condition: '连续7天每日≥1通关' },
+    { id: 'ACH003', name: '速通达人', reward: 10, condition: '普通9宫3分钟内通关' },
+    { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' }
+];
+
+/**
+ * 获取题目基础分数
+ */
+function getBaseScore(gameType, difficulty) {
+    const gameConfig = scoreConfig[gameType];
+    if (!gameConfig) return 1;
+    return gameConfig[difficulty] || 1;
+}
+
+/**
+ * 根据分数获取等级信息
+ */
+function getLevelInfo(score) {
+    for (let i = levelConfig.length - 1; i >= 0; i--) {
+        if (score >= levelConfig[i].minScore) {
+            return levelConfig[i];
+        }
+    }
+    return levelConfig[0];
+}
+
+/**
+ * 计算升级所需分数
+ */
+function getScoreToNextLevel(currentLevel) {
+    const currentLevelInfo = levelConfig.find(l => l.level === currentLevel);
+    const nextLevelInfo = levelConfig.find(l => l.level === currentLevel + 1);
+    if (!nextLevelInfo) return null; // 已达到最高等级
+    return nextLevelInfo.minScore - currentLevelInfo.minScore;
+}
+
+/**
+ * 添加分数
+ */
+function addScore(points) {
+    const playerData = Storage.getPlayerData();
+    playerData.totalScore += points;
+    
+    // 更新等级
+    const newLevelInfo = getLevelInfo(playerData.totalScore);
+    const oldLevel = playerData.level;
+    playerData.level = newLevelInfo.level;
+    
+    Storage.savePlayerData(playerData);
+    
+    // 如果升级了，返回升级信息
+    if (playerData.level > oldLevel) {
+        return { levelUp: true, oldLevel, newLevel: playerData.level, levelName: newLevelInfo.name };
+    }
+    return { levelUp: false };
+}
+
+/**
+ * 检查并触发成就
+ */
+function checkAchievements(gameType, difficulty, completionTime) {
+    const playerData = Storage.getPlayerData();
+    const records = Storage.getRecords();
+    const completedRecords = records.filter(r => r.isCompleted && !r.isAbandoned);
+    const achievements = [];
+    
+    // ACH001: 新手启程 - 通关10道入门题
+    if (!playerData.achievementList.includes('ACH001')) {
+        const easyCount = completedRecords.filter(r => 
+            ['MINI_4x4', 'MINI_6x6', 'STANDARD'].includes(r.gameType) && 
+            r.difficultyType === 'EASY'
+        ).length;
+        if (easyCount >= 10) {
+            achievements.push('ACH001');
+            addScore(5);
+        }
+    }
+    
+    // ACH003: 速通达人 - 普通9宫3分钟内通关
+    if (!playerData.achievementList.includes('ACH003')) {
+        if (gameType === 'STANDARD' && completionTime < 180) { // 3分钟 = 180秒
+            achievements.push('ACH003');
+            addScore(10);
+        }
+    }
+    
+    // ACH004: 变体先锋 - 首次通关变体数独
+    if (!playerData.achievementList.includes('ACH004')) {
+        const variantTypes = ['DIAGONAL', 'ODD_EVEN', 'KILLER_4x4', 'KILLER_6x6', 'KILLER_9x9', 
+                             'IRREGULAR', 'WINDOKU', 'CENTER_DOT', 'STAR', 'BLACK_WHITE_DOT', 
+                             'SANDWICH', 'SKYSCRAPER'];
+        const hasVariantCompleted = completedRecords.some(r => variantTypes.includes(r.gameType));
+        if (hasVariantCompleted) {
+            achievements.push('ACH004');
+            addScore(20);
+        }
+    }
+    
+    // 更新成就列表
+    if (achievements.length > 0) {
+        playerData.achievementList = [...new Set([...playerData.achievementList, ...achievements])];
+        Storage.savePlayerData(playerData);
+    }
+    
+    return achievements.map(id => achievementConfig.find(a => a.id === id));
+}
+
+/**
+ * 更新连续打卡天数
+ */
+function updateContinueDay() {
+    const playerData = Storage.getPlayerData();
+    const today = new Date().toDateString();
+    
+    if (playerData.lastPlayDate === today) {
+        // 今天已经更新过了
+        return playerData.continueDay;
+    }
+    
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (playerData.lastPlayDate === yesterday.toDateString()) {
+        // 连续打卡
+        playerData.continueDay++;
+    } else if (playerData.lastPlayDate) {
+        // 断签，重置
+        playerData.continueDay = 1;
+    } else {
+        // 第一次打卡
+        playerData.continueDay = 1;
+    }
+    
+    playerData.lastPlayDate = today;
+    Storage.savePlayerData(playerData);
+    
+    // 检查 ACH002: 持之以恒 - 连续7天打卡
+    if (!playerData.achievementList.includes('ACH002') && playerData.continueDay >= 7) {
+        playerData.achievementList.push('ACH002');
+        addScore(15);
+        Storage.savePlayerData(playerData);
+        return { continueDay: playerData.continueDay, achievementUnlocked: 'ACH002' };
+    }
+    
+    return { continueDay: playerData.continueDay };
+}
+
+/**
+ * 更新周常任务
+ */
+function updateWeeklyTasks(gameType, difficulty) {
+    const tasks = Storage.getWeeklyTasks();
+    let totalReward = 0;
+    
+    // 日常刷题 - 通关任意5题
+    if (!tasks.dailyQuiz.completed) {
+        tasks.dailyQuiz.progress++;
+        if (tasks.dailyQuiz.progress >= tasks.dailyQuiz.target) {
+            tasks.dailyQuiz.completed = true;
+            totalReward += tasks.dailyQuiz.reward;
+        }
+    }
+    
+    // 挑战进阶 - 通关3道中等及以上
+    if (!tasks.challengeAdvanced.completed && ['MEDIUM', 'HARD'].includes(difficulty)) {
+        tasks.challengeAdvanced.progress++;
+        if (tasks.challengeAdvanced.progress >= tasks.challengeAdvanced.target) {
+            tasks.challengeAdvanced.completed = true;
+            totalReward += tasks.challengeAdvanced.reward;
+        }
+    }
+    
+    // 硬核挑战 - 通关2道高级/变体
+    if (!tasks.hardcoreChallenge.completed) {
+        const isHardcore = difficulty === 'HARD' || 
+            ['DIAGONAL', 'ODD_EVEN', 'KILLER_4x4', 'KILLER_6x6', 'KILLER_9x9', 
+             'IRREGULAR', 'WINDOKU', 'CENTER_DOT', 'STAR', 'BLACK_WHITE_DOT', 
+             'SANDWICH', 'SKYSCRAPER'].includes(gameType);
+        if (isHardcore) {
+            tasks.hardcoreChallenge.progress++;
+            if (tasks.hardcoreChallenge.progress >= tasks.hardcoreChallenge.target) {
+                tasks.hardcoreChallenge.completed = true;
+                totalReward += tasks.hardcoreChallenge.reward;
+            }
+        }
+    }
+    
+    Storage.saveWeeklyTasks(tasks);
+    
+    if (totalReward > 0) {
+        addScore(totalReward);
+    }
+    
+    return { tasks, reward: totalReward };
+}
+
+/**
+ * 处理通关奖励
+ */
+function handleCompletionRewards(gameType, difficulty, completionTime) {
+    // 1. 添加基础分数
+    const baseScore = getBaseScore(gameType, difficulty);
+    const scoreResult = addScore(baseScore);
+    
+    // 2. 更新连续打卡天数
+    const dayResult = updateContinueDay();
+    
+    // 3. 检查成就
+    const achievements = checkAchievements(gameType, difficulty, completionTime);
+    
+    // 4. 更新周常任务
+    const taskResult = updateWeeklyTasks(gameType, difficulty);
+    
+    return {
+        baseScore,
+        scoreResult,
+        dayResult,
+        achievements,
+        taskResult
+    };
+}
 
 // ==================== 涂色模式功能 ====================
 
@@ -3969,7 +4312,7 @@ function checkSolution() {
         const record = Storage.getRecord(currentPuzzle.id) || {
             puzzleId: currentPuzzle.id,
             gameType: currentGameType,
-            difficultyType: currentDifficultyType,
+            difficultyType: currentDifficulty,
             attemptCount: attemptCount,
             isCompleted: false,
             bestTime: null,
@@ -3987,6 +4330,9 @@ function checkSolution() {
         }
         Storage.saveRecord(record);
 
+        // 处理通关奖励
+        const rewardResult = handleCompletionRewards(currentGameType, currentDifficulty, seconds);
+        
         // 显示涂色模式按钮
         document.getElementById('colorModeBtn').style.display = 'inline-block';
 

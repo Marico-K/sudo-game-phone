@@ -46,6 +46,122 @@ header p {
     font-size: 1.1em;
     color: #666;
     font-weight: 500;
+    margin-bottom: 15px;
+}
+
+/* 玩家等级信息样式 */
+.player-level-info {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 15px;
+}
+
+.level-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.level-icon {
+    font-size: 1.4em;
+}
+
+
+
+.level-number {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.level-name {
+    font-size: 1.1em;
+    color: #444;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* 萌新段位 - 绿色系 */
+.level-name.novice {
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+    color: #2e7d32;
+}
+
+/* 爱好者段位 - 蓝色系 */
+.level-name.lover {
+    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+    color: #1565c0;
+}
+
+/* 高手段位 - 紫色系 */
+.level-name.master {
+    background: linear-gradient(135deg, #e1bee7 0%, #ce93d8 100%);
+    color: #6a1b9a;
+}
+
+/* 大师段位 - 橙色系 */
+.level-name.grandmaster {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+    color: #e65100;
+}
+
+/* 宗师段位 - 红色系 */
+.level-name.legend {
+    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+    color: #c62828;
+}
+
+.level-progress {
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.85em;
+    color: #666;
+    text-align: center;
+    display: block;
+}
+
+.player-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.95em;
+}
+
+.stat-icon {
+    font-size: 1.2em;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #444;
 }
 
 /* ==================== 游戏页面头部样式 ==================== */
@@ -1039,6 +1155,115 @@ header p {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+/* 游戏类型选择弹窗特殊样式 */
+.gameType-modal-content {
+    max-width: 600px;
+    max-height: 90vh;
+}
+
+.gameType-modal-body {
+    overflow-y: auto;
+    max-height: calc(90vh - 80px);
+    padding: 15px;
+}
+
+.gameType-modal-body .gameType-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 大按钮样式 */
+.large-btn {
+    font-size: 1.2em;
+    padding: 16px 40px;
+    min-width: 200px;
+}
+
+/* 操作区域样式 */
+.action-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+}
+
+/* 成就按钮样式 */
+.achievement-btn {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.achievement-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+}
+
+/* 成就列表样式 */
+.modal-body {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.achievement-item.unlocked {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 1px solid #ffb74d;
+}
+
+.achievement-item.locked {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    opacity: 0.7;
+}
+
+.achievement-icon {
+    font-size: 2em;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-name {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.achievement-condition {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.achievement-reward {
+    font-size: 0.85em;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -1822,25 +2047,29 @@ header p {
 }
 
 .pagination-info {
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: #666;
+    white-space: nowrap;
 }
 
 .pagination-controls {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
 }
 
 .pagination-btn {
-    padding: 8px 18px;
+    padding: 6px 12px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 6px;
     background: white;
     color: #444;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 1em;
+    font-weight: bold;
     transition: all 0.2s ease;
+    min-width: 32px;
+    text-align: center;
 }
 
 .pagination-btn:hover:not(:disabled) {
