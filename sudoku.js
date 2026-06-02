@@ -1676,7 +1676,7 @@ class SudokuGenerator {
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
                 const val = board[r][c];
-                
+
                 // 检查右边相邻
                 if (c < 8) {
                     const rightVal = board[r][c + 1];
@@ -1685,7 +1685,7 @@ class SudokuGenerator {
                         // 对于生成来说，任何关系都是允许的，负约束是在解题时检查
                     }
                 }
-                
+
                 // 检查下边相邻
                 if (r < 8) {
                     const downVal = board[r + 1][c];
@@ -1728,11 +1728,11 @@ class SudokuGenerator {
      */
     generateBlackWhiteDotHints(board) {
         const dots = [];
-        
+
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
                 const val = board[r][c];
-                
+
                 // 检查右边相邻
                 if (c < 8) {
                     const rightVal = board[r][c + 1];
@@ -1744,7 +1744,7 @@ class SudokuGenerator {
                         dots.push({ row: r, col: c, direction: 'right', type: dotType });
                     }
                 }
-                
+
                 // 检查下边相邻
                 if (r < 8) {
                     const downVal = board[r + 1][c];
@@ -1757,7 +1757,7 @@ class SudokuGenerator {
                 }
             }
         }
-        
+
         return dots;
     }
 
@@ -1771,7 +1771,7 @@ class SudokuGenerator {
 
         // 生成标准数独解
         const board = this.generateFullBoard();
-        
+
         // 计算摩天楼提示
         const clues = this.generateSkyscraperClues(board);
 
@@ -1822,14 +1822,14 @@ class SudokuGenerator {
     countVisibleBuildings(arr) {
         let count = 0;
         let maxHeight = 0;
-        
+
         for (const height of arr) {
             if (height > maxHeight) {
                 count++;
                 maxHeight = height;
             }
         }
-        
+
         return count;
     }
 
@@ -3058,18 +3058,18 @@ function renderBlackWhiteDots(board) {
         // 获取第一个单元格的实际尺寸作为参考
         const firstCell = board.querySelector('.cell');
         if (!firstCell) return;
-        
+
         const cellRect = firstCell.getBoundingClientRect();
         const cellSize = cellRect.width;
-        
+
         // 获取目标单元格来精确计算位置
         dots.forEach(dot => {
             const dotEl = document.createElement('div');
             dotEl.className = `dot-marker ${dot.type}`;
-            
+
             let targetCell;
             let left, top;
-            
+
             if (dot.direction === 'right') {
                 // 右边相邻，点在两个格子之间，获取右边单元格
                 targetCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col + 1}"]`);
@@ -3095,13 +3095,13 @@ function renderBlackWhiteDots(board) {
                     }
                 }
             }
-            
+
             // 如果无法获取单元格，使用备用计算方法
             if (isNaN(left) || isNaN(top)) {
                 left = (dot.direction === 'right' ? (dot.col + 1) : (dot.col + 0.5)) * cellSize + 0.5;
                 top = (dot.direction === 'right' ? (dot.row + 0.5) : (dot.row + 1)) * cellSize + 0.5;
             }
-            
+
             // 转换为相对于board的位置
             const boardRect = board.getBoundingClientRect();
             dotEl.style.left = `${left - boardRect.left}px`;
@@ -4412,14 +4412,14 @@ function renderViewBlackWhiteDots(boardContainer, gameType) {
     requestAnimationFrame(() => {
         const firstCell = boardContainer.querySelector('.cell');
         if (!firstCell) return;
-        
+
         const cellRect = firstCell.getBoundingClientRect();
         const cellSize = cellRect.width;
-        
+
         dots.forEach(dot => {
             const dotEl = document.createElement('div');
             dotEl.className = `view-dot-marker ${dot.type}`;
-            
+
             let left, top;
             if (dot.direction === 'right') {
                 left = (dot.col + 1) * cellSize + 0.5;
@@ -4428,7 +4428,7 @@ function renderViewBlackWhiteDots(boardContainer, gameType) {
                 left = (dot.col + 0.5) * cellSize + 0.5;
                 top = (dot.row + 1) * cellSize + 0.5;
             }
-            
+
             dotEl.style.left = `${left}px`;
             dotEl.style.top = `${top}px`;
             boardContainer.appendChild(dotEl);

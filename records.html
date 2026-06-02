@@ -103,16 +103,128 @@
                     <p>还没有游戏记录</p>
                     <button class="primary-btn" onclick="goHome()">开始游戏</button>
                 </div>
+
+                <!-- 分页控件 -->
+                <div class="pagination-container" id="paginationContainer" style="display: none;">
+                    <div class="pagination-info">共 <span id="totalRecords"></span> 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" id="prevPageBtn" onclick="changePage(currentPage - 1)"
+                            disabled>上一页</button>
+                        <span class="pagination-current" id="paginationCurrent">1 / 1</span>
+                        <button class="pagination-btn" id="nextPageBtn" onclick="changePage(currentPage + 1)"
+                            disabled>下一页</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
     <script src="sudoku.js"></script>
     <script>
+        // 分页变量
+        let currentPage = 1;
+        const pageSize = 20;
+        let currentFilter = 'ALL';
+        let allRecords = [];
+
         // 记录页初始化
         document.addEventListener("DOMContentLoaded", function () {
-            loadRecords();
+            loadRecordsWithPagination();
         });
+
+        // 加载记录（带分页）
+        function loadRecordsWithPagination() {
+            allRecords = Storage.getRecords();
+
+            // 更新统计
+            const totalGames = allRecords.length;
+            const completedGames = allRecords.filter(r => r.isCompleted && !r.isAbandoned).length;
+            const totalTime = allRecords.reduce((sum, r) => sum + (r.completionTime || 0), 0);
+
+            document.getElementById('totalGames').textContent = totalGames;
+            document.getElementById('completedGames').textContent = completedGames;
+            document.getElementById('totalTime').textContent = formatTime(totalTime);
+
+            // 筛选记录
+            const filteredRecords = currentFilter === 'ALL'
+                ? allRecords
+                : allRecords.filter(r => r.gameType === currentFilter);
+
+            // 更新总记录数
+            document.getElementById('totalRecords').textContent = filteredRecords.length;
+
+            if (filteredRecords.length === 0) {
+                document.getElementById('recordsBody').innerHTML = '';
+                document.getElementById('recordsTable').style.display = 'none';
+                document.getElementById('paginationContainer').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'flex';
+                return;
+            }
+
+            document.getElementById('recordsTable').style.display = 'table';
+            document.getElementById('emptyState').style.display = 'none';
+
+            // 按ID倒序排列
+            filteredRecords.sort((a, b) => b.puzzleId - a.puzzleId);
+
+            // 计算分页
+            const totalPages = Math.ceil(filteredRecords.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageRecords = filteredRecords.slice(startIndex, endIndex);
+
+            // 更新分页控件状态
+            document.getElementById('paginationContainer').style.display = 'flex';
+            document.getElementById('paginationCurrent').textContent = `${currentPage} / ${totalPages}`;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+            const latestInProgress = filteredRecords.find(r => !r.isCompleted && !r.isAbandoned);
+
+            document.getElementById('recordsBody').innerHTML = pageRecords.map(record => {
+                const isLatestInProgress = latestInProgress && record.puzzleId === latestInProgress.puzzleId;
+                const canContinue = isLatestInProgress;
+                const canView = record.isCompleted && record.solution;
+                const statusText = record.isAbandoned ? '已放弃' : (record.isCompleted ? '已完成' : '进行中');
+                const statusClass = record.isAbandoned ? 'abandoned' : (record.isCompleted ? 'completed' : 'in-progress');
+
+                const startTimeText = record.startTime ? formatDateTime(record.startTime) : '--';
+                const duration = record.isCompleted ? (record.completionTime || 0) : (record.elapsedTime || 0);
+                const durationText = formatTime(duration);
+
+                return `
+                    <tr>
+                        <td>#${record.puzzleId}</td>
+                        <td><span class="gameType-badge ${record.gameType.toLowerCase()}">${getGameTypeName(record.gameType)}</span></td>
+                        <td>${getDifficultyTypeName(record.difficultyType)}</td>
+                        <td>${startTimeText}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${durationText}</td>
+                        <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.gameType + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 切换页码
+        function changePage(page) {
+            const filteredRecords = currentFilter === 'ALL'
+                ? allRecords
+                : allRecords.filter(r => r.gameType === currentFilter);
+            const totalPages = Math.ceil(filteredRecords.length / pageSize);
+
+            if (page < 1 || page > totalPages) return;
+
+            currentPage = page;
+            loadRecordsWithPagination();
+        }
+
+        // 筛选记录（覆盖原有函数）
+        function filterRecords(filter) {
+            currentFilter = filter;
+            currentPage = 1;
+            loadRecordsWithPagination();
+        }
     </script>
 </body>
 

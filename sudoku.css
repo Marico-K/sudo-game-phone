@@ -39,7 +39,7 @@ header h1 {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 700;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 header p {
@@ -130,7 +130,7 @@ header p {
     border-radius: 10px;
     min-width: 85px;
     text-align: center;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .help-btn {
@@ -397,47 +397,130 @@ header p {
 }
 
 /* 杀手数独笼子背景色 - 12种颜色轮询 */
-.sudoku-board.game-type-killer .cell.cage-color-0 { background-color: rgba(231, 76, 60, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-0 .cage-sum { color: #c0392b; border-color: #c0392b; }
+.sudoku-board.game-type-killer .cell.cage-color-0 {
+    background-color: rgba(231, 76, 60, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-1 { background-color: rgba(52, 152, 219, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-1 .cage-sum { color: #2980b9; border-color: #2980b9; }
+.sudoku-board.game-type-killer .cell.cage-color-0 .cage-sum {
+    color: #c0392b;
+    border-color: #c0392b;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-2 { background-color: rgba(46, 204, 113, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-2 .cage-sum { color: #27ae60; border-color: #27ae60; }
+.sudoku-board.game-type-killer .cell.cage-color-1 {
+    background-color: rgba(52, 152, 219, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-3 { background-color: rgba(243, 156, 18, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-3 .cage-sum { color: #d68910; border-color: #d68910; }
+.sudoku-board.game-type-killer .cell.cage-color-1 .cage-sum {
+    color: #2980b9;
+    border-color: #2980b9;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-4 { background-color: rgba(155, 89, 182, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-4 .cage-sum { color: #8e44ad; border-color: #8e44ad; }
+.sudoku-board.game-type-killer .cell.cage-color-2 {
+    background-color: rgba(46, 204, 113, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-5 { background-color: rgba(26, 188, 156, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-5 .cage-sum { color: #16a085; border-color: #16a085; }
+.sudoku-board.game-type-killer .cell.cage-color-2 .cage-sum {
+    color: #27ae60;
+    border-color: #27ae60;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-6 .cage-sum { color: #c2185b; border-color: #c2185b; }
+.sudoku-board.game-type-killer .cell.cage-color-3 {
+    background-color: rgba(243, 156, 18, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-7 { background-color: rgba(96, 125, 139, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-7 .cage-sum { color: #546e7a; border-color: #546e7a; }
+.sudoku-board.game-type-killer .cell.cage-color-3 .cage-sum {
+    color: #d68910;
+    border-color: #d68910;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-8 { background-color: rgba(241, 196, 15, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-8 .cage-sum { color: #f1c40f; border-color: #f1c40f; }
+.sudoku-board.game-type-killer .cell.cage-color-4 {
+    background-color: rgba(155, 89, 182, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-9 { background-color: rgba(127, 140, 141, 0.3) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-9 .cage-sum { color: #7f8c8d; border-color: #7f8c8d; }
+.sudoku-board.game-type-killer .cell.cage-color-4 .cage-sum {
+    color: #8e44ad;
+    border-color: #8e44ad;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-10 { background-color: rgba(248, 148, 6, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-10 .cage-sum { color: #f89406; border-color: #f89406; }
+.sudoku-board.game-type-killer .cell.cage-color-5 {
+    background-color: rgba(26, 188, 156, 0.2) !important;
+}
 
-.sudoku-board.game-type-killer .cell.cage-color-11 { background-color: rgba(142, 68, 173, 0.2) !important; }
-.sudoku-board.game-type-killer .cell.cage-color-11 .cage-sum { color: #9b59b6; border-color: #9b59b6; }
+.sudoku-board.game-type-killer .cell.cage-color-5 .cage-sum {
+    color: #16a085;
+    border-color: #16a085;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-6 {
+    background-color: rgba(233, 30, 99, 0.2) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-6 .cage-sum {
+    color: #c2185b;
+    border-color: #c2185b;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-7 {
+    background-color: rgba(96, 125, 139, 0.2) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-7 .cage-sum {
+    color: #546e7a;
+    border-color: #546e7a;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-8 {
+    background-color: rgba(241, 196, 15, 0.2) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-8 .cage-sum {
+    color: #f1c40f;
+    border-color: #f1c40f;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-9 {
+    background-color: rgba(127, 140, 141, 0.3) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-9 .cage-sum {
+    color: #7f8c8d;
+    border-color: #7f8c8d;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-10 {
+    background-color: rgba(248, 148, 6, 0.2) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-10 .cage-sum {
+    color: #f89406;
+    border-color: #f89406;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-11 {
+    background-color: rgba(142, 68, 173, 0.2) !important;
+}
+
+.sudoku-board.game-type-killer .cell.cage-color-11 .cage-sum {
+    color: #9b59b6;
+    border-color: #9b59b6;
+}
 
 /* 杀手数独笼子边框（统一深灰色虚线） */
-.sudoku-board.game-type-killer .cell.cage-border-top { border-top: 1px dashed #ff8c8c; }
-.sudoku-board.game-type-killer .cell.cage-border-bottom { border-bottom: 1px dashed #ff8c8c; }
-.sudoku-board.game-type-killer .cell.cage-border-left { border-left: 1px dashed #ff8c8c; }
-.sudoku-board.game-type-killer .cell.cage-border-right { border-right: 1px dashed #ff8c8c; }
+.sudoku-board.game-type-killer .cell.cage-border-top {
+    border-top: 1px dashed #ff8c8c;
+}
+
+.sudoku-board.game-type-killer .cell.cage-border-bottom {
+    border-bottom: 1px dashed #ff8c8c;
+}
+
+.sudoku-board.game-type-killer .cell.cage-border-left {
+    border-left: 1px dashed #ff8c8c;
+}
+
+.sudoku-board.game-type-killer .cell.cage-border-right {
+    border-right: 1px dashed #ff8c8c;
+}
 
 /* 锯齿数独样式 */
 .sudoku-board.game-type-irregular {
@@ -452,21 +535,58 @@ header p {
 }
 
 /* 锯齿数独不规则宫格背景色 - 9 种明显区分颜色 */
-.sudoku-board.game-type-irregular .cell.irregular-box-0 { background-color: rgba(255, 255, 255, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.50) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.35) !important; }
-.sudoku-board.game-type-irregular .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.35) !important; }
+.sudoku-board.game-type-irregular .cell.irregular-box-0 {
+    background-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-1 {
+    background-color: rgba(60, 179, 113, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-2 {
+    background-color: rgba(30, 144, 255, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-3 {
+    background-color: rgba(255, 215, 0, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-4 {
+    background-color: rgba(255, 105, 180, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-5 {
+    background-color: rgba(50, 205, 50, 0.50) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-6 {
+    background-color: rgba(255, 140, 0, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-7 {
+    background-color: rgba(138, 43, 226, 0.35) !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-box-8 {
+    background-color: rgba(64, 224, 208, 0.35) !important;
+}
 
 /* 锯齿数独宫格边框（深灰色实线） */
-.sudoku-board.game-type-irregular .cell.irregular-border-top { border-top: 2px solid #333333 !important; }
-.sudoku-board.game-type-irregular .cell.irregular-border-bottom { border-bottom: 2px solid #333333 !important; }
-.sudoku-board.game-type-irregular .cell.irregular-border-left { border-left: 2px solid #333333 !important; }
-.sudoku-board.game-type-irregular .cell.irregular-border-right { border-right: 2px solid #333333 !important; }
+.sudoku-board.game-type-irregular .cell.irregular-border-top {
+    border-top: 2px solid #333333 !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-border-bottom {
+    border-bottom: 2px solid #333333 !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-border-left {
+    border-left: 2px solid #333333 !important;
+}
+
+.sudoku-board.game-type-irregular .cell.irregular-border-right {
+    border-right: 2px solid #333333 !important;
+}
 
 /* 杀手数独宫格边框（深灰色实线） */
 .sudoku-board.game-type-killer .cell.border-top {
@@ -491,7 +611,7 @@ header p {
     line-height: 1;
     pointer-events: none;
     border: 1px solid #e74c3c;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cell.size-4x4 .cage-sum {
@@ -646,15 +766,42 @@ header p {
 }
 
 /* 不同数字的背景颜色（仅在同行/列/宫中唯一时显示） */
-.candidate-num.c1 { background: #4CAF50; }
-.candidate-num.c2 { background: #2196F3; }
-.candidate-num.c3 { background: #FF9800; }
-.candidate-num.c4 { background: #F44336; }
-.candidate-num.c5 { background: #9C27B0; }
-.candidate-num.c6 { background: #00BCD4; }
-.candidate-num.c7 { background: #FFEB3B; color: #333; }
-.candidate-num.c8 { background: #607D8B; }
-.candidate-num.c9 { background: #E91E63; }
+.candidate-num.c1 {
+    background: #4CAF50;
+}
+
+.candidate-num.c2 {
+    background: #2196F3;
+}
+
+.candidate-num.c3 {
+    background: #FF9800;
+}
+
+.candidate-num.c4 {
+    background: #F44336;
+}
+
+.candidate-num.c5 {
+    background: #9C27B0;
+}
+
+.candidate-num.c6 {
+    background: #00BCD4;
+}
+
+.candidate-num.c7 {
+    background: #FFEB3B;
+    color: #333;
+}
+
+.candidate-num.c8 {
+    background: #607D8B;
+}
+
+.candidate-num.c9 {
+    background: #E91E63;
+}
 
 /* 非唯一候选数字样式（透明背景） */
 .candidate-num.candidate-normal {
@@ -664,6 +811,7 @@ header p {
 
 /* ==================== 电脑端候选数字优化 ==================== */
 @media (min-width: 769px) {
+
     /* 候选数字容器 */
     .cell-candidates {
         padding: 4%;
@@ -869,7 +1017,7 @@ header p {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.55);
+    background-color: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(4px);
     align-items: center;
     justify-content: center;
@@ -1037,33 +1185,33 @@ header p {
         max-width: 600px;
         padding: 30px;
     }
-    
+
     .view-puzzle-board-container {
         margin: 30px 0;
     }
-    
+
     .view-puzzle-board {
         border-radius: 10px;
     }
-    
+
     .view-puzzle-board .cell {
         width: 42px;
         height: 42px;
         font-size: 16px;
     }
-    
+
     .view-puzzle-board.mini-4-board .cell {
         width: 64px !important;
         height: 64px !important;
         font-size: 28px !important;
     }
-    
+
     .view-puzzle-board.mini-6-board .cell {
         width: 52px !important;
         height: 52px !important;
         font-size: 22px !important;
     }
-    
+
     .view-puzzle-board.killer-board .cage-sum {
         font-size: 12px;
         padding: 2px 4px;
@@ -1074,53 +1222,53 @@ header p {
         font-size: 16px;
         padding: 3px 5px;
     }
-    
+
     /* 电脑端杀手4宫格 */
     .view-puzzle-board.killer-board.killer-4x4 .cell {
         width: 64px !important;
         height: 64px !important;
         font-size: 28px !important;
     }
-    
+
     /* 电脑端杀手6宫格 */
     .view-puzzle-board.killer-board.killer-6x6 .cell {
         width: 52px !important;
         height: 52px !important;
         font-size: 22px !important;
     }
-    
+
     /* 电脑端杀手9宫格 */
     .view-puzzle-board.killer-board.killer-9x9 .cell {
         width: 42px !important;
         height: 42px !important;
         font-size: 16px !important;
     }
-    
+
     /* 电脑端答案数字样式 */
     .view-puzzle-board.mini-4-board .original-number,
     .view-puzzle-board.killer-board.killer-4x4 .original-number {
         font-size: 28px !important;
     }
-    
+
     .view-puzzle-board.mini-4-board .filled-number,
     .view-puzzle-board.killer-board.killer-4x4 .filled-number {
         font-size: 26px !important;
     }
-    
+
     .view-puzzle-board.mini-6-board .original-number,
     .view-puzzle-board.killer-board.killer-6x6 .original-number {
         font-size: 22px !important;
     }
-    
+
     .view-puzzle-board.mini-6-board .filled-number,
     .view-puzzle-board.killer-board.killer-6x6 .filled-number {
         font-size: 20px !important;
     }
-    
+
     .view-puzzle-board.killer-board.killer-9x9 .original-number {
         font-size: 16px !important;
     }
-    
+
     .view-puzzle-board.killer-board.killer-9x9 .filled-number {
         font-size: 14px !important;
     }
@@ -1255,52 +1403,168 @@ header p {
     background: #333;
 }
 
-.view-puzzle-board.irregular-board .cell.irregular-box-0 { background-color: rgba(255, 99, 71, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-1 { background-color: rgba(60, 179, 113, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-2 { background-color: rgba(30, 144, 255, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-3 { background-color: rgba(255, 215, 0, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-4 { background-color: rgba(255, 105, 180, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-5 { background-color: rgba(50, 205, 50, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-6 { background-color: rgba(255, 140, 0, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-7 { background-color: rgba(138, 43, 226, 0.25) !important; }
-.view-puzzle-board.irregular-board .cell.irregular-box-8 { background-color: rgba(64, 224, 208, 0.25) !important; }
+.view-puzzle-board.irregular-board .cell.irregular-box-0 {
+    background-color: rgba(255, 99, 71, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-1 {
+    background-color: rgba(60, 179, 113, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-2 {
+    background-color: rgba(30, 144, 255, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-3 {
+    background-color: rgba(255, 215, 0, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-4 {
+    background-color: rgba(255, 105, 180, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-5 {
+    background-color: rgba(50, 205, 50, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-6 {
+    background-color: rgba(255, 140, 0, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-7 {
+    background-color: rgba(138, 43, 226, 0.25) !important;
+}
+
+.view-puzzle-board.irregular-board .cell.irregular-box-8 {
+    background-color: rgba(64, 224, 208, 0.25) !important;
+}
 
 /* 杀手数独样式 */
-.view-puzzle-board.killer-board .cell.killer-cage-0 { background-color: rgba(156, 39, 176, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-1 { background-color: rgba(0, 188, 212, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-2 { background-color: rgba(255, 152, 0, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-3 { background-color: rgba(76, 175, 80, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-4 { background-color: rgba(244, 67, 54, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-5 { background-color: rgba(33, 150, 243, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-6 { background-color: rgba(233, 30, 99, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-7 { background-color: rgba(139, 195, 74, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-8 { background-color: rgba(205, 220, 57, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-9 { background-color: rgba(255, 87, 34, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-10 { background-color: rgba(63, 81, 181, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-11 { background-color: rgba(0, 150, 136, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-12 { background-color: rgba(255, 193, 7, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-13 { background-color: rgba(96, 125, 139, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-14 { background-color: rgba(121, 85, 72, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-15 { background-color: rgba(244, 143, 177, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-16 { background-color: rgba(129, 212, 250, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-17 { background-color: rgba(187, 222, 251, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-18 { background-color: rgba(165, 214, 167, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-19 { background-color: rgba(255, 213, 79, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-20 { background-color: rgba(255, 204, 188, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-21 { background-color: rgba(248, 187, 208, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-22 { background-color: rgba(179, 157, 219, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-23 { background-color: rgba(144, 164, 174, 0.2) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-24 { background-color: rgba(161, 136, 127, 0.2) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-0 {
+    background-color: rgba(156, 39, 176, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-1 {
+    background-color: rgba(0, 188, 212, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-2 {
+    background-color: rgba(255, 152, 0, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-3 {
+    background-color: rgba(76, 175, 80, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-4 {
+    background-color: rgba(244, 67, 54, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-5 {
+    background-color: rgba(33, 150, 243, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-6 {
+    background-color: rgba(233, 30, 99, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-7 {
+    background-color: rgba(139, 195, 74, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-8 {
+    background-color: rgba(205, 220, 57, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-9 {
+    background-color: rgba(255, 87, 34, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-10 {
+    background-color: rgba(63, 81, 181, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-11 {
+    background-color: rgba(0, 150, 136, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-12 {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-13 {
+    background-color: rgba(96, 125, 139, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-14 {
+    background-color: rgba(121, 85, 72, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-15 {
+    background-color: rgba(244, 143, 177, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-16 {
+    background-color: rgba(129, 212, 250, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-17 {
+    background-color: rgba(187, 222, 251, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-18 {
+    background-color: rgba(165, 214, 167, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-19 {
+    background-color: rgba(255, 213, 79, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-20 {
+    background-color: rgba(255, 204, 188, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-21 {
+    background-color: rgba(248, 187, 208, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-22 {
+    background-color: rgba(179, 157, 219, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-23 {
+    background-color: rgba(144, 164, 174, 0.2) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-24 {
+    background-color: rgba(161, 136, 127, 0.2) !important;
+}
 
 /* 杀手数独笼子边框样式 - 只在外边界显示 */
-.view-puzzle-board.killer-board .cell.killer-cage-border-top { border-top: 1px dashed rgba(244, 67, 54, 0.6) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-border-bottom { border-bottom: 1px dashed rgba(244, 67, 54, 0.6) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-border-left { border-left: 1px dashed rgba(244, 67, 54, 0.6) !important; }
-.view-puzzle-board.killer-board .cell.killer-cage-border-right { border-right: 1px dashed rgba(244, 67, 54, 0.6) !important; }
+.view-puzzle-board.killer-board .cell.killer-cage-border-top {
+    border-top: 1px dashed rgba(244, 67, 54, 0.6) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-border-bottom {
+    border-bottom: 1px dashed rgba(244, 67, 54, 0.6) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-border-left {
+    border-left: 1px dashed rgba(244, 67, 54, 0.6) !important;
+}
+
+.view-puzzle-board.killer-board .cell.killer-cage-border-right {
+    border-right: 1px dashed rgba(244, 67, 54, 0.6) !important;
+}
 
 /* 杀手数独棋盘不显示默认的宫边框 */
-.view-puzzle-board.killer-board .cell.border-right { border-right: none !important; }
-.view-puzzle-board.killer-board .cell.border-bottom { border-bottom: none !important; }
+.view-puzzle-board.killer-board .cell.border-right {
+    border-right: none !important;
+}
+
+.view-puzzle-board.killer-board .cell.border-bottom {
+    border-bottom: none !important;
+}
 
 /* 杀手数独笼和样式 */
 .view-puzzle-board.killer-board .cage-sum {
@@ -1421,7 +1685,7 @@ header p {
         min-width: 130px;
         white-space: nowrap;
     }
-    
+
     .win-buttons {
         gap: 15px;
     }
@@ -1543,6 +1807,59 @@ header p {
 
 .records-table tr:hover {
     background: #f8fafc;
+}
+
+/* 分页容器样式 */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 12px 12px;
+    margin-top: -1px;
+}
+
+.pagination-info {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.pagination-btn {
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: #444;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-current {
+    font-size: 0.9em;
+    color: #444;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
 }
 
 .gameType-badge {
@@ -1892,7 +2209,7 @@ header p {
 
 .skyscraper-clues-top {
     display: grid;
-    grid-template-columns: repeat(9,0.5fr);
+    grid-template-columns: repeat(9, 0.5fr);
     background: #2c3e50;
     flex: 0.5;
     padding-left: 20px;
