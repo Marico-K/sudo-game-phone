@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独进阶技巧</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
+        .header p { margin: 8px 0 0; opacity: 0.9; font-size: 0.9em; }
+        .back-btn {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9em;
+        }
+        .content { padding: 24px; }
+        .technique-section {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eee;
+        }
+        .technique-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .technique-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .technique-icon { font-size: 1.5em; }
+        .technique-title h2 { margin: 0; font-size: 1.2em; color: #333; }
+        .technique-title .difficulty {
+            margin-left: auto;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+        .difficulty.easy { background: #e8f5e9; color: #2e7d32; }
+        .difficulty.medium { background: #fff3e0; color: #e65100; }
+        .difficulty.hard { background: #ffebee; color: #c62828; }
+        .difficulty.expert { background: #e3f2fd; color: #1565c0; }
+        .technique-desc { color: #666; line-height: 1.6; margin-bottom: 12px; }
+        .technique-steps {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 0;
+        }
+        .technique-steps li { margin-bottom: 8px; color: #555; }
+        .technique-steps li:last-child { margin-bottom: 0; }
+        .section-divider {
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            margin: 28px 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ddd;
+        }
+        .technique-example {
+            margin-top: 16px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .example-header {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .sudoku-container {
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            background: #fff;
+        }
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            gap: 0;
+            border: 3px solid #333;
+            width: 270px;
+            height: 270px;
+        }
+        .sudoku-cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+        }
+        .sudoku-cell:nth-child(3n):not(:nth-child(9n)) { border-right: 2px solid #333; }
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #333; }
+        .sudoku-cell.fixed { color: #333; font-weight: 600; }
+        .sudoku-cell.highlight { background: #e3f2fd; }
+        .sudoku-cell.highlight-strong { background: #bbdefb; }
+        .sudoku-cell.selected { background: #c8e6c9; font-weight: bold; }
+        .sudoku-cell.forbidden { background: #ffebee; }
+        .sudoku-cell.eliminate { color: #999; text-decoration: line-through; }
+        .sudoku-cell.candidate { font-size: 9px; color: #666; }
+        .example-caption {
+            padding: 12px 15px;
+            background: #fff;
+            font-size: 0.85em;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        .example-caption strong { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 数独进阶技巧</h1>
+            <p>从入门到精通，掌握数独解题方法</p>
+            <a href="index.html" class="back-btn">← 返回首页</a>
+        </div>
+
+        <div class="content">
+            <div class="section-divider">基础技巧</div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">✅</span>
+                    <h2>唯一候选数法 (Naked Single)</h2>
+                    <span class="difficulty easy">入门</span>
+                </div>
+                <div class="technique-desc">当某个单元格中只有一个可能的数字时，这个数字就是唯一解。这是最基础的数独技巧。</div>
+                <ul class="technique-steps">
+                    <li>检查每个空单元格，列出所有可能填入的数字（候选数）</li>
+                    <li>如果某个单元格只有一个候选数，直接填入该数字</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：找出唯一候选数</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell selected">9</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>绿色格子</strong>：所在行已有1-8，所在列已有2-8，所在宫已有1-8，唯一可能填的数字是9
+                    </div>
+                </div>
+            </div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">🔍</span>
+                    <h2>隐性唯一候选数法 (Hidden Single)</h2>
+                    <span class="difficulty easy">入门</span>
+                </div>
+                <div class="technique-desc">在某一行、列或宫中，某个数字只能出现在一个位置。这个数字被其他候选数"隐藏"了。</div>
+                <ul class="technique-steps">
+                    <li>对每个数字1-9，检查它在每行、每列、每宫的可能位置</li>
+                    <li>如果某个数字在某个区域内只有一个可能位置，填入该数字</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：找出数字 6 的唯一位置</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell"></div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell selected">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>绿色格子</strong>：左上宫中已经有 1、2、3、4、5、7、8、9，只有第三行第一列可以填 6
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">中级技巧</div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">👥</span>
+                    <h2>数对排除法 (Naked Pair)</h2>
+                    <span class="difficulty medium">中级</span>
+                </div>
+                <div class="technique-desc">在同一区域内，两个单元格都只有相同的两个候选数，这两个数字只能在这两个单元格中。</div>
+                <ul class="technique-steps">
+                    <li>在一行、列或宫中寻找两个单元格</li>
+                    <li>这两个单元格都只有相同的两个候选数</li>
+                    <li>从该区域其他单元格的候选数中排除这两个数字</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：利用数对排除候选数</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell highlight-strong candidate">1,2</div><div class="sudoku-cell highlight-strong candidate">1,2</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell eliminate candidate"><s>1</s>,3</div><div class="sudoku-cell eliminate candidate">3,<s>2</s></div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">9</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>蓝色高亮</strong>：第一行第2、3格形成数对[1,2]，这两个数字只能在这两个位置<br>
+                        <strong>删除线</strong>：第二行（同宫）其他格子可以排除候选数1和2
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">高级技巧</div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">✈️</span>
+                    <h2>X-Wing</h2>
+                    <span class="difficulty hard">高级</span>
+                </div>
+                <div class="technique-desc">在两行中，某个数字只出现在相同的两列中，可以排除这两列其他位置的该数字。</div>
+                <ul class="technique-steps">
+                    <li>寻找两行，其中某个数字只出现在相同的两列</li>
+                    <li>这四个交点形成一个矩形（X形）</li>
+                    <li>从这两列其他行中排除该数字</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：X-Wing排除数字7</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell highlight-strong">7</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell highlight-strong">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell highlight-strong">7</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell highlight-strong">7</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell forbidden">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell forbidden">7</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">5</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>蓝色高亮</strong>：第1行和第8行的数字7只能在第3列和第7列，形成X形<br>
+                        <strong>红色禁止</strong>：第3、7列其他行（如第9行）不能填7
+                    </div>
+                </div>
+            </div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">🐟</span>
+                    <h2>Swordfish（剑鱼）</h2>
+                    <span class="difficulty hard">高级</span>
+                </div>
+                <div class="technique-desc">在三行中，某个数字只出现在相同的三列中，可以排除这三列其他位置的该数字。是X-Wing的扩展。</div>
+                <ul class="technique-steps">
+                    <li>寻找三行，其中某个数字只出现在相同的三列</li>
+                    <li>这九个交点形成剑鱼形状</li>
+                    <li>从这三列其他行中排除该数字</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：Swordfish排除数字5</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell highlight-strong">5</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell highlight-strong">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell highlight-strong">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell highlight-strong">5</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell highlight-strong">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell highlight-strong">5</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell forbidden">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell forbidden">5</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell forbidden">5</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>蓝色高亮</strong>：第1、4、7行的数字5只在第3、7、9列出现，形成剑鱼<br>
+                        <strong>红色禁止</strong>：第3、7、9列其他行（如第9行）不能填5
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider">专家技巧</div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">🔺</span>
+                    <h2>XY-Wing（三格三角删同数）</h2>
+                    <span class="difficulty expert">专家</span>
+                </div>
+                <div class="technique-desc">三个单元格形成三角形，共享候选数，可以排除同时能看到这三个格的其他单元格中的某个数字。</div>
+                <ul class="technique-steps">
+                    <li>找到一个双值格（XY）作为枢纽</li>
+                    <li>找到两个与枢纽格共享单元的双值格（XZ和YZ）</li>
+                    <li>排除同时能看到XZ和YZ的单元格中的Z</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：XY-Wing排除数字3</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell selected candidate">2,3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell highlight-strong candidate">2,7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell highlight-strong candidate">3,7</div><div class="sudoku-cell forbidden candidate">3,<s>7</s></div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">3</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>绿色格子</strong>：枢纽格[2,3]在第1行第2格<br>
+                        <strong>蓝色高亮</strong>：两翼格[2,7]和[3,7]分别在第2行第3格和第7行第7格<br>
+                        <strong>红色禁止</strong>：第7行第8格可以看到两个翼格，排除候选数7
+                    </div>
+                </div>
+            </div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">🔻</span>
+                    <h2>XYZ-Wing</h2>
+                    <span class="difficulty expert">专家</span>
+                </div>
+                <div class="technique-desc">XY-Wing的扩展，枢纽格包含三个候选数(XYZ)，可以排除同时能看到枢纽格和两个翼格的单元格中的Z。</div>
+                <ul class="technique-steps">
+                    <li>找到一个三值格（XYZ）作为枢纽</li>
+                    <li>找到两个与枢纽格共享单元的双值格（XZ和YZ）</li>
+                    <li>排除同时能看到XYZ、XZ和YZ的单元格中的Z</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：XYZ-Wing排除数字9</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell selected candidate">6,7,9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell highlight-strong candidate">6,9</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell forbidden candidate">7,<s>9</s></div><div class="sudoku-cell fixed">5</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell highlight-strong candidate">7,9</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>绿色格子</strong>：枢纽格[6,7,9]在第4行第5格<br>
+                        <strong>蓝色高亮</strong>：两翼格[6,9]和[7,9]分别在第7行第5格和第9行第5格<br>
+                        <strong>红色禁止</strong>：第8行第8格可以看到三个格，排除候选数9
+                    </div>
+                </div>
+            </div>
+
+            <div class="technique-section">
+                <div class="technique-title">
+                    <span class="technique-icon">🔲</span>
+                    <h2>唯一矩形法 (Unique Rectangle)</h2>
+                    <span class="difficulty expert">专家</span>
+                </div>
+                <div class="technique-desc">利用数独题目的唯一性假设，避免出现多解情况。这是一种高级的逻辑推理技巧。</div>
+                <ul class="technique-steps">
+                    <li>找到四个单元格形成矩形，分布在两个宫中</li>
+                    <li>如果这四个单元格都只包含两个相同的候选数，会导致多解</li>
+                    <li>从可能导致多解的单元格中排除相应候选数</li>
+                </ul>
+                <div class="technique-example">
+                    <div class="example-header">示例：唯一矩形避免多解</div>
+                    <div class="sudoku-container">
+                        <div class="sudoku-grid">
+                            <div class="sudoku-cell fixed">1</div><div class="sudoku-cell highlight-strong candidate">2,6</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell highlight-strong candidate">2,6</div><div class="sudoku-cell fixed">9</div>
+                            <div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">6</div>
+                            <div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">1</div>
+                            <div class="sudoku-cell fixed">2</div><div class="sudoku-cell highlight-strong candidate">2,6</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell selected candidate">6,4</div><div class="sudoku-cell fixed">7</div>
+                            <div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">4</div>
+                            <div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">8</div>
+                            <div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div>
+                            <div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">2</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">3</div>
+                            <div class="sudoku-cell fixed">7</div><div class="sudoku-cell fixed">8</div><div class="sudoku-cell fixed">3</div><div class="sudoku-cell fixed">1</div><div class="sudoku-cell fixed">6</div><div class="sudoku-cell fixed">4</div><div class="sudoku-cell fixed">5</div><div class="sudoku-cell fixed">9</div><div class="sudoku-cell fixed">2</div>
+                        </div>
+                    </div>
+                    <div class="example-caption">
+                        <strong>蓝色高亮</strong>：第1行第2、8格和第4行第2、8格形成矩形，如果都只有[2,6]会导致多解<br>
+                        <strong>绿色格子</strong>：第4行第8格有额外候选数4，因此必须填4（排除2和6），避免多解
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
