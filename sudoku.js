@@ -2294,21 +2294,91 @@ const Storage = {
      * 导出存档 - 将所有数据打包成加密字符串
      */
     exportSaveData() {
-        const saveData = {
-            version: '1.0',
-            exportTime: new Date().toISOString(),
-            data: {
-                playerData: this.getPlayerData(),
-                records: this.getRecords(),
-                scoreRecords: this.getScoreRecords(),
-                session: localStorage.getItem(this.KEYS.SESSION),
-                puzzleId: localStorage.getItem(this.KEYS.PUZZLE_ID),
-                dailyTasks: this.getDailyTasks(),
-                weeklyTasks: this.getWeeklyTasks()
-            }
+        const playerData = this.getPlayerData();
+        const records = this.getRecords();
+        const scoreRecords = this.getScoreRecords();
+        
+        // 使用紧凑格式减少体积
+        const compactData = {
+            v: '1',
+            t: Date.now(),
+            p: {
+                s: playerData.totalScore,
+                l: playerData.level,
+                d: playerData.continueDay,
+                a: playerData.achievementList,
+                lp: playerData.lastPlayDate
+            },
+            r: records.slice(-50), // 只保留最近50条记录
+            sr: scoreRecords.slice(-30), // 只保留最近30条积分记录
+            sid: localStorage.getItem(this.KEYS.SESSION),
+            pid: localStorage.getItem(this.KEYS.PUZZLE_ID),
+            dt: this.getDailyTasks(),
+            wt: this.getWeeklyTasks()
         };
-        const jsonString = JSON.stringify(saveData);
-        return this.encrypt(jsonString);
+        const jsonString = JSON.stringify(compactData);
+        return this.compressAndEncrypt(jsonString);
+    },
+
+    /**
+     * 压缩并加密数据
+     */
+    compressAndEncrypt(data) {
+        // 使用简单的字符替换压缩
+        let compressed = data
+            .replace(/"([a-z])":/g, '$1:')
+            .replace(/":/g, '=')
+            .replace(/"([^"]+)"/g, '`$1`');
+        
+        // 编码处理非ASCII字符
+        const encoded = encodeURIComponent(compressed);
+        
+        // XOR加密
+        const key = 'sudoku_key';
+        let encrypted = [];
+        for (let i = 0; i < encoded.length; i++) {
+            encrypted.push(encoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        
+        // 使用base64url编码（更紧凑）
+        return btoa(String.fromCharCode(...encrypted))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+    },
+
+    /**
+     * 解密并解压数据
+     */
+    decryptAndDecompress(encrypted) {
+        try {
+            // 还原base64url编码
+            const base64 = encrypted
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+            
+            // XOR解密
+            const decoded = atob(padded);
+            const key = 'sudoku_key';
+            let decrypted = [];
+            for (let i = 0; i < decoded.length; i++) {
+                decrypted.push(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            
+            // 解码还原
+            const decompressed = decodeURIComponent(String.fromCharCode(...decrypted));
+            
+            // 还原JSON格式
+            const restored = decompressed
+                .replace(/`([^`]+)`/g, '"$1"')
+                .replace(/=/g, '":')
+                .replace(/([a-z]):/g, '"$1":');
+            
+            return JSON.parse(restored);
+        } catch {
+            return null;
+        }
     },
 
     /**
@@ -2316,45 +2386,74 @@ const Storage = {
      */
     importSaveData(encryptedData) {
         try {
-            const jsonString = this.decrypt(encryptedData);
-            if (!jsonString) {
+            // 尝试新格式
+            let saveData = this.decryptAndDecompress(encryptedData);
+            
+            // 如果新格式失败，尝试旧格式（兼容之前的存档）
+            if (!saveData) {
+                const jsonString = this.decrypt(encryptedData);
+                if (!jsonString) {
+                    return { success: false, message: '无效的存档数据' };
+                }
+                saveData = JSON.parse(jsonString);
+            }
+            
+            // 验证版本
+            if (!saveData.v && !saveData.version) {
                 return { success: false, message: '无效的存档数据' };
             }
             
-            const saveData = JSON.parse(jsonString);
-            
-            // 验证版本
-            if (!saveData.version || saveData.version !== '1.0') {
-                return { success: false, message: '存档版本不兼容' };
+            // 恢复数据（兼容新旧格式）
+            const playerData = saveData.p || saveData.data?.playerData;
+            if (playerData) {
+                // 转换紧凑格式
+                const fullPlayerData = {
+                    totalScore: playerData.s || playerData.totalScore || 0,
+                    level: playerData.l || playerData.level || 1,
+                    continueDay: playerData.d || playerData.continueDay || 0,
+                    achievementList: playerData.a || playerData.achievementList || [],
+                    lastPlayDate: playerData.lp || playerData.lastPlayDate || null
+                };
+                this.savePlayerData(fullPlayerData);
             }
             
-            // 恢复数据
-            if (saveData.data.playerData) {
-                this.savePlayerData(saveData.data.playerData);
+            const records = saveData.r || saveData.data?.records;
+            if (records) {
+                localStorage.setItem(this.KEYS.RECORDS, JSON.stringify(records));
             }
-            if (saveData.data.records) {
-                localStorage.setItem(this.KEYS.RECORDS, JSON.stringify(saveData.data.records));
+            
+            const scoreRecords = saveData.sr || saveData.data?.scoreRecords;
+            if (scoreRecords) {
+                localStorage.setItem(this.KEYS.SCORE_RECORDS, JSON.stringify(scoreRecords));
             }
-            if (saveData.data.scoreRecords) {
-                localStorage.setItem(this.KEYS.SCORE_RECORDS, JSON.stringify(saveData.data.scoreRecords));
+            
+            const session = saveData.sid || saveData.data?.session;
+            if (session) {
+                localStorage.setItem(this.KEYS.SESSION, session);
             }
-            if (saveData.data.session) {
-                localStorage.setItem(this.KEYS.SESSION, saveData.data.session);
+            
+            const puzzleId = saveData.pid || saveData.data?.puzzleId;
+            if (puzzleId) {
+                localStorage.setItem(this.KEYS.PUZZLE_ID, puzzleId);
             }
-            if (saveData.data.puzzleId) {
-                localStorage.setItem(this.KEYS.PUZZLE_ID, saveData.data.puzzleId);
+            
+            const dailyTasks = saveData.dt || saveData.data?.dailyTasks;
+            if (dailyTasks) {
+                localStorage.setItem(this.KEYS.DAILY_TASKS, JSON.stringify(dailyTasks));
             }
-            if (saveData.data.dailyTasks) {
-                localStorage.setItem(this.KEYS.DAILY_TASKS, JSON.stringify(saveData.data.dailyTasks));
+            
+            const weeklyTasks = saveData.wt || saveData.data?.weeklyTasks;
+            if (weeklyTasks) {
+                localStorage.setItem(this.KEYS.WEEKLY_TASKS, JSON.stringify(weeklyTasks));
             }
-            if (saveData.data.weeklyTasks) {
-                localStorage.setItem(this.KEYS.WEEKLY_TASKS, JSON.stringify(saveData.data.weeklyTasks));
-            }
+            
+            // 获取导出时间
+            const exportTime = saveData.t ? new Date(saveData.t).toISOString() : saveData.exportTime || new Date().toISOString();
             
             return { 
                 success: true, 
                 message: '存档导入成功',
-                exportTime: saveData.exportTime 
+                exportTime: exportTime 
             };
         } catch (error) {
             return { success: false, message: '存档解析失败: ' + error.message };
