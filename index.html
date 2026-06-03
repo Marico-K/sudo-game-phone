@@ -12,7 +12,7 @@
     <!-- 只留原来的首页：难度选择、继续游戏、我的记录按钮 -->
     <div class="container" id="homePage">
         <header>
-            <h1>🎯 数独游戏</h1>
+            <h1>数独游戏</h1>
             <p>单机版本 - 无竞技功能</p>
             <!-- 玩家等级信息 -->
             <div class="player-level-info" id="playerLevelInfo">
@@ -44,24 +44,42 @@
             <!-- 继续上一局按钮（有未完成游戏时显示） -->
             <div id="continueGameSection" style="display: none;">
                 <h2>继续上一局游戏</h2>
-                <div class="continue-game-area">
-                    <button class="primary-btn" onclick="continueLatestGame()">▶️ 继续游戏</button>
+                <div class="home-buttons-area">
+                    <button class="home-btn primary" onclick="continueLatestGame()">▶️ 继续游戏</button>
                     <p>或</p>
-                    <button class="secondary-btn" onclick="clearProgressAndShowGameType()">🎲 开始新游戏</button>
-                </div>
-                <div class="additional-options">
-                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
+                    <button class="home-btn secondary" onclick="clearProgressAndShowGameType()">🎲 开始新游戏</button>
+                
+                    <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
+                    <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
                 </div>
             </div>
 
-            <!-- 默认显示区域：开始挑战按钮 + 我的记录 + 进阶技巧 -->
+            <!-- 默认显示区域：开始挑战按钮 + 每日任务 + 我的记录 + 进阶技巧 -->
             <div id="defaultSection">
-                <div class="action-area">
-                    <button class="primary-btn large-btn" onclick="showGameTypeModal()">🎮 开始挑战</button>
+                <!-- 每日任务区域（可收缩） -->
+                <div class="daily-tasks-section">
+                    <div class="section-header" onclick="toggleDailyTasks()">
+                        <h3>📋 每日任务</h3>
+                        <div class="header-right">
+                            <span class="refresh-badge" id="dailyRefreshBadge">今日已刷新</span>
+                            <span class="expand-icon" id="dailyExpandIcon">▼</span>
+                        </div>
+                    </div>
+                    <div id="dailyTasksContent">
+                        <div id="dailyTasksList">
+                            <!-- 每日任务列表将动态生成 -->
+                        </div>
+                        <div class="daily-total-reward">
+                            <span>今日任务奖励总计:</span>
+                            <span class="reward-total" id="dailyRewardTotal">0</span>分
+                        </div>
+                    </div>
                 </div>
-                <div class="additional-options">
-                    <button class="secondary-btn" onclick="showRecords()">📊 我的记录</button>
-                    <button class="secondary-btn" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
+
+                <div class="home-buttons-area">
+                    <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
+                    <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
+                    <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
                 </div>
             </div>
         </main>
@@ -145,6 +163,77 @@
             
             // 更新成就数量
             document.getElementById('achievementCount').textContent = playerData.achievementList.length;
+            
+            // 加载每日任务
+            loadDailyTasks();
+        }
+        
+        // 切换每日任务收缩/展开
+        function toggleDailyTasks() {
+            const content = document.getElementById('dailyTasksContent');
+            const header = document.querySelector('.section-header');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                header.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                header.classList.add('expanded');
+            }
+        }
+        
+        // 加载每日任务
+        function loadDailyTasks() {
+            const tasks = Storage.getDailyTasks();
+            const taskList = document.getElementById('dailyTasksList');
+            const rewardTotal = document.getElementById('dailyRewardTotal');
+            
+            taskList.innerHTML = '';
+            
+            let totalReward = 0;
+            let completedCount = 0;
+            
+            Object.keys(tasks).forEach(taskId => {
+                if (taskId === 'lastRefreshDate') return;
+                
+                const task = tasks[taskId];
+                const isCompleted = task.completed || task.claimed;
+                const progress = task.progress || 0;
+                const target = task.target || 1;
+                
+                if (isCompleted) {
+                    completedCount++;
+                }
+                
+                totalReward += task.reward;
+                
+                const taskItem = document.createElement('div');
+                taskItem.className = `daily-task-item ${isCompleted ? 'completed' : ''}`;
+                taskItem.innerHTML = `
+                    <div class="task-status">${isCompleted ? '✓' : ''}</div>
+                    <div class="task-info">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-desc">${task.description}</div>
+                    </div>
+                    <div class="task-meta">
+                        <div class="task-progress">
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: ${Math.min((progress / target) * 100, 100)}%"></div>
+                            </div>
+                            <span class="progress-text-small">${progress}/${target}</span>
+                        </div>
+                        <div class="task-reward">+${task.reward}分</div>
+                    </div>
+                `;
+                
+                taskList.appendChild(taskItem);
+            });
+            
+            rewardTotal.textContent = totalReward;
+            
+            // 更新刷新徽章
+            const badge = document.getElementById('dailyRefreshBadge');
+            badge.textContent = `${completedCount}/5 已完成`;
         }
         
         // 显示继续游戏区域
@@ -184,12 +273,28 @@
             // 清空列表
             achievementList.innerHTML = '';
             
-            // 所有成就配置
-            const allAchievements = [
+            // 从 sudoku.js 获取所有成就配置
+            const allAchievements = window.achievementConfig || [
                 { id: 'ACH001', name: '新手启程', reward: 5, condition: '通关10道入门题' },
                 { id: 'ACH002', name: '持之以恒', reward: 15, condition: '连续7天每日≥1通关' },
                 { id: 'ACH003', name: '速通达人', reward: 10, condition: '普通9宫3分钟内通关' },
-                { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' }
+                { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' },
+                { id: 'ACH005', name: '小有成就', reward: 15, condition: '累计通关50道题' },
+                { id: 'ACH006', name: '百题斩', reward: 30, condition: '累计通关100道题' },
+                { id: 'ACH007', name: '千题大师', reward: 100, condition: '累计通关1000道题' },
+                { id: 'ACH008', name: '初遇挑战', reward: 10, condition: '首次通关中等难度' },
+                { id: 'ACH009', name: '迎难而上', reward: 25, condition: '首次通关高级难度' },
+                { id: 'ACH010', name: '速度之星', reward: 20, condition: '普通9宫1分钟内通关' },
+                { id: 'ACH011', name: '完美主义', reward: 15, condition: '首次无错误通关' },
+                { id: 'ACH012', name: '连胜王者', reward: 20, condition: '连续通关5次' },
+                { id: 'ACH013', name: '变体大师', reward: 50, condition: '通关所有类型变体数独' },
+                { id: 'ACH014', name: '杀手专家', reward: 30, condition: '通关所有难度杀手数独' },
+                { id: 'ACH015', name: '挑战极限', reward: 50, condition: '通关所有类型数独' },
+                { id: 'ACH016', name: '打卡达人', reward: 30, condition: '连续14天打卡' },
+                { id: 'ACH017', name: '签到王者', reward: 50, condition: '连续30天打卡' },
+                { id: 'ACH018', name: '初见杀手', reward: 15, condition: '首次通关杀手数独' },
+                { id: 'ACH019', name: '对角线达人', reward: 15, condition: '首次通关对角线数独' },
+                { id: 'ACH020', name: '迷你专家', reward: 10, condition: '通关所有迷你数独' }
             ];
             
             // 生成成就列表

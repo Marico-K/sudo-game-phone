@@ -32,7 +32,7 @@
     <div class="container" id="recordsPage">
         <header class="game-header">
             <div class="header-left">
-                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <button class="back-btn" onclick="goHome()">‹</button>
                 <h1>📊 我的记录</h1>
             </div>
         </header>
@@ -54,8 +54,18 @@
                 </div>
             </div>
 
-            <!-- 筛选下拉框 -->
-            <div class="filter-section">
+            <!-- 记录类型切换标签 -->
+            <div class="records-tabs">
+                <button class="record-tab-btn active" id="gameRecordTab" onclick="switchRecordType('game')">
+                    🎮 游戏记录
+                </button>
+                <button class="record-tab-btn" id="scoreRecordTab" onclick="switchRecordType('score')">
+                    💰 积分记录
+                </button>
+            </div>
+
+            <!-- 筛选下拉框（游戏记录专用） -->
+            <div class="filter-section" id="gameFilterSection">
                 <h3>按难度筛选</h3>
                 <select class="filter-select" onchange="filterRecords(this.value)">
                     <option value="ALL">全部</option>
@@ -79,8 +89,8 @@
                 </select>
             </div>
 
-            <!-- 记录表格 -->
-            <div class="records-table-container">
+            <!-- 游戏记录表格 -->
+            <div class="records-table-container" id="gameRecordsContainer">
                 <table class="records-table" id="recordsTable">
                     <thead>
                         <tr>
@@ -105,14 +115,39 @@
                     <button class="primary-btn" onclick="goHome()">开始游戏</button>
                 </div>
 
-                <!-- 分页控件 -->
-                <div class="pagination-container" id="paginationContainer" style="display: none;">
-                    <div class="pagination-info">共 <span id="totalRecords"></span> 条记录</div>
+            </div>
+
+            <!-- 分页控件 -->
+            <div class="pagination-container" id="paginationContainer" style="display: none;">
+                <div class="pagination-info">共 <span id="totalRecords"></span> 条记录</div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="prevPageBtn" onclick="changePage(currentPage - 1)"
+                        disabled title="上一页">‹</button>
+                    <span class="pagination-current" id="paginationCurrent">1 / 1</span>
+                    <button class="pagination-btn" id="nextPageBtn" onclick="changePage(currentPage + 1)"
+                        disabled title="下一页">›</button>
+                </div>
+            </div>
+
+            <!-- 积分记录列表 -->
+            <div class="score-records-container" id="scoreRecordsContainer" style="display: none;">
+                <div class="score-records-list" id="scoreRecordsList"></div>
+
+                <!-- 积分记录空状态提示 -->
+                <div class="empty-state" id="scoreEmptyState" style="display: none;">
+                    <div class="empty-icon">💰</div>
+                    <p>还没有积分记录</p>
+                    <button class="primary-btn" onclick="goHome()">开始游戏</button>
+                </div>
+
+                <!-- 积分记录分页控件 -->
+                <div class="pagination-container" id="scorePaginationContainer" style="display: none;">
+                    <div class="pagination-info">共 <span id="totalScoreRecords"></span> 条记录</div>
                     <div class="pagination-controls">
-                        <button class="pagination-btn" id="prevPageBtn" onclick="changePage(currentPage - 1)"
+                        <button class="pagination-btn" id="scorePrevPageBtn" onclick="changeScorePage(currentScorePage - 1)"
                             disabled title="上一页">‹</button>
-                        <span class="pagination-current" id="paginationCurrent">1 / 1</span>
-                        <button class="pagination-btn" id="nextPageBtn" onclick="changePage(currentPage + 1)"
+                        <span class="pagination-current" id="scorePaginationCurrent">1 / 1</span>
+                        <button class="pagination-btn" id="scoreNextPageBtn" onclick="changeScorePage(currentScorePage + 1)"
                             disabled title="下一页">›</button>
                     </div>
                 </div>
@@ -124,32 +159,70 @@
     <script>
         // 分页变量
         let currentPage = 1;
+        let currentScorePage = 1;
         const pageSize = 20;
         let currentFilter = 'ALL';
-        let allRecords = [];
+        let currentRecordType = 'game';
+        let allGameRecords = [];
+        let allScoreRecords = [];
 
         // 记录页初始化
         document.addEventListener("DOMContentLoaded", function () {
-            loadRecordsWithPagination();
+            loadRecords();
         });
 
-        // 加载记录（带分页）
-        function loadRecordsWithPagination() {
-            allRecords = Storage.getRecords();
+        // 加载记录
+        function loadRecords() {
+            allGameRecords = Storage.getRecords();
+            allScoreRecords = Storage.getScoreRecords();
 
             // 更新统计
-            const totalGames = allRecords.length;
-            const completedGames = allRecords.filter(r => r.isCompleted && !r.isAbandoned).length;
-            const totalTime = allRecords.reduce((sum, r) => sum + (r.completionTime || 0), 0);
+            const totalGames = allGameRecords.length;
+            const completedGames = allGameRecords.filter(r => r.isCompleted && !r.isAbandoned).length;
+            const totalTime = allGameRecords.reduce((sum, r) => sum + (r.completionTime || 0), 0);
 
             document.getElementById('totalGames').textContent = totalGames;
             document.getElementById('completedGames').textContent = completedGames;
             document.getElementById('totalTime').textContent = formatTime(totalTime);
 
+            // 根据当前记录类型显示内容
+            if (currentRecordType === 'game') {
+                loadGameRecords();
+            } else {
+                loadScoreRecords();
+            }
+        }
+
+        // 切换记录类型
+        function switchRecordType(type) {
+            currentRecordType = type;
+            currentPage = 1;
+            currentScorePage = 1;
+
+            // 更新标签样式
+            document.querySelectorAll('.record-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(type + 'RecordTab').classList.add('active');
+
+            // 显示/隐藏对应的容器
+            if (type === 'game') {
+                document.getElementById('gameFilterSection').style.display = 'block';
+                document.getElementById('gameRecordsContainer').style.display = 'block';
+                document.getElementById('scoreRecordsContainer').style.display = 'none';
+                loadGameRecords();
+            } else {
+                document.getElementById('gameFilterSection').style.display = 'none';
+                document.getElementById('gameRecordsContainer').style.display = 'none';
+                document.getElementById('scoreRecordsContainer').style.display = 'block';
+                loadScoreRecords();
+            }
+        }
+
+        // 加载游戏记录（带分页）
+        function loadGameRecords() {
             // 筛选记录
             const filteredRecords = currentFilter === 'ALL'
-                ? allRecords
-                : allRecords.filter(r => r.gameType === currentFilter);
+                ? allGameRecords
+                : allGameRecords.filter(r => r.gameType === currentFilter);
 
             // 更新总记录数
             document.getElementById('totalRecords').textContent = filteredRecords.length;
@@ -213,24 +286,85 @@
             }).join('');
         }
 
-        // 切换页码
+        // 加载积分记录（带分页）
+        function loadScoreRecords() {
+            document.getElementById('totalScoreRecords').textContent = allScoreRecords.length;
+
+            if (allScoreRecords.length === 0) {
+                document.getElementById('scoreRecordsList').innerHTML = '';
+                document.getElementById('scoreEmptyState').style.display = 'flex';
+                document.getElementById('scorePaginationContainer').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('scoreEmptyState').style.display = 'none';
+
+            // 按时间倒序排列
+            const sortedRecords = [...allScoreRecords].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            // 计算分页
+            const totalPages = Math.ceil(sortedRecords.length / pageSize);
+            const startIndex = (currentScorePage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageRecords = sortedRecords.slice(startIndex, endIndex);
+
+            // 更新分页控件状态
+            document.getElementById('scorePaginationContainer').style.display = 'flex';
+            document.getElementById('scorePaginationCurrent').textContent = `${currentScorePage} / ${totalPages}`;
+            document.getElementById('scorePrevPageBtn').disabled = currentScorePage <= 1;
+            document.getElementById('scoreNextPageBtn').disabled = currentScorePage >= totalPages;
+
+            document.getElementById('scoreRecordsList').innerHTML = pageRecords.map(record => {
+                const typeIcon = record.type === 'achievement' ? '🏆' : (record.type === 'task' ? '📋' : '🎮');
+                const typeBg = record.type === 'achievement' ? 'achievement' : (record.type === 'task' ? 'task' : 'game');
+                const recordTime = formatDateTime(record.timestamp);
+                
+                return `
+                    <div class="score-record-item ${typeBg}">
+                        <div class="score-record-left">
+                            <div class="score-record-icon">${typeIcon}</div>
+                            <div class="score-record-info">
+                                <div class="score-record-name">${record.name}</div>
+                                <div class="score-record-desc">${record.description}</div>
+                            </div>
+                        </div>
+                        <div class="score-record-right">
+                            <span class="score-record-score">+${record.score}</span>
+                            <div class="score-record-time">${recordTime}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 切换页码（游戏记录）
         function changePage(page) {
             const filteredRecords = currentFilter === 'ALL'
-                ? allRecords
-                : allRecords.filter(r => r.gameType === currentFilter);
+                ? allGameRecords
+                : allGameRecords.filter(r => r.gameType === currentFilter);
             const totalPages = Math.ceil(filteredRecords.length / pageSize);
 
             if (page < 1 || page > totalPages) return;
 
             currentPage = page;
-            loadRecordsWithPagination();
+            loadGameRecords();
+        }
+
+        // 切换页码（积分记录）
+        function changeScorePage(page) {
+            const totalPages = Math.ceil(allScoreRecords.length / pageSize);
+
+            if (page < 1 || page > totalPages) return;
+
+            currentScorePage = page;
+            loadScoreRecords();
         }
 
         // 筛选记录（覆盖原有函数）
         function filterRecords(filter) {
             currentFilter = filter;
             currentPage = 1;
-            loadRecordsWithPagination();
+            loadGameRecords();
         }
     </script>
 </body>

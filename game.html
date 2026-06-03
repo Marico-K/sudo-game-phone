@@ -14,7 +14,7 @@
     <div class="game-container" id="gamePage">
         <header class="game-header">
             <div class="header-left">
-                <button class="back-btn" onclick="goHome()">← 返回</button>
+                <button class="back-btn" onclick="goHome()">‹</button>
             </div>
             <div class="header-center">
                 <h1 id="gameTypeTitle">数独游戏</h1>
@@ -162,7 +162,7 @@
 
             currentGameType = gameType;
             currentDifficulty = difficultyType;
-            document.getElementById("gameTypeTitle").textContent = `数独游戏 - ${getGameTypeName(gameType)}【${getDifficultyTypeName(difficultyType)}】`;
+            document.getElementById("gameTypeTitle").innerHTML = `数独游戏 - <span>${getGameTypeName(gameType)}</span>【${getDifficultyTypeName(difficultyType)}】`;
             resetGameControls();
 
             // ==================== 自动判断：继续游戏 OR 新游戏 ====================

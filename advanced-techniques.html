@@ -23,20 +23,33 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 24px 32px;
-            text-align: center;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
-        .header p { margin: 8px 0 0; opacity: 0.9; font-size: 0.9em; }
+        .header-content {
+            text-align: center;
+            flex: 1;
+        }
+        .header h1 { margin: 0; font-size: 1.6em; font-weight: 600; }
+        .header p { margin: 6px 0 0; opacity: 0.9; font-size: 0.9em; }
         .back-btn {
-            display: inline-block;
-            margin-top: 16px;
-            padding: 8px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: none;
+            border: none;
             text-decoration: none;
+            color: rgba(255,255,255,0.8);
+            font-size: 2em;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .back-btn:hover {
             color: white;
-            font-size: 0.9em;
+            transform: scale(1.1);
         }
         .content { padding: 24px; }
         .technique-section {
@@ -144,9 +157,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧠 数独进阶技巧</h1>
-            <p>从入门到精通，掌握数独解题方法</p>
-            <a href="index.html" class="back-btn">← 返回首页</a>
+            <a href="index.html" class="back-btn"><</a>
+            <div class="header-content">
+                <h1>🧠 数独进阶技巧</h1>
+                <p>从入门到精通，掌握数独解题方法</p>
+            </div>
         </div>
 
         <div class="content">
