@@ -4922,6 +4922,23 @@ function updateCellDisplay(index) {
 }
 
 /**
+    * 更新所有候选数格子的显示（全局更新候选数高亮）
+    * 用于确定模式下填写确定数后，候选数高亮状态可能全局改变的情况
+    */
+function updateAllCandidateCells() {
+    const size = currentPuzzle.size || 9;
+    const totalCells = size * size;
+
+    for (let idx = 0; idx < totalCells; idx++) {
+        const value = currentBoard[idx];
+        // 只更新候选数格子
+        if (Array.isArray(value) && value.length > 0) {
+            updateCellDisplay(idx);
+        }
+    }
+}
+
+/**
     * 初始化单元格缓存
     */
 function initCellsCache() {
@@ -5163,23 +5180,12 @@ function placeNumber(num) {
     // 检查是否为固定数字
     if (originalPuzzle[index] !== '0') return;
 
-    // 需要更新的单元格索引集合
-    const updatedIndices = new Set([index]);
-
     // 根据输入模式执行不同操作
     if (inputMode === 'exact') {
         // 确定模式：设置确定值
         if (num === 0) {
             // 清除
             currentBoard[index] = [];
-
-            // 清除后，同行、同列、同宫的候选数高亮状态可能改变
-            const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
-            affectedIndices.forEach(idx => {
-                if (Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 0) {
-                    updatedIndices.add(idx);
-                }
-            });
         } else {
             // 设置确定值
             currentBoard[index] = num;
@@ -5192,12 +5198,17 @@ function placeNumber(num) {
                     if (candidateIdx >= 0) {
                         currentBoard[idx].splice(candidateIdx, 1);
                     }
-                    // 无论是否移除了候选数，都需要更新显示
-                    // 因为其他候选数可能因为这次移除而变得唯一
-                    updatedIndices.add(idx);
                 }
             });
         }
+
+        // 更新当前格子的显示（确定值或空）
+        updateCellDisplay(index);
+
+        // 确定模式下，候选数高亮状态可能全局改变，需要更新所有候选数格子
+        // 原因：某个候选数的唯一性可能因为其他候选数被移除而改变
+        // 例如：格子A的候选数1原本不唯一（格子B也有1），但格子B的1被移除后，A的1变成唯一
+        updateAllCandidateCells();
     } else {
         // 草稿模式：添加或移除候选数字
         if (num === 0) {
@@ -5225,13 +5236,12 @@ function placeNumber(num) {
         const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
         affectedIndices.forEach(idx => {
             if (Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 0) {
-                updatedIndices.add(idx);
+                updateCellDisplay(idx);
             }
         });
+        // 也更新当前格子
+        updateCellDisplay(index);
     }
-
-    // 优化：只更新受影响的单元格
-    updatedIndices.forEach(idx => updateCellDisplay(idx));
 
     // 如果填入的是确定值，高亮所有相同数字的格子（与选中有数字格子的效果一致）
     if (inputMode === 'exact' && num !== 0) {

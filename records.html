@@ -270,17 +270,19 @@
                     ? `+${record.totalScore}` 
                     : '-';
                 const scoreClass = record.isCompleted && record.totalScore > 0 ? 'positive' : '';
+                const gameType = record.gameType || 'STANDARD';
+                const difficultyType = record.difficultyType || 'MEDIUM';
                 
                 return `
                     <tr>
                         <td>#${record.puzzleId}</td>
-                        <td><span class="gameType-badge ${record.gameType.toLowerCase()}">${getGameTypeName(record.gameType)}</span></td>
-                        <td>${getDifficultyTypeName(record.difficultyType)}</td>
+                        <td><span class="gameType-badge ${gameType.toLowerCase()}">${getGameTypeName(gameType)}</span></td>
+                        <td>${getDifficultyTypeName(difficultyType)}</td>
                         <td>${startTimeText}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${durationText}</td>
                         <td><span class="score-badge ${scoreClass}">${scoreText}</span></td>
-                        <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + record.gameType + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
+                        <td>${canContinue ? '<button class="action-btn" onclick="continuePuzzle(' + record.puzzleId + ', \'' + gameType + '\')">继续</button>' : (canView ? '<button class="action-btn view-btn" onclick="viewPuzzle(' + record.puzzleId + ')">查看题目</button>' : '-')}</td>
                     </tr>
                 `;
             }).join('');
