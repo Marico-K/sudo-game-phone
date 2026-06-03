@@ -4725,7 +4725,61 @@ function isCandidateUnique(row, col, num) {
     const irregularBoxes = currentPuzzle.irregularBoxes;
     const index = row * size + col;
 
-    // 条件1：检查同行是否唯一
+    // 首先检查：如果同行、同列或同宫已经有确定值num，
+    // 那么当前格子的候选数num实际上是无效的，不应该高亮
+    // 条件0：检查同行是否已有确定值num
+    for (let c = 0; c < size; c++) {
+        const idx = row * size + c;
+        if (typeof currentBoard[idx] === 'number' && currentBoard[idx] === num) {
+            return false;
+        }
+    }
+
+    // 检查同列是否已有确定值num
+    for (let r = 0; r < size; r++) {
+        const idx = r * size + col;
+        if (typeof currentBoard[idx] === 'number' && currentBoard[idx] === num) {
+            return false;
+        }
+    }
+
+    // 检查同宫是否已有确定值num
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
+        for (const box of irregularBoxes) {
+            if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                for (const cell of box) {
+                    const [r, c] = cell;
+                    const idx = r * size + c;
+                    if (typeof currentBoard[idx] === 'number' && currentBoard[idx] === num) {
+                        return false;
+                    }
+                }
+                break;
+            }
+        }
+    } else {
+        const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+        const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+        const boxRowStart = Math.floor(row / boxRows) * boxRows;
+        const boxColStart = Math.floor(col / boxCols) * boxCols;
+        for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+            for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                const idx = r * size + c;
+                if (typeof currentBoard[idx] === 'number' && currentBoard[idx] === num) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // 条件0.5：如果当前格子的候选数只有一个，那么这个候选数应该高亮
+    // 这是"唯一候选"策略，与下面的"唯一位置"策略是两种不同的高亮逻辑
+    const currentCellValue = currentBoard[index];
+    if (Array.isArray(currentCellValue) && currentCellValue.length === 1 && currentCellValue[0] === num) {
+        return true;
+    }
+
+    // 条件1：检查同行是否唯一（该数字在该行只有这一个可填位置）
     let rowUnique = true;
     for (let c = 0; c < size; c++) {
         const idx = row * size + c;
@@ -4735,7 +4789,7 @@ function isCandidateUnique(row, col, num) {
         }
     }
 
-    // 条件2：检查同列是否唯一
+    // 条件2：检查同列是否唯一（该数字在该列只有这一个可填位置）
     let colUnique = true;
     for (let r = 0; r < size; r++) {
         const idx = r * size + col;
@@ -4745,7 +4799,7 @@ function isCandidateUnique(row, col, num) {
         }
     }
 
-    // 条件3：检查同宫是否唯一（标准或不规则）
+    // 条件3：检查同宫是否唯一（该数字在该宫只有这一个可填位置）
     let boxUnique = true;
     if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
         // 锯齿数独：检查不规则宫格
@@ -5118,6 +5172,14 @@ function placeNumber(num) {
         if (num === 0) {
             // 清除
             currentBoard[index] = [];
+
+            // 清除后，同行、同列、同宫的候选数高亮状态可能改变
+            const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+            affectedIndices.forEach(idx => {
+                if (Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 0) {
+                    updatedIndices.add(idx);
+                }
+            });
         } else {
             // 设置确定值
             currentBoard[index] = num;
@@ -5129,8 +5191,10 @@ function placeNumber(num) {
                     const candidateIdx = currentBoard[idx].indexOf(num);
                     if (candidateIdx >= 0) {
                         currentBoard[idx].splice(candidateIdx, 1);
-                        updatedIndices.add(idx);
                     }
+                    // 无论是否移除了候选数，都需要更新显示
+                    // 因为其他候选数可能因为这次移除而变得唯一
+                    updatedIndices.add(idx);
                 }
             });
         }
@@ -5168,6 +5232,19 @@ function placeNumber(num) {
 
     // 优化：只更新受影响的单元格
     updatedIndices.forEach(idx => updateCellDisplay(idx));
+
+    // 如果填入的是确定值，高亮所有相同数字的格子（与选中有数字格子的效果一致）
+    if (inputMode === 'exact' && num !== 0) {
+        const cells = initCellsCache();
+        // 先清除之前的高亮
+        cells.forEach(c => c.classList.remove('highlighted-num'));
+        // 高亮所有相同数字的格子
+        cells.forEach((c, idx) => {
+            if (currentBoard[idx] === num) {
+                c.classList.add('highlighted-num');
+            }
+        });
+    }
 
     // 检查冲突（只检查确定值）
     checkConflicts();
