@@ -80,6 +80,7 @@
                     <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
+                    <button class="home-btn secondary" onclick="showSaveManagerModal()">💾 存档管理</button>
                 </div>
             </div>
         </main>
@@ -473,6 +474,124 @@
             </div>
         </div>
     </div>
+
+    <!-- 存档管理弹窗 -->
+    <div id="SaveManagerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💾 存档管理</h2>
+                <span class="close" onclick="closeSaveManagerModal()">&times;</span>
+            </div>
+            <div class="modal-body save-manager-body">
+                <div class="save-section">
+                    <h3>📤 导出存档</h3>
+                    <p class="section-desc">将你的游戏进度导出为加密字符串，可以分享到其他设备</p>
+                    <button class="control-btn" onclick="exportSave()" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+                        📥 导出存档
+                    </button>
+                    <div id="exportResult" style="display: none; margin-top: 15px;">
+                        <textarea id="exportCode" readonly placeholder="导出的存档代码将显示在这里..."></textarea>
+                        <button class="control-btn" onclick="copyExportCode()" style="margin-top: 10px; background: linear-gradient(135deg, #673AB7, #5E35B1);">
+                            📋 复制代码
+                        </button>
+                    </div>
+                </div>
+
+                <div class="save-section">
+                    <h3>📥 导入存档</h3>
+                    <p class="section-desc">粘贴从其他设备导出的存档代码</p>
+                    <textarea id="importCode" placeholder="请粘贴存档代码..."></textarea>
+                    <button class="control-btn" onclick="importSave()" style="margin-top: 10px; background: linear-gradient(135deg, #4CAF50, #45a049);">
+                        📤 导入存档
+                    </button>
+                    <div id="importResult" style="margin-top: 15px; display: none;"></div>
+                </div>
+
+                <div class="save-section danger-section">
+                    <h3>⚠️ 清除数据</h3>
+                    <p class="section-desc">此操作将清除所有游戏数据，包括进度、成就和记录</p>
+                    <button class="control-btn danger-btn" onclick="clearAllSaveData()" style="background: linear-gradient(135deg, #F44336, #D32F2F);">
+                        🗑️ 清除所有数据
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示存档管理弹窗
+        function showSaveManagerModal() {
+            document.getElementById('SaveManagerModal').style.display = 'block';
+            document.getElementById('exportResult').style.display = 'none';
+            document.getElementById('importResult').style.display = 'none';
+            document.getElementById('importCode').value = '';
+        }
+
+        // 关闭存档管理弹窗
+        function closeSaveManagerModal() {
+            document.getElementById('SaveManagerModal').style.display = 'none';
+        }
+
+        // 导出存档
+        function exportSave() {
+            const saveData = Storage.exportSaveData();
+            document.getElementById('exportCode').value = saveData;
+            document.getElementById('exportResult').style.display = 'block';
+        }
+
+        // 复制导出代码
+        async function copyExportCode() {
+            const code = document.getElementById('exportCode').value;
+            try {
+                await navigator.clipboard.writeText(code);
+                alert('存档代码已复制到剪贴板！');
+            } catch (err) {
+                // 降级方案
+                const textarea = document.getElementById('exportCode');
+                textarea.select();
+                document.execCommand('copy');
+                alert('存档代码已复制到剪贴板！');
+            }
+        }
+
+        // 导入存档
+        function importSave() {
+            const code = document.getElementById('importCode').value.trim();
+            if (!code) {
+                document.getElementById('importResult').innerHTML = '<span style="color: #F44336;">请输入存档代码</span>';
+                document.getElementById('importResult').style.display = 'block';
+                return;
+            }
+
+            const result = Storage.importSaveData(code);
+            const resultDiv = document.getElementById('importResult');
+            
+            if (result.success) {
+                resultDiv.innerHTML = `
+                    <span style="color: #4CAF50;">✅ ${result.message}</span>
+                    <p style="margin-top: 10px; color: #666;">存档导出时间: ${new Date(result.exportTime).toLocaleString()}</p>
+                `;
+                // 重新加载页面以应用新存档
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                resultDiv.innerHTML = `<span style="color: #F44336;">❌ ${result.message}</span>`;
+            }
+            resultDiv.style.display = 'block';
+        }
+
+        // 清除所有数据
+        function clearAllSaveData() {
+            if (!confirm('⚠️ 确定要清除所有游戏数据吗？此操作不可撤销！')) {
+                return;
+            }
+            
+            Storage.clearAllData();
+            alert('所有数据已清除，页面将重新加载...');
+            location.reload();
+        }
+    </script>
 </body>
 
 </html>

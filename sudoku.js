@@ -2261,6 +2261,120 @@ const Storage = {
     },
 
     /**
+     * 简单加密函数（XOR加密）
+     */
+    encrypt(data, key = 'sudoku_secret_key') {
+        // 先编码以处理非ASCII字符
+        const encodedData = encodeURIComponent(data);
+        let encrypted = [];
+        for (let i = 0; i < encodedData.length; i++) {
+            encrypted.push(encodedData.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return btoa(String.fromCharCode(...encrypted));
+    },
+
+    /**
+     * 简单解密函数
+     */
+    decrypt(encrypted, key = 'sudoku_secret_key') {
+        try {
+            const decoded = atob(encrypted);
+            let decrypted = [];
+            for (let i = 0; i < decoded.length; i++) {
+                decrypted.push(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            // 解码还原非ASCII字符
+            return decodeURIComponent(String.fromCharCode(...decrypted));
+        } catch {
+            return null;
+        }
+    },
+
+    /**
+     * 导出存档 - 将所有数据打包成加密字符串
+     */
+    exportSaveData() {
+        const saveData = {
+            version: '1.0',
+            exportTime: new Date().toISOString(),
+            data: {
+                playerData: this.getPlayerData(),
+                records: this.getRecords(),
+                scoreRecords: this.getScoreRecords(),
+                session: localStorage.getItem(this.KEYS.SESSION),
+                puzzleId: localStorage.getItem(this.KEYS.PUZZLE_ID),
+                dailyTasks: this.getDailyTasks(),
+                weeklyTasks: this.getWeeklyTasks()
+            }
+        };
+        const jsonString = JSON.stringify(saveData);
+        return this.encrypt(jsonString);
+    },
+
+    /**
+     * 导入存档 - 解析加密字符串并恢复数据
+     */
+    importSaveData(encryptedData) {
+        try {
+            const jsonString = this.decrypt(encryptedData);
+            if (!jsonString) {
+                return { success: false, message: '无效的存档数据' };
+            }
+            
+            const saveData = JSON.parse(jsonString);
+            
+            // 验证版本
+            if (!saveData.version || saveData.version !== '1.0') {
+                return { success: false, message: '存档版本不兼容' };
+            }
+            
+            // 恢复数据
+            if (saveData.data.playerData) {
+                this.savePlayerData(saveData.data.playerData);
+            }
+            if (saveData.data.records) {
+                localStorage.setItem(this.KEYS.RECORDS, JSON.stringify(saveData.data.records));
+            }
+            if (saveData.data.scoreRecords) {
+                localStorage.setItem(this.KEYS.SCORE_RECORDS, JSON.stringify(saveData.data.scoreRecords));
+            }
+            if (saveData.data.session) {
+                localStorage.setItem(this.KEYS.SESSION, saveData.data.session);
+            }
+            if (saveData.data.puzzleId) {
+                localStorage.setItem(this.KEYS.PUZZLE_ID, saveData.data.puzzleId);
+            }
+            if (saveData.data.dailyTasks) {
+                localStorage.setItem(this.KEYS.DAILY_TASKS, JSON.stringify(saveData.data.dailyTasks));
+            }
+            if (saveData.data.weeklyTasks) {
+                localStorage.setItem(this.KEYS.WEEKLY_TASKS, JSON.stringify(saveData.data.weeklyTasks));
+            }
+            
+            return { 
+                success: true, 
+                message: '存档导入成功',
+                exportTime: saveData.exportTime 
+            };
+        } catch (error) {
+            return { success: false, message: '存档解析失败: ' + error.message };
+        }
+    },
+
+    /**
+     * 清除所有存档数据
+     */
+    clearAllData() {
+        localStorage.removeItem(this.KEYS.RECORDS);
+        localStorage.removeItem(this.KEYS.SCORE_RECORDS);
+        localStorage.removeItem(this.KEYS.SESSION);
+        localStorage.removeItem(this.KEYS.PUZZLE_ID);
+        localStorage.removeItem(this.KEYS.PLAYER_DATA);
+        localStorage.removeItem(this.KEYS.DAILY_TASKS);
+        localStorage.removeItem(this.KEYS.WEEKLY_TASKS);
+    },
+
+    /**
      * 获取玩家数据
      */
     getPlayerData() {
