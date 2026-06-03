@@ -194,7 +194,7 @@
             let completedCount = 0;
             
             Object.keys(tasks).forEach(taskId => {
-                if (taskId === 'lastRefreshDate') return;
+                if (taskId === 'lastRefreshDate' || taskId === 'version') return;
                 
                 const task = tasks[taskId];
                 const isCompleted = task.completed || task.claimed;
@@ -274,28 +274,7 @@
             achievementList.innerHTML = '';
             
             // 从 sudoku.js 获取所有成就配置
-            const allAchievements = window.achievementConfig || [
-                { id: 'ACH001', name: '新手启程', reward: 5, condition: '通关10道入门题' },
-                { id: 'ACH002', name: '持之以恒', reward: 15, condition: '连续7天每日≥1通关' },
-                { id: 'ACH003', name: '速通达人', reward: 10, condition: '普通9宫3分钟内通关' },
-                { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' },
-                { id: 'ACH005', name: '小有成就', reward: 15, condition: '累计通关50道题' },
-                { id: 'ACH006', name: '百题斩', reward: 30, condition: '累计通关100道题' },
-                { id: 'ACH007', name: '千题大师', reward: 100, condition: '累计通关1000道题' },
-                { id: 'ACH008', name: '初遇挑战', reward: 10, condition: '首次通关中等难度' },
-                { id: 'ACH009', name: '迎难而上', reward: 25, condition: '首次通关高级难度' },
-                { id: 'ACH010', name: '速度之星', reward: 20, condition: '普通9宫1分钟内通关' },
-                { id: 'ACH011', name: '完美主义', reward: 15, condition: '首次无错误通关' },
-                { id: 'ACH012', name: '连胜王者', reward: 20, condition: '连续通关5次' },
-                { id: 'ACH013', name: '变体大师', reward: 50, condition: '通关所有类型变体数独' },
-                { id: 'ACH014', name: '杀手专家', reward: 30, condition: '通关所有难度杀手数独' },
-                { id: 'ACH015', name: '挑战极限', reward: 50, condition: '通关所有类型数独' },
-                { id: 'ACH016', name: '打卡达人', reward: 30, condition: '连续14天打卡' },
-                { id: 'ACH017', name: '签到王者', reward: 50, condition: '连续30天打卡' },
-                { id: 'ACH018', name: '初见杀手', reward: 15, condition: '首次通关杀手数独' },
-                { id: 'ACH019', name: '对角线达人', reward: 15, condition: '首次通关对角线数独' },
-                { id: 'ACH020', name: '迷你专家', reward: 10, condition: '通关所有迷你数独' }
-            ];
+            const allAchievements = window.achievementConfig || [];
             
             // 生成成就列表
             allAchievements.forEach(achievement => {

@@ -8,7 +8,7 @@ let timerInterval = null;          // 计时器定时器ID
 let seconds = 0;                   // 游戏耗时（秒）
 let currentGameType = '';        // 当前游戏类型
 let currentDifficulty = '';      // 当前难度等级
-let attemptCount = 0;              // 当前题目尝试次数
+let attemptCount = 0;              // 当前题目重置次数
 let bestTime = null;               // 当前题目最佳成绩
 let puzzleIdCounter = 0;           // 题目ID计数器
 let cellsCache = null;             // 单元格DOM缓存
@@ -2214,6 +2214,10 @@ const Storage = {
         const data = localStorage.getItem(this.KEYS.DAILY_TASKS);
         if (data) {
             const tasks = JSON.parse(data);
+            // 检查任务数据版本（处理旧数据）
+            if (!tasks.version || tasks.version < 2) {
+                return this.resetDailyTasks();
+            }
             // 检查是否需要重置（新的一天）
             if (tasks.lastRefreshDate) {
                 const lastDate = new Date(tasks.lastRefreshDate).toDateString();
@@ -2341,7 +2345,7 @@ const dailyTaskTemplates = {
     beginner: [
         { id: 'daily_easy', name: '新手热身', description: '完成1道简单难度数独', type: 'game', target: 1, reward: 3, filter: { difficulty: 'EASY' } },
         { id: 'daily_mini', name: '迷你挑战', description: '完成1道迷你数独', type: 'game', target: 1, reward: 2, filter: { gameType: ['MINI_4x4', 'MINI_6x6'] } },
-        { id: 'daily_quick', name: '快速通关', description: '5分钟内完成1道数独', type: 'time', target: 300, reward: 5, filter: {} },
+        { id: 'daily_quick', name: '快速通关', description: '5分钟内完成1道数独', type: 'time', target: 1, timeLimit: 300, reward: 5, filter: {} },
         { id: 'daily_streak', name: '保持连胜', description: '连续完成2道数独', type: 'streak', target: 2, reward: 4, filter: {} },
         { id: 'daily_first', name: '每日首胜', description: '完成今日第一道数独', type: 'first', target: 1, reward: 5, filter: {} }
     ],
@@ -2349,7 +2353,7 @@ const dailyTaskTemplates = {
     intermediate: [
         { id: 'daily_medium', name: '进阶挑战', description: '完成2道中等难度数独', type: 'game', target: 2, reward: 8, filter: { difficulty: 'MEDIUM' } },
         { id: 'daily_standard', name: '标准练习', description: '完成3道标准数独', type: 'game', target: 3, reward: 6, filter: { gameType: 'STANDARD' } },
-        { id: 'daily_speed', name: '速度挑战', description: '3分钟内完成1道数独', type: 'time', target: 180, reward: 8, filter: {} },
+        { id: 'daily_speed', name: '速度挑战', description: '3分钟内完成1道数独', type: 'time', target: 1, timeLimit: 180, reward: 8, filter: {} },
         { id: 'daily_no_mistake', name: '完美通关', description: '无错误完成1道数独', type: 'perfect', target: 1, reward: 10, filter: {} },
         { id: 'daily_variant', name: '初尝变体', description: '完成1道变体数独', type: 'game', target: 1, reward: 10, filter: { gameType: ['DIAGONAL', 'ODD_EVEN'] } }
     ],
@@ -2357,7 +2361,7 @@ const dailyTaskTemplates = {
     advanced: [
         { id: 'daily_hard', name: '高手试炼', description: '完成2道高级难度数独', type: 'game', target: 2, reward: 15, filter: { difficulty: 'HARD' } },
         { id: 'daily_killer', name: '杀手挑战', description: '完成1道杀手数独', type: 'game', target: 1, reward: 12, filter: { gameType: ['KILLER_4x4', 'KILLER_6x6', 'KILLER_9x9'] } },
-        { id: 'daily_master', name: '大师速度', description: '2分钟内完成1道数独', type: 'time', target: 120, reward: 15, filter: {} },
+        { id: 'daily_master', name: '大师速度', description: '2分钟内完成1道数独', type: 'time', target: 1, timeLimit: 120, reward: 15, filter: {} },
         { id: 'daily_streak_5', name: '连胜大师', description: '连续完成5道数独', type: 'streak', target: 5, reward: 12, filter: {} },
         { id: 'daily_variant_2', name: '变体达人', description: '完成2道不同类型变体数独', type: 'game', target: 2, reward: 15, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU'] } }
     ],
@@ -2365,7 +2369,7 @@ const dailyTaskTemplates = {
     master: [
         { id: 'daily_hardcore', name: '硬核挑战', description: '完成3道高级难度数独', type: 'game', target: 3, reward: 25, filter: { difficulty: 'HARD' } },
         { id: 'daily_killer_9x9', name: '终极杀手', description: '完成1道9宫杀手数独', type: 'game', target: 1, reward: 20, filter: { gameType: 'KILLER_9x9' } },
-        { id: 'daily_speed_demon', name: '极速通关', description: '1分钟内完成1道标准数独', type: 'time', target: 60, reward: 20, filter: { gameType: 'STANDARD' } },
+        { id: 'daily_speed_demon', name: '极速通关', description: '1分钟内完成1道标准数独', type: 'time', target: 1, timeLimit: 60, reward: 20, filter: { gameType: 'STANDARD' } },
         { id: 'daily_perfect_streak', name: '完美连胜', description: '连续5道无错误通关', type: 'perfect_streak', target: 5, reward: 25, filter: {} },
         { id: 'daily_all_variant', name: '变体全制霸', description: '完成3道不同类型变体数独', type: 'game', target: 3, reward: 30, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU', 'CENTER_DOT', 'STAR', 'BLACK_WHITE_DOT', 'SANDWICH', 'SKYSCRAPER'] } }
     ]
@@ -2388,7 +2392,9 @@ function generateDailyTasks(level) {
     const taskGroup = getTaskGroup(level);
     const templates = dailyTaskTemplates[taskGroup];
     
-    const tasks = {};
+    const tasks = {
+        version: 2  // 任务数据版本号，用于强制更新旧数据
+    };
     templates.forEach(template => {
         tasks[template.id] = {
             ...template,
@@ -2411,7 +2417,7 @@ function updateDailyTasks(gameType, difficulty, completionTime, attemptCount) {
     
     Object.keys(tasks).forEach(taskId => {
         const task = tasks[taskId];
-        if (task.completed || task.claimed || taskId === 'lastRefreshDate') return;
+        if (task.completed || task.claimed || taskId === 'lastRefreshDate' || taskId === 'version') return;
         
         let shouldProgress = false;
         
@@ -2427,40 +2433,108 @@ function updateDailyTasks(gameType, difficulty, completionTime, attemptCount) {
                 }
                 break;
             case 'time':
-                shouldProgress = completionTime <= task.target;
+                // 速度挑战：单次通关时间小于等于时间限制即完成
+                shouldProgress = completionTime <= task.timeLimit;
                 break;
             case 'perfect':
                 shouldProgress = attemptCount === 1;
                 break;
             case 'first':
-                // 检查是否是今日第一个完成的任务
-                const completedToday = Object.values(tasks).filter(t => t.completed && t.type === 'game').length;
-                shouldProgress = completedToday === 0;
+                // 检查是否是今日第一个完成的任务（通过游戏记录判断）
+                const gameRecords = Storage.getRecords();
+                const today = new Date().toDateString();
+                const todayCompletedRecords = gameRecords.filter(r => r.isCompleted && !r.isAbandoned && 
+                    new Date(r.startTime || 0).toDateString() === today);
+                shouldProgress = todayCompletedRecords.length === 1;
                 break;
             case 'streak':
-                // 检查最近完成记录
-                const records = Storage.getRecords();
-                const completedRecords = records.filter(r => r.isCompleted && !r.isAbandoned);
-                const recentRecords = [...completedRecords].sort((a, b) => 
+                // 检查连续完成记录（从最新记录开始检查连续完成）
+                const streakRecords = Storage.getRecords();
+                const sortedRecords = [...streakRecords].sort((a, b) => 
                     new Date(b.startTime || 0) - new Date(a.startTime || 0)
-                ).slice(0, task.target);
-                shouldProgress = recentRecords.length >= task.target;
+                );
+                
+                let currentStreak = 0;
+                for (const record of sortedRecords) {
+                    if (record.isCompleted && !record.isAbandoned) {
+                        currentStreak++;
+                    } else {
+                        break; // 遇到未完成或放弃的记录，连胜中断
+                    }
+                    if (currentStreak >= task.target) {
+                        break;
+                    }
+                }
+                // 每次完成游戏都更新连胜进度（即使未达到目标）
+                shouldProgress = currentStreak > 0;
                 break;
             case 'perfect_streak':
-                const perfectRecords = completedRecords.filter(r => r.attemptCount === 1);
-                const recentPerfectRecords = [...perfectRecords].sort((a, b) => 
+                // 检查连续完美通关记录
+                const perfectStreakRecords = Storage.getRecords();
+                const sortedPerfectRecords = [...perfectStreakRecords].sort((a, b) => 
                     new Date(b.startTime || 0) - new Date(a.startTime || 0)
-                ).slice(0, task.target);
-                shouldProgress = recentPerfectRecords.length >= task.target;
+                );
+                
+                let perfectStreak = 0;
+                for (const record of sortedPerfectRecords) {
+                    if (record.isCompleted && !record.isAbandoned && record.attemptCount === 1) {
+                        perfectStreak++;
+                    } else {
+                        break; // 遇到不完美或未完成的记录，连胜中断
+                    }
+                    if (perfectStreak >= task.target) {
+                        break;
+                    }
+                }
+                // 每次完成游戏都更新完美连胜进度（即使未达到目标）
+                shouldProgress = perfectStreak > 0;
                 break;
         }
         
         if (shouldProgress) {
-            task.progress++;
-            if (task.progress >= task.target) {
+            if (task.type === 'time' || task.type === 'first') {
+                // 这些任务类型：满足条件直接完成
+                task.progress = task.target;
                 task.completed = true;
                 totalReward += task.reward;
                 completedTasks.push(task);
+            } else if (task.type === 'streak' || task.type === 'perfect_streak') {
+                // 连胜任务：更新当前连胜数作为进度
+                const streakRecords = Storage.getRecords();
+                const sortedStreakRecords = [...streakRecords].sort((a, b) => 
+                    new Date(b.startTime || 0) - new Date(a.startTime || 0)
+                );
+                
+                let currentStreak = 0;
+                for (const record of sortedStreakRecords) {
+                    if (task.type === 'perfect_streak') {
+                        if (record.isCompleted && !record.isAbandoned && record.attemptCount === 1) {
+                            currentStreak++;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        if (record.isCompleted && !record.isAbandoned) {
+                            currentStreak++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                
+                task.progress = Math.min(currentStreak, task.target);
+                if (task.progress >= task.target) {
+                    task.completed = true;
+                    totalReward += task.reward;
+                    completedTasks.push(task);
+                }
+            } else {
+                task.progress++;
+                if (task.progress >= task.target) {
+                    task.completed = true;
+                    totalReward += task.reward;
+                    completedTasks.push(task);
+                }
             }
         }
     });
@@ -2523,27 +2597,37 @@ const levelConfig = [
 ];
 
 // 成就配置
-const achievementConfig = [
-    { id: 'ACH001', name: '新手启程', reward: 5, condition: '通关10道入门题' },
-    { id: 'ACH002', name: '持之以恒', reward: 15, condition: '连续7天每日≥1通关' },
-    { id: 'ACH003', name: '速通达人', reward: 10, condition: '普通9宫3分钟内通关' },
-    { id: 'ACH004', name: '变体先锋', reward: 20, condition: '首次通关变体数独' },
-    { id: 'ACH005', name: '小有成就', reward: 15, condition: '累计通关50道题' },
-    { id: 'ACH006', name: '百题斩', reward: 30, condition: '累计通关100道题' },
-    { id: 'ACH007', name: '千题大师', reward: 100, condition: '累计通关1000道题' },
-    { id: 'ACH008', name: '初遇挑战', reward: 10, condition: '首次通关中等难度' },
-    { id: 'ACH009', name: '迎难而上', reward: 25, condition: '首次通关高级难度' },
-    { id: 'ACH010', name: '速度之星', reward: 20, condition: '普通9宫1分钟内通关' },
-    { id: 'ACH011', name: '完美主义', reward: 15, condition: '首次无错误通关' },
-    { id: 'ACH012', name: '连胜王者', reward: 20, condition: '连续通关5次' },
-    { id: 'ACH013', name: '变体大师', reward: 50, condition: '通关所有类型变体数独' },
-    { id: 'ACH014', name: '杀手专家', reward: 30, condition: '通关所有难度杀手数独' },
-    { id: 'ACH015', name: '挑战极限', reward: 50, condition: '通关所有类型数独' },
-    { id: 'ACH016', name: '打卡达人', reward: 30, condition: '连续14天打卡' },
-    { id: 'ACH017', name: '签到王者', reward: 50, condition: '连续30天打卡' },
-    { id: 'ACH018', name: '初见杀手', reward: 15, condition: '首次通关杀手数独' },
-    { id: 'ACH019', name: '对角线达人', reward: 15, condition: '首次通关对角线数独' },
-    { id: 'ACH020', name: '迷你专家', reward: 10, condition: '通关所有迷你数独' }
+const achievementConfig = window.achievementConfig = [
+    { id: 'ACH001', name: '新手启程', reward: 10, condition: '通关50道入门题' },
+    { id: 'ACH002', name: '持之以恒', reward: 30, condition: '连续14天每日≥1通关' },
+    { id: 'ACH003', name: '速通达人', reward: 20, condition: '高级难度2分钟内通关' },
+    { id: 'ACH004', name: '变体先锋', reward: 25, condition: '首次通关变体数独' },
+    { id: 'ACH005', name: '小有成就', reward: 25, condition: '累计通关100道题' },
+    { id: 'ACH006', name: '百题斩', reward: 50, condition: '累计通关500道题' },
+    { id: 'ACH007', name: '千题大师', reward: 150, condition: '累计通关1000道题' },
+    { id: 'ACH008', name: '初遇挑战', reward: 20, condition: '首次通关高级难度' },
+    { id: 'ACH009', name: '迎难而上', reward: 50, condition: '累计通关20道高级难度' },
+    { id: 'ACH010', name: '速度之星', reward: 30, condition: '高级难度45秒内通关' },
+    { id: 'ACH011', name: '完美主义', reward: 50, condition: '高级难度标准数独无重置90秒内通关' },
+    { id: 'ACH012', name: '连胜王者', reward: 35, condition: '连续通关10次' },
+    { id: 'ACH013', name: '变体大师', reward: 80, condition: '通关所有类型变体数独' },
+    { id: 'ACH014', name: '杀手专家', reward: 50, condition: '通关所有难度杀手数独' },
+    { id: 'ACH015', name: '挑战极限', reward: 100, condition: '通关所有类型数独' },
+    { id: 'ACH016', name: '打卡达人', reward: 40, condition: '连续21天打卡' },
+    { id: 'ACH017', name: '签到王者', reward: 80, condition: '连续60天打卡' },
+    { id: 'ACH018', name: '初见杀手', reward: 20, condition: '首次通关杀手数独' },
+    { id: 'ACH019', name: '对角线达人', reward: 20, condition: '首次通关对角线数独' },
+    { id: 'ACH020', name: '迷你专家', reward: 15, condition: '通关所有迷你数独' },
+    { id: 'ACH021', name: '极速大师', reward: 80, condition: '高级难度30秒内通关' },
+    { id: 'ACH022', name: '千锤百炼', reward: 300, condition: '累计通关5000道题' },
+    { id: 'ACH023', name: '无尽连胜', reward: 60, condition: '连续通关20次' },
+    { id: 'ACH024', name: '全能大师', reward: 500, condition: '解锁所有成就' },
+    { id: 'ACH025', name: '限时挑战', reward: 40, condition: '10分钟内完成3道高级数独' },
+    { id: 'ACH026', name: '完美连胜', reward: 50, condition: '连续10次无重置通关' },
+    { id: 'ACH027', name: '夜行大师', reward: 30, condition: '凌晨0-6点完成5次通关' },
+    { id: 'ACH028', name: '数字艺术家', reward: 45, condition: '使用颜色模式完成100题' },
+    { id: 'ACH029', name: '杀手之王', reward: 60, condition: '通关9宫杀手数独' },
+    { id: 'ACH030', name: '传奇大师', reward: 200, condition: '累计通关10000道题' }
 ];
 
 /**
@@ -2607,36 +2691,37 @@ function checkAchievements(gameType, difficulty, completionTime) {
     const achievements = [];
     const totalCompleted = completedRecords.length;
     
-    // ACH001: 新手启程 - 通关10道入门题
     let playerData = Storage.getPlayerData();
+    
+    // ACH001: 新手启程 - 通关50道入门题
     if (!playerData.achievementList.includes('ACH001')) {
         const easyCount = completedRecords.filter(r => 
             ['MINI_4x4', 'MINI_6x6', 'STANDARD'].includes(r.gameType) && 
             r.difficultyType === 'EASY'
         ).length;
-        if (easyCount >= 10) {
+        if (easyCount >= 50) {
             achievements.push('ACH001');
-            addScore(5);
+            addScore(10);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '新手启程',
-                description: '通关10道入门题',
-                score: 5
+                description: '通关50道入门题',
+                score: 10
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH003: 速通达人 - 普通9宫3分钟内通关
+    // ACH003: 速通达人 - 高级难度2分钟内通关
     if (!playerData.achievementList.includes('ACH003')) {
-        if (gameType === 'STANDARD' && completionTime < 180) {
+        if (gameType === 'STANDARD' && currentDifficulty === 'HARD' && completionTime < 120) {
             achievements.push('ACH003');
-            addScore(10);
+            addScore(20);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '速通达人',
-                description: '普通9宫3分钟内通关',
-                score: 10
+                description: '高级难度2分钟内通关',
+                score: 20
             });
             playerData = Storage.getPlayerData();
         }
@@ -2661,31 +2746,31 @@ function checkAchievements(gameType, difficulty, completionTime) {
         }
     }
     
-    // ACH005: 小有成就 - 累计通关50道题
+    // ACH005: 小有成就 - 累计通关100道题
     if (!playerData.achievementList.includes('ACH005')) {
-        if (totalCompleted >= 50) {
+        if (totalCompleted >= 100) {
             achievements.push('ACH005');
-            addScore(15);
+            addScore(25);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '小有成就',
-                description: '累计通关50道题',
-                score: 15
+                description: '累计通关100道题',
+                score: 25
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH006: 百题斩 - 累计通关100道题
+    // ACH006: 百题斩 - 累计通关500道题
     if (!playerData.achievementList.includes('ACH006')) {
-        if (totalCompleted >= 100) {
+        if (totalCompleted >= 500) {
             achievements.push('ACH006');
-            addScore(30);
+            addScore(50);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '百题斩',
-                description: '累计通关100道题',
-                score: 30
+                description: '累计通关500道题',
+                score: 50
             });
             playerData = Storage.getPlayerData();
         }
@@ -2695,93 +2780,98 @@ function checkAchievements(gameType, difficulty, completionTime) {
     if (!playerData.achievementList.includes('ACH007')) {
         if (totalCompleted >= 1000) {
             achievements.push('ACH007');
-            addScore(100);
+            addScore(150);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '千题大师',
                 description: '累计通关1000道题',
-                score: 100
+                score: 150
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH008: 初遇挑战 - 首次通关中等难度
+    // ACH008: 初遇挑战 - 首次通关高级难度
     if (!playerData.achievementList.includes('ACH008')) {
-        const hasMediumCompleted = completedRecords.some(r => r.difficultyType === 'MEDIUM');
-        if (hasMediumCompleted) {
+        const hasHardCompleted = completedRecords.some(r => r.difficultyType === 'HARD');
+        if (hasHardCompleted) {
             achievements.push('ACH008');
-            addScore(10);
+            addScore(20);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '初遇挑战',
-                description: '首次通关中等难度',
-                score: 10
+                description: '首次通关高级难度',
+                score: 20
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH009: 迎难而上 - 首次通关高级难度
+    // ACH009: 迎难而上 - 累计通关20道高级难度
     if (!playerData.achievementList.includes('ACH009')) {
-        const hasHardCompleted = completedRecords.some(r => r.difficultyType === 'HARD');
-        if (hasHardCompleted) {
+        const hardCount = completedRecords.filter(r => r.difficultyType === 'HARD').length;
+        if (hardCount >= 20) {
             achievements.push('ACH009');
-            addScore(25);
+            addScore(50);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '迎难而上',
-                description: '首次通关高级难度',
-                score: 25
+                description: '累计通关20道高级难度',
+                score: 50
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH010: 速度之星 - 普通9宫1分钟内通关
+    // ACH010: 速度之星 - 高级难度45秒内通关
     if (!playerData.achievementList.includes('ACH010')) {
-        if (gameType === 'STANDARD' && completionTime < 60) {
+        if (gameType === 'STANDARD' && currentDifficulty === 'HARD' && completionTime < 45) {
             achievements.push('ACH010');
-            addScore(20);
+            addScore(30);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '速度之星',
-                description: '普通9宫1分钟内通关',
-                score: 20
+                description: '高级难度45秒内通关',
+                score: 30
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH011: 完美主义 - 首次无错误通关
+    // ACH011: 完美主义 - 高级难度无重置90秒内通关
     if (!playerData.achievementList.includes('ACH011')) {
-        const hasPerfectCompleted = completedRecords.some(r => r.attemptCount === 1);
+        const hasPerfectCompleted = completedRecords.some(r => 
+            r.attemptCount === 0 &&                              // 从未重置
+            r.gameType === 'STANDARD' &&                         // 标准9宫格
+            r.difficultyType === 'HARD' &&                       // 高级难度
+            r.completionTime && r.completionTime <= 90           // 90秒内完成
+        );
         if (hasPerfectCompleted) {
             achievements.push('ACH011');
-            addScore(15);
+            addScore(50);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '完美主义',
-                description: '首次无错误通关',
-                score: 15
+                description: '高级难度标准数独无重置90秒内通关',
+                score: 50
             });
             playerData = Storage.getPlayerData();
         }
     }
     
-    // ACH012: 连胜王者 - 连续通关5次
+    // ACH012: 连胜王者 - 连续通关10次
     if (!playerData.achievementList.includes('ACH012')) {
         const recentRecords = [...completedRecords].sort((a, b) => 
             new Date(b.startTime || 0) - new Date(a.startTime || 0)
-        ).slice(0, 5);
-        if (recentRecords.length >= 5) {
+        ).slice(0, 10);
+        if (recentRecords.length >= 10) {
             achievements.push('ACH012');
-            addScore(20);
+            addScore(35);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '连胜王者',
-                description: '连续通关5次',
-                score: 20
+                description: '连续通关10次',
+                score: 35
             });
             playerData = Storage.getPlayerData();
         }
@@ -2796,12 +2886,12 @@ function checkAchievements(gameType, difficulty, completionTime) {
             variantTypes.includes(r.gameType)).map(r => r.gameType))];
         if (completedVariantTypes.length >= variantTypes.length) {
             achievements.push('ACH013');
-            addScore(50);
+            addScore(80);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '变体大师',
                 description: '通关所有类型变体数独',
-                score: 50
+                score: 80
             });
             playerData = Storage.getPlayerData();
         }
@@ -2814,12 +2904,12 @@ function checkAchievements(gameType, difficulty, completionTime) {
             killerTypes.includes(r.gameType)).map(r => r.gameType))];
         if (completedKillerTypes.length >= killerTypes.length) {
             achievements.push('ACH014');
-            addScore(30);
+            addScore(50);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '杀手专家',
                 description: '通关所有难度杀手数独',
-                score: 30
+                score: 50
             });
             playerData = Storage.getPlayerData();
         }
@@ -2834,12 +2924,12 @@ function checkAchievements(gameType, difficulty, completionTime) {
         const completedTypes = [...new Set(completedRecords.map(r => r.gameType))];
         if (completedTypes.length >= allGameTypes.length) {
             achievements.push('ACH015');
-            addScore(50);
+            addScore(100);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '挑战极限',
                 description: '通关所有类型数独',
-                score: 50
+                score: 100
             });
             playerData = Storage.getPlayerData();
         }
@@ -2851,12 +2941,12 @@ function checkAchievements(gameType, difficulty, completionTime) {
         const hasKillerCompleted = completedRecords.some(r => killerTypes.includes(r.gameType));
         if (hasKillerCompleted) {
             achievements.push('ACH018');
-            addScore(15);
+            addScore(20);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '初见杀手',
                 description: '首次通关杀手数独',
-                score: 15
+                score: 20
             });
             playerData = Storage.getPlayerData();
         }
@@ -2867,12 +2957,12 @@ function checkAchievements(gameType, difficulty, completionTime) {
         const hasDiagonalCompleted = completedRecords.some(r => r.gameType === 'DIAGONAL');
         if (hasDiagonalCompleted) {
             achievements.push('ACH019');
-            addScore(15);
+            addScore(20);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '对角线达人',
                 description: '首次通关对角线数独',
-                score: 15
+                score: 20
             });
             playerData = Storage.getPlayerData();
         }
@@ -2885,12 +2975,184 @@ function checkAchievements(gameType, difficulty, completionTime) {
             miniTypes.includes(r.gameType)).map(r => r.gameType))];
         if (completedMiniTypes.length >= miniTypes.length) {
             achievements.push('ACH020');
-            addScore(10);
+            addScore(15);
             Storage.saveScoreRecord({
                 type: 'achievement',
                 name: '迷你专家',
                 description: '通关所有迷你数独',
-                score: 10
+                score: 15
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH021: 极速大师 - 高级难度30秒内通关
+    if (!playerData.achievementList.includes('ACH021')) {
+        if (gameType === 'STANDARD' && currentDifficulty === 'HARD' && completionTime < 30) {
+            achievements.push('ACH021');
+            addScore(80);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '极速大师',
+                description: '高级难度30秒内通关',
+                score: 80
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH022: 千锤百炼 - 累计通关5000道题
+    if (!playerData.achievementList.includes('ACH022')) {
+        if (totalCompleted >= 5000) {
+            achievements.push('ACH022');
+            addScore(300);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '千锤百炼',
+                description: '累计通关5000道题',
+                score: 300
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH023: 无尽连胜 - 连续通关20次
+    if (!playerData.achievementList.includes('ACH023')) {
+        const recentRecords = [...completedRecords].sort((a, b) => 
+            new Date(b.startTime || 0) - new Date(a.startTime || 0)
+        ).slice(0, 20);
+        if (recentRecords.length >= 20) {
+            achievements.push('ACH023');
+            addScore(60);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '无尽连胜',
+                description: '连续通关20次',
+                score: 60
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH024: 全能大师 - 解锁所有成就
+    if (!playerData.achievementList.includes('ACH024')) {
+        if (playerData.achievementList.length >= achievementConfig.length) {
+            achievements.push('ACH024');
+            addScore(500);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '全能大师',
+                description: '解锁所有成就',
+                score: 500
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH025: 限时挑战 - 10分钟内完成3道高级数独
+    if (!playerData.achievementList.includes('ACH025')) {
+        const recentHardRecords = [...completedRecords]
+            .filter(r => r.difficultyType === 'HARD' && r.completionTime)
+            .sort((a, b) => new Date(b.startTime || 0) - new Date(a.startTime || 0))
+            .slice(0, 3);
+        if (recentHardRecords.length >= 3) {
+            const firstTime = new Date(recentHardRecords[2].startTime || 0).getTime();
+            const lastTime = new Date(recentHardRecords[0].startTime || 0).getTime() + 
+                           (recentHardRecords[0].completionTime || 0) * 1000;
+            if ((lastTime - firstTime) / 1000 <= 600) {
+                achievements.push('ACH025');
+                addScore(40);
+                Storage.saveScoreRecord({
+                    type: 'achievement',
+                    name: '限时挑战',
+                    description: '10分钟内完成3道高级数独',
+                    score: 40
+                });
+                playerData = Storage.getPlayerData();
+            }
+        }
+    }
+    
+    // ACH026: 完美连胜 - 连续10次无重置通关
+    if (!playerData.achievementList.includes('ACH026')) {
+        const recentRecords = [...completedRecords]
+            .filter(r => r.attemptCount === 0)
+            .sort((a, b) => new Date(b.startTime || 0) - new Date(a.startTime || 0))
+            .slice(0, 10);
+        if (recentRecords.length >= 10) {
+            achievements.push('ACH026');
+            addScore(50);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '完美连胜',
+                description: '连续10次无重置通关',
+                score: 50
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH027: 夜行大师 - 凌晨0-6点完成5次通关
+    if (!playerData.achievementList.includes('ACH027')) {
+        const nightRecords = completedRecords.filter(r => {
+            const hour = new Date(r.startTime || 0).getHours();
+            return hour >= 0 && hour < 6;
+        });
+        if (nightRecords.length >= 5) {
+            achievements.push('ACH027');
+            addScore(30);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '夜行大师',
+                description: '凌晨0-6点完成5次通关',
+                score: 30
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH028: 数字艺术家 - 使用颜色模式完成100题
+    if (!playerData.achievementList.includes('ACH028')) {
+        const colorRecords = completedRecords.filter(r => r.iconMode === 'colors');
+        if (colorRecords.length >= 100) {
+            achievements.push('ACH028');
+            addScore(45);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '数字艺术家',
+                description: '使用颜色模式完成100题',
+                score: 45
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH029: 杀手之王 - 通关9宫杀手数独
+    if (!playerData.achievementList.includes('ACH029')) {
+        const hasKiller9x9 = completedRecords.some(r => r.gameType === 'KILLER_9x9');
+        if (hasKiller9x9) {
+            achievements.push('ACH029');
+            addScore(60);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '杀手之王',
+                description: '通关9宫杀手数独',
+                score: 60
+            });
+            playerData = Storage.getPlayerData();
+        }
+    }
+    
+    // ACH030: 传奇大师 - 累计通关10000道题
+    if (!playerData.achievementList.includes('ACH030')) {
+        if (totalCompleted >= 10000) {
+            achievements.push('ACH030');
+            addScore(200);
+            Storage.saveScoreRecord({
+                type: 'achievement',
+                name: '传奇大师',
+                description: '累计通关10000道题',
+                score: 200
             });
             playerData = Storage.getPlayerData();
         }
@@ -3601,9 +3863,9 @@ function getDifficultyTypeName(difficultyType) {
 function loadUserRecord() {
     const record = Storage.getRecord(currentPuzzle.id);
     if (record) {
-        attemptCount = record.attemptCount || 1;
+        attemptCount = record.attemptCount || 0;
         bestTime = record.bestTime;
-        document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+        document.getElementById('attemptInfo').textContent = attemptCount > 0 ? `已重置 ${attemptCount} 次` : '未重置';
         if (bestTime) {
             document.getElementById('bestTimeInfo').style.display = 'block';
             document.getElementById('bestTime').textContent = formatTime(bestTime);
@@ -3611,9 +3873,9 @@ function loadUserRecord() {
             document.getElementById('bestTimeInfo').style.display = 'none';
         }
     } else {
-        attemptCount = 1;
+        attemptCount = 0;
         bestTime = null;
-        document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+        document.getElementById('attemptInfo').textContent = '未重置';
         document.getElementById('bestTimeInfo').style.display = 'none';
     }
 
@@ -3636,10 +3898,8 @@ function saveAttemptRecord() {
         currentBoard: '',
         elapsedTime: 0
     };
-    record.attemptCount++;
+    record.attemptCount = attemptCount; // 使用当前的重置次数
     Storage.saveRecord(record);
-    attemptCount = record.attemptCount;
-    document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
 }
 
 /**
@@ -4863,6 +5123,9 @@ function checkSolution() {
             record.bestTime = seconds;
         }
 
+        // 先保存游戏记录（确保任务检查时能看到）
+        Storage.saveRecord(record);
+        
         // 处理通关奖励
         const rewardResult = handleCompletionRewards(currentGameType, currentDifficulty, seconds, attemptCount);
         
@@ -4886,10 +5149,9 @@ function checkSolution() {
         
         // 保存每日任务奖励为积分记录（已在 updateDailyTasks 中处理）
         
-        // 只在游戏记录中保存基础通关分数
+        // 更新记录中的分数信息
         record.earnedScore = rewardResult.baseScore;
         record.totalScore = rewardResult.baseScore;
-        
         Storage.saveRecord(record);
         
         // 显示涂色模式按钮
@@ -4933,6 +5195,10 @@ function resetPuzzle() {
     renderBoard();
     seconds = 0;
     updateTimerDisplay();
+    
+    // 重置题目，尝试次数+1
+    attemptCount++;
+    document.getElementById('attemptInfo').textContent = `已重置 ${attemptCount} 次`;
 }
 
 /**
