@@ -2211,6 +2211,20 @@ header p {
     color: #6c757d;
 }
 
+.score-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.score-badge.positive {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #28a745;
+}
+
 .action-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;

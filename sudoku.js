@@ -2376,12 +2376,12 @@ function addScore(points) {
  * 检查并触发成就
  */
 function checkAchievements(gameType, difficulty, completionTime) {
-    const playerData = Storage.getPlayerData();
     const records = Storage.getRecords();
     const completedRecords = records.filter(r => r.isCompleted && !r.isAbandoned);
     const achievements = [];
     
     // ACH001: 新手启程 - 通关10道入门题
+    let playerData = Storage.getPlayerData();
     if (!playerData.achievementList.includes('ACH001')) {
         const easyCount = completedRecords.filter(r => 
             ['MINI_4x4', 'MINI_6x6', 'STANDARD'].includes(r.gameType) && 
@@ -2390,6 +2390,7 @@ function checkAchievements(gameType, difficulty, completionTime) {
         if (easyCount >= 10) {
             achievements.push('ACH001');
             addScore(5);
+            playerData = Storage.getPlayerData(); // 重新获取最新数据
         }
     }
     
@@ -2398,6 +2399,7 @@ function checkAchievements(gameType, difficulty, completionTime) {
         if (gameType === 'STANDARD' && completionTime < 180) { // 3分钟 = 180秒
             achievements.push('ACH003');
             addScore(10);
+            playerData = Storage.getPlayerData(); // 重新获取最新数据
         }
     }
     
@@ -2410,11 +2412,13 @@ function checkAchievements(gameType, difficulty, completionTime) {
         if (hasVariantCompleted) {
             achievements.push('ACH004');
             addScore(20);
+            playerData = Storage.getPlayerData(); // 重新获取最新数据
         }
     }
     
     // 更新成就列表
     if (achievements.length > 0) {
+        playerData = Storage.getPlayerData(); // 确保使用最新数据
         playerData.achievementList = [...new Set([...playerData.achievementList, ...achievements])];
         Storage.savePlayerData(playerData);
     }
@@ -2426,7 +2430,7 @@ function checkAchievements(gameType, difficulty, completionTime) {
  * 更新连续打卡天数
  */
 function updateContinueDay() {
-    const playerData = Storage.getPlayerData();
+    let playerData = Storage.getPlayerData();
     const today = new Date().toDateString();
     
     if (playerData.lastPlayDate === today) {
@@ -2453,9 +2457,11 @@ function updateContinueDay() {
     
     // 检查 ACH002: 持之以恒 - 连续7天打卡
     if (!playerData.achievementList.includes('ACH002') && playerData.continueDay >= 7) {
+        playerData = Storage.getPlayerData(); // 获取最新数据
         playerData.achievementList.push('ACH002');
-        addScore(15);
-        Storage.savePlayerData(playerData);
+        Storage.savePlayerData(playerData); // 先保存成就
+        addScore(15); // 再添加分数（addScore会自动保存）
+        playerData = Storage.getPlayerData(); // 获取包含更新分数的数据
         return { continueDay: playerData.continueDay, achievementUnlocked: 'ACH002' };
     }
     
@@ -4328,10 +4334,18 @@ function checkSolution() {
         if (isNewRecord) {
             record.bestTime = seconds;
         }
-        Storage.saveRecord(record);
 
         // 处理通关奖励
         const rewardResult = handleCompletionRewards(currentGameType, currentDifficulty, seconds);
+        
+        // 保存本次获得的积分到记录中
+        record.earnedScore = rewardResult.baseScore;
+        record.achievementRewards = rewardResult.achievements.length > 0 ? 
+            rewardResult.achievements.reduce((sum, a) => sum + (a.reward || 0), 0) : 0;
+        record.taskRewards = rewardResult.taskResult.reward || 0;
+        record.totalScore = record.earnedScore + record.achievementRewards + record.taskRewards;
+        
+        Storage.saveRecord(record);
         
         // 显示涂色模式按钮
         document.getElementById('colorModeBtn').style.display = 'inline-block';
