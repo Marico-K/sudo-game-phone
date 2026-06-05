@@ -99,9 +99,9 @@
                     </div>
                 </div>
                 <!-- 测试按钮：增加 1000 积分 -->
-                <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
+                <!-- <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
                      +1000 积分
-                </button>
+                </button> -->
                 <div class="shop-items-grid" id="shopItemsGrid">
                 </div>
             </div>
@@ -116,11 +116,15 @@
             <!-- 玩家等级信息 -->
             <div class="player-level-info" id="playerLevelInfo">
                 <div class="level-badge">
-                    <span class="level-icon" id="levelIcon"></span>
-                    <span class="level-number" id="levelNumber">L1</span>
-                    <span class="level-name level-name-clickable" id="levelName" onclick="showLevelList()">初学萌新</span>
-                    <span class="level-score" id="totalScore">⚜️ 0</span>
-                    <span class="level-available-score" id="availableScore">💰 0</span>
+                    <div class="level-main">
+                        <span class="level-icon" id="levelIcon"></span>
+                        <span class="level-number" id="levelNumber">L1</span>
+                        <span class="level-name level-name-clickable" id="levelName" onclick="showLevelList()">初学萌新</span>
+                    </div>
+                    <div class="level-scores">
+                        <span class="level-score" id="totalScore">⚜️ 0</span>
+                        <span class="level-available-score" id="availableScore">💰 0</span>
+                    </div>
                 </div>
                 <div class="level-progress">
                     <div class="progress-bar">

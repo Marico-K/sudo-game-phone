@@ -694,9 +694,28 @@ header p {
 .level-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 10px;
     margin-bottom: 14px;
+    width: 100%;
+}
+
+.level-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: flex-start;
+}
+
+.level-scores {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 80px;
 }
 
 .level-icon {
@@ -735,23 +754,25 @@ header p {
 }
 
 .level-score {
-    font-size: 0.95em;
+    font-size: 0.75em;
     color: #ffd700;
     font-weight: 600;
-    padding: 5px 12px;
+    padding: 3px 8px;
     background: rgba(255, 215, 0, 0.15);
-    border-radius: 20px;
+    border-radius: 12px;
     border: 1px solid rgba(255, 215, 0, 0.3);
+    white-space: nowrap;
 }
 
 .level-available-score {
-    font-size: 0.95em;
+    font-size: 0.75em;
     color: #667eea;
     font-weight: 600;
-    padding: 5px 12px;
+    padding: 3px 8px;
     background: rgba(102, 126, 234, 0.15);
-    border-radius: 20px;
+    border-radius: 12px;
     border: 1px solid rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
 }
 
 .level-name-clickable {

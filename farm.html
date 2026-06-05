@@ -164,7 +164,7 @@
         }
 
         .nav-tab {
-            flex: 1;
+            flex-shrink: 0;
             min-width: 80px;
             padding: 12px 16px;
             border: none;
@@ -172,6 +172,7 @@
             background: white;
             font-size: 0.9em;
             font-weight: 500;
+            white-space: nowrap;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -1167,18 +1168,18 @@
             items: {
                 fertilizer: { name: '肥料', price: 5 },
                 feed: { name: '饲料', price: 5 },
-                carrot_seed: { name: '胡萝卜种子', price: 3 },
-                tomato_seed: { name: '西红柿种子', price: 4 },
-                lettuce_seed: { name: '生菜种子', price: 2 },
-                corn_seed: { name: '玉米种子', price: 5 },
-                potato_seed: { name: '土豆种子', price: 3 },
-                eggplant_seed: { name: '茄子种子', price: 4 },
-                apple_seed: { name: '苹果树苗', price: 10 },
-                orange_seed: { name: '橙子树苗', price: 12 },
-                grape_seed: { name: '葡萄树苗', price: 9 },
-                peach_seed: { name: '桃树苗', price: 11 },
-                chicken_baby: { name: '小鸡', price: 20 },
-                cow_baby: { name: '小牛', price: 30 },
+                carrot_seed: { name: '胡萝卜种子', price: 30 },
+                tomato_seed: { name: '西红柿种子', price: 40 },
+                lettuce_seed: { name: '生菜种子', price: 20 },
+                corn_seed: { name: '玉米种子', price: 50 },
+                potato_seed: { name: '土豆种子', price: 30 },
+                eggplant_seed: { name: '茄子种子', price: 40 },
+                apple_seed: { name: '苹果树苗', price: 100 },
+                orange_seed: { name: '橙子树苗', price: 120 },
+                grape_seed: { name: '葡萄树苗', price: 90 },
+                peach_seed: { name: '桃树苗', price: 110 },
+                chicken_baby: { name: '小鸡', price: 200 },
+                cow_baby: { name: '小牛', price: 300 },
             }
         };
 
@@ -1563,18 +1564,18 @@
             let html = '';
 
             const exchangeItems = [
-                { id: 'carrot', icon: '🥕', name: '胡萝卜', rate: 10 },
-                { id: 'tomato', icon: '🍅', name: '西红柿', rate: 15 },
-                { id: 'lettuce', icon: '🥬', name: '生菜', rate: 8 },
-                { id: 'corn', icon: '🌽', name: '玉米', rate: 20 },
-                { id: 'potato', icon: '🥔', name: '土豆', rate: 10 },
-                { id: 'eggplant', icon: '🍆', name: '茄子', rate: 18 },
-                { id: 'apple', icon: '🍎', name: '苹果', rate: 30 },
-                { id: 'orange', icon: '🍊', name: '橙子', rate: 35 },
-                { id: 'grape', icon: '🍇', name: '葡萄', rate: 28 },
-                { id: 'peach', icon: '🍑', name: '桃子', rate: 32 },
-                { id: 'egg', icon: '🥚', name: '鸡蛋', rate: 8 },
-                { id: 'milk', icon: '🥛', name: '牛奶', rate: 12 },
+                { id: 'carrot', icon: '🥕', name: '胡萝卜', rate: 100 },
+                { id: 'tomato', icon: '🍅', name: '西红柿', rate: 150 },
+                { id: 'lettuce', icon: '🥬', name: '生菜', rate: 80 },
+                { id: 'corn', icon: '🌽', name: '玉米', rate: 200 },
+                { id: 'potato', icon: '🥔', name: '土豆', rate: 100 },
+                { id: 'eggplant', icon: '🍆', name: '茄子', rate: 180 },
+                { id: 'apple', icon: '🍎', name: '苹果', rate: 300 },
+                { id: 'orange', icon: '🍊', name: '橙子', rate: 350 },
+                { id: 'grape', icon: '🍇', name: '葡萄', rate: 280 },
+                { id: 'peach', icon: '🍑', name: '桃子', rate: 320 },
+                { id: 'egg', icon: '🥚', name: '鸡蛋', rate: 80 },
+                { id: 'milk', icon: '🥛', name: '牛奶', rate: 120 },
             ];
 
             exchangeItems.forEach(item => {
