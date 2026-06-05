@@ -1924,6 +1924,19 @@
             closeSeedModal();
             refreshPage();
             
+            // 保存积分消费记录
+            const item = farmConfig.vegetables.find(v => v.id === itemId) || 
+                        farmConfig.fruits.find(f => f.id === itemId) ||
+                        farmConfig.animals.find(a => a.id === itemId);
+            if (item) {
+                Storage.saveScoreRecord({
+                    type: 'purchase',
+                    name: item.name,
+                    description: `购买${area === 'garden' ? '种子' : area === 'orchard' ? '树苗' : '幼崽'} x1`,
+                    score: -price
+                });
+            }
+            
             // 播放庆祝特效
             playHarvestCelebration();
             

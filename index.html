@@ -312,7 +312,7 @@
             }
             
             document.getElementById('checkInMessage').textContent = message;
-            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo} <span onclick="showCheckInRewardRule()"><span style="font-size: 0.8em;">(点击查看规则)</span></span>`;
+            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo}<br><span onclick="showCheckInRewardRule()" style="font-size: 0.8em; display: block; text-align: center;">(点击查看规则)</span>`;
             
             // 更新底部按钮
             const footer = document.getElementById('checkInFooter');
@@ -566,7 +566,7 @@
             }
 
             document.getElementById('checkInMessage').textContent = message;
-            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo} <span onclick="showCheckInRewardRule()"><span style="font-size: 0.8em;">(点击查看规则)</span></span>`;
+            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo}<br><span onclick="showCheckInRewardRule()" style="font-size: 0.8em; display: block; text-align: center;">(点击查看规则)</span>`;
 
             // 刷新道具显示（如果商城打开的话）
             if (document.getElementById('shopModal').style.display === 'block') {
