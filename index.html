@@ -6,9 +6,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>数独 - 首页</title>
     <link rel="stylesheet" href="sudoku.css">
+    <script src="dialog.js"></script>
 </head>
 
 <body>
+    <!-- 背景粒子动画容器 -->
+    <div class="particles-container" id="particlesContainer"></div>
+    
+    <!-- 浮动气泡 -->
+    <div class="bubble" style="width: 60px; height: 60px; top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="bubble" style="width: 40px; height: 40px; top: 40%; left: 80%; animation-delay: 3s;"></div>
+    <div class="bubble" style="width: 50px; height: 50px; top: 60%; left: 20%; animation-delay: 6s;"></div>
+    <div class="bubble" style="width: 35px; height: 35px; top: 30%; left: 60%; animation-delay: 9s;"></div>
+    
+    <!-- 等级列表弹窗 -->
+    <div class="modal" id="levelListModal" style="display: none;">
+        <div class="modal-content level-list-content">
+            <div class="modal-header">
+                <h2>🏆 等级列表</h2>
+                <span class="close" onclick="closeModal('levelListModal')">&times;</span>
+            </div>
+            <div class="level-list-container" id="levelListContainer"></div>
+        </div>
+    </div>
+
+    <!-- 连续打卡弹窗 -->
+    <div class="modal" id="checkInModal" style="display: none;">
+        <div class="modal-content check-in-content">
+            <div class="check-in-header">
+                <div class="check-in-header-left">
+                    <div class="check-in-icon">🔥</div>
+                    <h2>连续打卡</h2>
+                </div>
+                <span class="close" onclick="closeModal('checkInModal')">&times;</span>
+            </div>
+            <div class="check-in-body">
+                <div class="check-in-streak">
+                    <span class="streak-number" id="streakNumber">0</span>
+                    <span class="streak-label">天</span>
+                </div>
+                <p class="check-in-message" id="checkInMessage"></p>
+                <div class="check-in-reward-info" id="checkInRewardInfo"></div>
+                
+                <!-- 打卡日历 -->
+                <div class="check-in-calendar-section">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">◀</button>
+                        <span class="calendar-month-year" id="calendarMonthYear"></span>
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                    <div class="calendar-legend">
+                        <span class="legend-item"><span class="legend-dot checked"></span> 已打卡</span>
+                        <span class="legend-item"><span class="legend-dot makeup"></span> 补打卡</span>
+                        <span class="legend-item"><span class="legend-dot available"></span> 可补卡</span>
+                    </div>
+                </div>
+            </div>
+            <div class="check-in-footer" id="checkInFooter">
+            </div>
+        </div>
+    </div>
+
+    <!-- 连续打卡积分规则弹窗 -->
+    <div class="modal" id="checkInRewardRuleModal" style="display: none;">
+        <div class="modal-content check-in-rule-content">
+            <div class="modal-header">
+                <h2>🏆 连续打卡积分规则</h2>
+                <span class="close" onclick="closeModal('checkInRewardRuleModal')">&times;</span>
+            </div>
+            <div class="check-in-rule-body" id="checkInRuleBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- 积分商城弹窗 -->
+    <div class="modal" id="shopModal" style="display: none;">
+        <div class="modal-content shop-content">
+            <div class="modal-header">
+                <h2>🛒 积分商城</h2>
+                <span class="close" onclick="closeModal('shopModal')">&times;</span>
+            </div>
+            <div class="shop-body">
+                <div class="shop-balance">
+                    <div class="shop-balance-info">
+                        <span class="shop-balance-label">可用积分</span>
+                        <span class="shop-balance-amount" id="shopAvailableScore"> 0</span>
+                    </div>
+                    <div class="shop-balance-legend">
+                        <p class="total">⚜️ 累计积分：等级统计</p>
+                        <p class="available">💰 可用积分：购买道具</p>
+                    </div>
+                </div>
+                <!-- 测试按钮：增加 1000 积分 -->
+                <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
+                     +1000 积分
+                </button>
+                <div class="shop-items-grid" id="shopItemsGrid">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 只留原来的首页：难度选择、继续游戏、我的记录按钮 -->
     <div class="container" id="homePage">
         <header>
@@ -19,7 +118,9 @@
                 <div class="level-badge">
                     <span class="level-icon" id="levelIcon"></span>
                     <span class="level-number" id="levelNumber">L1</span>
-                    <span class="level-name" id="levelName">初学萌新</span>
+                    <span class="level-name level-name-clickable" id="levelName" onclick="showLevelList()">初学萌新</span>
+                    <span class="level-score" id="totalScore">⚜️ 0</span>
+                    <span class="level-available-score" id="availableScore">💰 0</span>
                 </div>
                 <div class="level-progress">
                     <div class="progress-bar">
@@ -28,7 +129,7 @@
                     <span class="progress-text" id="progressText">0 / 15 分</span>
                 </div>
                 <div class="player-stats">
-                    <span class="stat-item">
+                    <span class="stat-item stat-item-clickable" onclick="showCheckInInfo()">
                         <span class="stat-icon">🔥</span>
                         <span class="stat-value" id="continueDay">0</span>天
                     </span>
@@ -48,9 +149,11 @@
                     <button class="home-btn primary" onclick="continueLatestGame()">▶️ 继续游戏</button>
                     <p>或</p>
                     <button class="home-btn secondary" onclick="clearProgressAndShowGameType()">🎲 开始新游戏</button>
-                
+                    <button class="home-btn secondary" id="farmBtnContinue" onclick="goToFarm()">🌾 数独农场</button>
+                    <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
+                    <button class="home-btn secondary" onclick="showSaveManagerModal()">💾 存档管理</button>
                 </div>
             </div>
 
@@ -78,6 +181,8 @@
 
                 <div class="home-buttons-area">
                     <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
+                    <button class="home-btn secondary" id="farmBtnDefault" onclick="goToFarm()">🌾 数独农场</button>
+                    <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
                     <button class="home-btn secondary" onclick="showSaveManagerModal()">💾 存档管理</button>
@@ -115,6 +220,12 @@
             const titleClass = titleClassMap[levelInfo.title] || 'novice';
             levelNameElement.className = 'level-name ' + titleClass;
             
+            // 更新总积分
+            document.getElementById('totalScore').textContent = `⚜️ ${playerData.totalScore}`;
+            
+            // 更新可用积分
+            document.getElementById('availableScore').textContent = `💰 ${playerData.availableScore || 0}`;
+            
             // 根据等级计算图标显示（3个⭐=1个🌙，3个🌙=1个☀️，3个☀️=1个👑）
             const level = playerData.level;
             let crowns = 0, suns = 0, moons = 0, stars = 0;
@@ -150,9 +261,10 @@
             // 更新进度条
             if (scoreToNext !== null) {
                 const currentLevelInfo = levelConfig.find(l => l.level === playerData.level);
-                const progress = ((playerData.totalScore - currentLevelInfo.minScore) / scoreToNext) * 100;
-                document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
-                document.getElementById('progressText').textContent = `${playerData.totalScore - currentLevelInfo.minScore} / ${scoreToNext} 分`;
+                const currentProgress = Math.max(0, playerData.totalScore - currentLevelInfo.minScore);
+                const progress = (currentProgress / scoreToNext) * 100;
+                document.getElementById('progressFill').style.width = `${Math.max(0, Math.min(progress, 100))}%`;
+                document.getElementById('progressText').textContent = `${currentProgress} / ${scoreToNext} 分`;
             } else {
                 // 已达到最高等级
                 document.getElementById('progressFill').style.width = '100%';
@@ -167,6 +279,668 @@
             
             // 加载每日任务
             loadDailyTasks();
+        }
+        
+        // 显示连续打卡弹窗
+        function showCheckInInfo() {
+            const playerData = Storage.getPlayerData();
+            const streak = playerData.continueDay || 0;
+            const today = new Date().toDateString();
+            const hasCheckedInToday = playerData.lastPlayDate === today;
+            
+            document.getElementById('streakNumber').textContent = streak;
+            
+            let message = '';
+            let rewardInfo = '';
+            
+            if (streak === 0) {
+                message = '开始你的打卡之旅吧！';
+                rewardInfo = '每日完成数独即可打卡，连续打卡可获得额外积分奖励';
+            } else if (streak < 7) {
+                message = `太棒了！你已经连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else if (streak < 30) {
+                message = `🔥 优秀！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else {
+                message = `🏆 传奇！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            }
+            
+            document.getElementById('checkInMessage').textContent = message;
+            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo} <span onclick="showCheckInRewardRule()"><span style="font-size: 0.8em;">(点击查看规则)</span></span>`;
+            
+            // 更新底部按钮
+            const footer = document.getElementById('checkInFooter');
+            const record = getLatestInProgressGame();
+            const hasUnfinishedGame = record !== null;
+            
+            if (hasCheckedInToday) {
+                // 当天已完成打卡，不显示按钮
+                footer.innerHTML = '<p class="check-in-hint">今日已打卡，明天继续！</p>';
+            } else if (hasUnfinishedGame) {
+                // 当天未打卡，有未完成游戏
+                footer.innerHTML = '<button class="btn btn-primary check-in-btn" onclick="continueLatestGame(); closeModal(\'checkInModal\');">▶️ 继续游戏</button>';
+            } else {
+                // 当天未打卡，没有未完成游戏
+                footer.innerHTML = '<button class="btn btn-primary check-in-btn" onclick="showGameTypeModal(); closeModal(\'checkInModal\');">🎮 开始挑战</button>';
+            }
+            
+            // 渲染日历
+            renderCalendar();
+            
+            document.getElementById('checkInModal').style.display = 'block';
+        }
+        
+        // 当前显示的日历年月
+        let currentCalendarDate = new Date();
+        
+        // 获取第一次游戏记录的日期
+        function getFirstGameDate() {
+            const records = Storage.getRecords();
+            if (!records || records.length === 0) {
+                return null;
+            }
+            
+            // 找到最早的开始时间
+            let earliestTime = Infinity;
+            records.forEach(record => {
+                if (record.startTime && record.startTime < earliestTime) {
+                    earliestTime = record.startTime;
+                }
+            });
+            
+            if (earliestTime === Infinity) {
+                return null;
+            }
+            
+            return new Date(earliestTime).toDateString();
+        }
+        
+        // 渲染日历
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // 更新年月显示
+            document.getElementById('calendarMonthYear').textContent = `${year}年${month + 1}月`;
+            
+            // 获取当月第一天和最后一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            // 获取第一天是星期几 (0-6, 0是星期日)
+            const startDayOfWeek = firstDay.getDay();
+            
+            // 计算需要显示的总天数（包括上月和下月的填充）
+            const daysInMonth = lastDay.getDate();
+            const totalCells = startDayOfWeek + daysInMonth;
+            const rows = Math.ceil(totalCells / 7);
+            const totalCellsToShow = rows * 7;
+            
+            // 获取上月最后一天
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            
+            // 获取玩家数据
+            const playerData = Storage.getPlayerData();
+            const checkInHistory = playerData.checkInHistory || [];
+            const makeupHistory = playerData.makeupHistory || [];
+            const today = new Date().toDateString();
+            
+            // 获取第一次游戏日期（限制补打卡的最早日期）
+            const firstGameDate = getFirstGameDate();
+            
+            let calendarHtml = '';
+            
+            // 添加星期标题
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekDays.forEach(day => {
+                calendarHtml += `<div class="calendar-day week-header">${day}</div>`;
+            });
+            
+            // 填充日历格子
+            for (let i = 0; i < totalCellsToShow; i++) {
+                let dayNum = i - startDayOfWeek + 1;
+                let isOtherMonth = false;
+                let dateStr = '';
+                
+                if (dayNum <= 0) {
+                    // 上月的日期
+                    dayNum = prevMonthLastDay + dayNum;
+                    isOtherMonth = true;
+                    const prevMonth = month - 1;
+                    const prevYear = prevMonth < 0 ? year - 1 : year;
+                    const actualMonth = prevMonth < 0 ? 11 : prevMonth;
+                    dateStr = new Date(prevYear, actualMonth, dayNum).toDateString();
+                } else if (dayNum > daysInMonth) {
+                    // 下月的日期
+                    dayNum = dayNum - daysInMonth;
+                    isOtherMonth = true;
+                    const nextMonth = month + 1;
+                    const nextYear = nextMonth > 11 ? year + 1 : year;
+                    const actualMonth = nextMonth > 11 ? 0 : nextMonth;
+                    dateStr = new Date(nextYear, actualMonth, dayNum).toDateString();
+                } else {
+                    // 当月的日期
+                    dateStr = new Date(year, month, dayNum).toDateString();
+                }
+                
+                // 判断是否是今天
+                const isToday = dateStr === today;
+                
+                // 判断是否是未来日期
+                const cellDate = new Date(year, month, dayNum);
+                const isFuture = cellDate > new Date(new Date().toDateString());
+                
+                // 判断打卡状态
+                const isChecked = checkInHistory.includes(dateStr);
+                const isMakeup = makeupHistory.includes(dateStr);
+                
+                // 判断是否早于第一次游戏日期
+                const isBeforeFirstGame = firstGameDate && new Date(dateStr) < new Date(firstGameDate);
+                
+                // 判断是否可以补打卡（过去的日期、未打卡、不早于第一次游戏日期）
+                const canMakeup = !isFuture && !isChecked && !isOtherMonth && dayNum > 0 && dayNum <= daysInMonth && !isBeforeFirstGame;
+                
+                // 构建CSS类
+                let dayClass = 'calendar-day';
+                if (isOtherMonth) dayClass += ' other-month';
+                if (isToday) dayClass += ' today';
+                if (isFuture) dayClass += ' future';
+                if (isChecked) dayClass += ' checked';
+                else if (isMakeup) dayClass += ' makeup';
+                else if (canMakeup) dayClass += ' available';
+                
+                // 添加点击事件
+                const onClick = canMakeup ? `onclick="handleMakeupCheckin('${dateStr}')"` : '';
+                
+                calendarHtml += `<div class="${dayClass}" ${onClick}>${dayNum}</div>`;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHtml;
+        }
+        
+        // 切换月份
+        function changeCalendarMonth(delta) {
+            currentCalendarDate = new Date(
+                currentCalendarDate.getFullYear(),
+                currentCalendarDate.getMonth() + delta,
+                1
+            );
+            renderCalendar();
+        }
+        
+        // 处理补打卡
+        function handleMakeupCheckin(dateStr) {
+            const items = getPlayerItems();
+            const makeupCount = items['makeup_checkin'] || 0;
+            
+            if (makeupCount <= 0) {
+                customAlert('您没有补打卡券，请先在积分商城购买！', 'warning');
+                return;
+            }
+            
+            // 检查是否有第一次游戏记录
+            const firstGameDate = getFirstGameDate();
+            if (!firstGameDate) {
+                customAlert('您还没有进行过游戏，无法补打卡！', 'warning');
+                return;
+            }
+            
+            // 检查补打卡日期是否早于第一次游戏日期
+            if (new Date(dateStr) < new Date(firstGameDate)) {
+                const firstGame = new Date(firstGameDate);
+                const firstGameFormat = `${firstGame.getMonth() + 1}月${firstGame.getDate()}日`;
+                customAlert(`补打卡日期不能早于第一次游戏日期（${firstGameFormat}）！`, 'warning');
+                return;
+            }
+            
+            const date = new Date(dateStr);
+            const dateFormat = `${date.getMonth() + 1}月${date.getDate()}日`;
+            
+            customConfirm(`确定要使用补打卡券补签${dateFormat}吗？`, () => {
+                doMakeupCheckIn(dateStr, dateFormat);
+            }, null, { title: '补签确认', type: 'question' });
+        }
+
+        function doMakeupCheckIn(dateStr, dateFormat) {
+            // 使用补打卡券
+            const useResult = useItem('makeup_checkin');
+            if (!useResult.success) {
+                customAlert(useResult.message, 'error');
+                return;
+            }
+
+            // 使用后重新获取最新的playerData
+            let playerData = Storage.getPlayerData();
+
+            // 添加到打卡历史
+            if (!playerData.checkInHistory) {
+                playerData.checkInHistory = [];
+            }
+            if (!playerData.checkInHistory.includes(dateStr)) {
+                playerData.checkInHistory.push(dateStr);
+            }
+
+            // 添加到补打卡历史
+            if (!playerData.makeupHistory) {
+                playerData.makeupHistory = [];
+            }
+            if (!playerData.makeupHistory.includes(dateStr)) {
+                playerData.makeupHistory.push(dateStr);
+            }
+
+            Storage.savePlayerData(playerData);
+
+            // 重新计算连续打卡天数
+            recalculateContinueDay();
+
+            // 刷新日历
+            renderCalendar();
+
+            // 刷新连续打卡天数显示
+            const playerDataUpdated = Storage.getPlayerData();
+            document.getElementById('streakNumber').textContent = playerDataUpdated.continueDay;
+
+            // 更新消息和奖励信息
+            const streak = playerDataUpdated.continueDay;
+            let message = '';
+            let rewardInfo = '';
+
+            if (streak === 0) {
+                message = '开始你的打卡之旅吧！';
+                rewardInfo = '每日完成数独即可打卡，连续打卡可获得额外积分奖励';
+            } else if (streak < 7) {
+                message = `太棒了！你已经连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else if (streak < 30) {
+                message = `🔥 优秀！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else {
+                message = `🏆 传奇！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            }
+
+            document.getElementById('checkInMessage').textContent = message;
+            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo} <span onclick="showCheckInRewardRule()"><span style="font-size: 0.8em;">(点击查看规则)</span></span>`;
+
+            // 刷新道具显示（如果商城打开的话）
+            if (document.getElementById('shopModal').style.display === 'block') {
+                showShopModal();
+            }
+
+            // 刷新首页的连续打卡天数显示
+            if (document.getElementById('continueDay')) {
+                document.getElementById('continueDay').textContent = streak;
+            }
+
+            customAlert(`成功补签${dateFormat}！连续打卡天数已更新为 ${streak} 天！`, 'success');
+        }
+        
+        // 显示连续打卡积分规则弹窗
+        function showCheckInRewardRule() {
+            const playerData = Storage.getPlayerData();
+            const streak = playerData.continueDay || 0;
+            
+            // 定义规则
+            const rules = [
+                { min: 1, max: 3, reward: 5, label: '1-3天' },
+                { min: 4, max: 7, reward: 10, label: '4-7天' },
+                { min: 8, max: 14, reward: 15, label: '8-14天' },
+                { min: 15, max: 30, reward: 25, label: '15-30天' },
+                { min: 31, max: Infinity, reward: 50, label: '30天以上' }
+            ];
+            
+            // 找出当前用户所处的规则区间
+            let currentRuleIndex = 0;
+            for (let i = 0; i < rules.length; i++) {
+                if (streak >= rules[i].min && streak <= rules[i].max) {
+                    currentRuleIndex = i;
+                    break;
+                }
+            }
+            
+            // 生成规则列表HTML
+            let ruleListHtml = '';
+            rules.forEach((rule, index) => {
+                const isCurrent = index === currentRuleIndex;
+                ruleListHtml += `
+                    <div class="rule-item ${isCurrent ? 'highlight' : ''}">
+                        <span class="rule-range">${rule.label}</span>
+                        <span class="rule-reward">+${rule.reward} 积分/天</span>
+                    </div>
+                `;
+            });
+            
+            const body = document.getElementById('checkInRuleBody');
+            body.innerHTML = `
+                <div class="rule-section">
+                    <h3>📊 积分奖励规则</h3>
+                    <div class="rule-list">
+                        ${ruleListHtml}
+                    </div>
+                </div>
+                <div class="rule-section">
+                    <h3>💡 打卡说明</h3>
+                    <ul class="rule-tips">
+                        <li>每日完成任意一道数独即可完成打卡</li>
+                        <li>连续打卡天数越多，每日奖励积分越高</li>
+                        <li>如果中断打卡，连续天数将重置为1天</li>
+                        <li>积分奖励在完成打卡时自动发放</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('checkInRewardRuleModal').style.display = 'block';
+        }
+        
+        // 显示积分商城
+        function showShopModal() {
+            const playerData = Storage.getPlayerData();
+            const items = getPlayerItems();
+            
+            // 更新可用积分显示
+            document.getElementById('shopAvailableScore').textContent = `💰 ${playerData.availableScore || 0}`;
+            
+            // 生成道具列表
+            const itemsGrid = document.getElementById('shopItemsGrid');
+            let itemsHtml = '';
+            
+            itemConfig.forEach(item => {
+                // 检查是否需要农场经营权
+                const needsFarmRight = item.requires === 'farm_right';
+                const hasFarmRight = items['farm_right'] > 0;
+                
+                // 如果需要农场经营权但未购买，跳过显示
+                if (needsFarmRight && !hasFarmRight) {
+                    return;
+                }
+                
+                const owned = items[item.id] > 0;
+                const canAfford = (playerData.availableScore || 0) >= item.price;
+                // 消耗品可以重复购买，永久道具只能购买一次
+                const canPurchase = item.type === 'consumable' ? canAfford : (!owned && canAfford);
+                const typeLabel = item.type === 'permanent' ? '永久道具' : '消耗品';
+                const typeClass = item.type === 'permanent' ? 'permanent' : 'consumable';
+                const ownedCount = items[item.id] || 0;
+                
+                // 计算最大可购买数量（消耗品）
+                const maxBuyCount = item.type === 'consumable' ? Math.floor((playerData.availableScore || 0) / item.price) : 1;
+                
+                itemsHtml += `
+                    <div class="shop-item ${item.type === 'permanent' && owned ? 'purchased' : ''} ${!canPurchase ? 'disabled' : ''}" ${canPurchase ? `onclick="showPurchaseModal('${item.id}')"` : ''}>
+                        <div class="shop-item-type ${typeClass}">${typeLabel} ${owned ? `(${ownedCount})` : ''}</div>
+                        <div class="shop-item-icon">${item.icon}</div>
+                        <div class="shop-item-name">${item.name}</div>
+                        <div class="shop-item-description">${item.description}</div>
+                        <div class="shop-item-price">💰 ${item.price}</div>
+                        ${!canPurchase && !owned ? '<div class="shop-item-locked">积分不足</div>' : ''}
+                        ${item.type === 'consumable' ? '<div class="shop-item-batch-hint">点击批量购买</div>' : ''}
+                    </div>
+                `;
+            });
+            
+            itemsGrid.innerHTML = itemsHtml;
+            document.getElementById('shopModal').style.display = 'block';
+        }
+        
+        // 显示购买弹窗（支持批量购买）
+        function showPurchaseModal(itemId) {
+            const item = itemConfig.find(i => i.id === itemId);
+            if (!item) return;
+            
+            const playerData = Storage.getPlayerData();
+            const items = getPlayerItems();
+            
+            // 检查是否已拥有永久道具
+            if (item.type === 'permanent' && items[itemId] > 0) {
+                customAlert('您已拥有此永久道具！', 'warning');
+                return;
+            }
+            
+            // 计算最大可购买数量
+            const maxBuyCount = item.type === 'consumable' ? Math.floor((playerData.availableScore || 0) / item.price) : 1;
+            
+            if (maxBuyCount <= 0) {
+                customAlert('可用积分不足，无法购买！', 'warning');
+                return;
+            }
+            
+            // 创建批量购买弹窗内容
+            window.currentBuyCount = 1;  // 初始化购买数量
+            let modalContent = `
+                <div style="text-align: center; padding: 15px 20px;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">${item.icon}</div>
+                    <h3 style="margin: 0 0 8px 0; color: #333; font-size: 1.25em;">${item.name}</h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.9em; line-height: 1.4;">${item.description}</p>
+                    <div style="background: #f8f9fa; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 1.3em; font-weight: bold; color: #f5576c; margin-bottom: 6px;">
+                            💰 ${item.price} 积分/个
+                        </div>
+                        <div style="color: #888; font-size: 0.85em;">
+                            当前可用积分：${playerData.availableScore || 0}
+                        </div>
+                    </div>
+            `;
+            
+            if (item.type === 'consumable') {
+                modalContent += `
+                    <div style="margin-bottom: 12px;">
+                        <div style="color: #666; margin-bottom: 8px; font-weight: 500; font-size: 0.9em;">购买数量</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <button onclick="adjustBuyCount(-1, '${item.id}')" style="width: 36px; height: 36px; font-size: 18px; border: none; background: #667eea; color: white; border-radius: 6px; cursor: pointer;">-</button>
+                            <input type="number" id="buyCountInput" value="1" min="1" max="${maxBuyCount}" 
+                                style="width: 70px; height: 36px; text-align: center; font-size: 16px; font-weight: bold; border: 2px solid #667eea; border-radius: 6px;"
+                                onchange="validateBuyCount(${maxBuyCount}, '${item.id}')" />
+                            <button onclick="adjustBuyCount(1, '${item.id}')" style="width: 36px; height: 36px; font-size: 18px; border: none; background: #667eea; color: white; border-radius: 6px; cursor: pointer;">+</button>
+                        </div>
+                        <div style="margin-top: 6px;">
+                            <button onclick="setBuyCount(${maxBuyCount}, '${item.id}')" style="padding: 4px 12px; border: none; background: #f0f0f0; color: #666; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                                最大 ${maxBuyCount} 个
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                modalContent += `<input type="hidden" id="buyCountInput" value="1" />`;
+            }
+            
+            modalContent += `
+                    <div id="totalPriceDisplay" style="font-size: 1.1em; font-weight: bold; color: #ff9f43; margin-bottom: 10px;">
+                        合计：💰 ${item.price} 积分
+                    </div>
+                </div>
+            `;
+            
+            // 创建自定义弹窗
+            customConfirm(modalContent, () => {
+                doPurchaseItem(item, window.currentBuyCount || 1);
+                window.currentBuyCount = null;
+            }, () => {
+                window.currentBuyCount = null;
+            }, { 
+                title: '确认购买', 
+                type: 'question', 
+                confirmText: '确认购买',
+                cancelText: '取消',
+                customContent: true
+            });
+        }
+        
+        // 调整购买数量
+        function adjustBuyCount(delta, itemId) {
+            const input = document.getElementById('buyCountInput');
+            if (!input) return;
+            
+            const max = parseInt(input.max);
+            let value = parseInt(input.value) || 1;
+            value += delta;
+            
+            if (value < 1) value = 1;
+            if (value > max) value = max;
+            
+            input.value = value;
+            window.currentBuyCount = value;
+            updateTotalPrice(itemId);
+        }
+        
+        // 设置购买数量
+        function setBuyCount(count, itemId) {
+            const input = document.getElementById('buyCountInput');
+            if (input) {
+                input.value = count;
+                window.currentBuyCount = count;
+                updateTotalPrice(itemId);
+            }
+        }
+        
+        // 验证购买数量
+        function validateBuyCount(max, itemId) {
+            const input = document.getElementById('buyCountInput');
+            if (!input) return;
+            
+            let value = parseInt(input.value) || 1;
+            if (value < 1) value = 1;
+            if (value > max) value = max;
+            
+            input.value = value;
+            window.currentBuyCount = value;
+            updateTotalPrice(itemId);
+        }
+        
+        // 更新总价显示
+        function updateTotalPrice(itemId) {
+            const item = itemConfig.find(i => i.id === itemId);
+            if (!item) return;
+            
+            const buyCount = parseInt(document.getElementById('buyCountInput').value) || 1;
+            const totalPrice = item.price * buyCount;
+            
+            const totalDisplay = document.getElementById('totalPriceDisplay');
+            if (totalDisplay) {
+                totalDisplay.textContent = `合计：💰 ${totalPrice} 积分`;
+            }
+        }
+
+        function doPurchaseItem(item, count = 1) {
+            // 计算总价
+            const totalPrice = item.price * count;
+            
+            // 扣除积分
+            const deductResult = deductAvailableScore(totalPrice);
+            if (!deductResult.success) {
+                customAlert(deductResult.message, 'error');
+                return;
+            }
+
+            // 添加道具（批量）
+            addItemToPlayer(item.id, count);
+
+            // 如果购买的是农场经营权，自动开通农场
+            if (item.id === 'farm_right') {
+                unlockFarmIfNeeded();
+
+                // 更新首页农场按钮显示（两个区域都有农场按钮）
+                const farmBtnContinue = document.getElementById('farmBtnContinue');
+                const farmBtnDefault = document.getElementById('farmBtnDefault');
+                if (farmBtnContinue) farmBtnContinue.style.display = 'block';
+                if (farmBtnDefault) farmBtnDefault.style.display = 'block';
+            }
+
+            // 保存购买记录
+            Storage.saveScoreRecord({
+                type: 'purchase',
+                name: item.name,
+                description: `购买${item.type === 'permanent' ? '永久' : '消耗'}道具 x${count}`,
+                score: -totalPrice
+            });
+
+            // 刷新商城显示
+            showShopModal();
+
+            // 刷新首页积分显示
+            updatePlayerInfo();
+
+            // 如果购买的是农场空地道具，购买后跳转回农场
+            if (item.effect === 'farm_slot') {
+                customAlert(`购买成功！您已获得「${item.name}」x${count}\n\n即将返回农场...`, 'success', () => {
+                    window.location.href = 'farm.html';
+                });
+            } else {
+                customAlert(`购买成功！您已获得「${item.name}」x${count}`, 'success');
+            }
+        }
+        
+        // 计算连续打卡奖励积分
+        function getCheckInReward(streak) {
+            if (streak <= 3) return 5;
+            if (streak <= 7) return 10;
+            if (streak <= 14) return 15;
+            if (streak <= 30) return 25;
+            return 50;
+        }
+        
+        // 显示等级列表弹窗
+        function showLevelList() {
+            const playerData = Storage.getPlayerData();
+            const container = document.getElementById('levelListContainer');
+            
+            let html = '';
+            for (let i = 0; i < levelConfig.length; i++) {
+                const level = levelConfig[i];
+                const isCurrent = level.level === playerData.level;
+                const isUnlocked = playerData.totalScore >= level.minScore;
+                
+                let scoreText = `需要 ${level.minScore} 分`;
+                if (i < levelConfig.length - 1) {
+                    const nextLevel = levelConfig[i + 1];
+                    const needed = nextLevel.minScore - level.minScore;
+                    scoreText = `${level.minScore} - ${nextLevel.minScore - 1} 分`;
+                } else {
+                    scoreText = `${level.minScore} 分以上（满级）`;
+                }
+                
+                html += `
+                    <div class="level-list-item ${isCurrent ? 'current' : ''} ${isUnlocked ? 'unlocked' : 'locked'}">
+                        <div class="level-item-info">
+                            <span class="level-item-number">L${level.level}</span>
+                            <span class="level-item-name">${level.name}</span>
+                        </div>
+                        <div class="level-item-score">
+                            <strong>${scoreText}</strong>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            document.getElementById('levelListModal').style.display = 'block';
+        }
+        
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 跳转农场页面
+        function goToFarm() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            if (!items['farm_right'] || items['farm_right'] <= 0) {
+                customAlert('您还没有开通农场功能！\n\n请先在积分商城购买「农场经营权」来开通农场。', 'warning');
+                return;
+            }
+            window.location.href = 'farm.html';
+        }
+        
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         }
         
         // 切换每日任务收缩/展开
@@ -304,13 +1078,95 @@
             document.getElementById('AchievementModal').style.display = 'none';
         }
         
+        // 初始化背景粒子
+        function initParticles() {
+            const container = document.getElementById('particlesContainer');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                particle.style.width = (4 + Math.random() * 6) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+        
+        // 按钮涟漪效果
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const rect = button.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        }
+        
+        // 为所有按钮添加涟漪效果
+        function initButtonRipple() {
+            const buttons = document.querySelectorAll('.home-btn, .gameType-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', createRipple);
+            });
+        }
+        
         // 首页一进来就执行
         document.addEventListener("DOMContentLoaded", function () {
+            // 初始化粒子动画
+            initParticles();
+            
+            // 初始化按钮涟漪效果
+            initButtonRipple();
+            
             loadPlayerLevelInfo();
             if (hasInProgressGame()) {
                 showContinueGameSection();
             } else {
                 showDefaultSection();
+            }
+            
+            // 检查农场权限，控制农场按钮显示
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            const hasFarmRight = items['farm_right'] && items['farm_right'] > 0;
+            
+            // 两个区域都有农场按钮，需要同时控制
+            const farmBtnContinue = document.getElementById('farmBtnContinue');
+            const farmBtnDefault = document.getElementById('farmBtnDefault');
+            if (farmBtnContinue) farmBtnContinue.style.display = hasFarmRight ? 'block' : 'none';
+            if (farmBtnDefault) farmBtnDefault.style.display = hasFarmRight ? 'block' : 'none';
+            
+            // 检查URL参数，如果从农场跳转过来则自动打开商城
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('showShop') === '1') {
+                // 清除URL参数
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // 打开商城
+                setTimeout(() => {
+                    showShopModal();
+                    // 如果指定了要购买的道具，滚动到对应位置
+                    const buyItem = urlParams.get('buyItem');
+                    if (buyItem) {
+                        const itemElement = document.querySelector(`[onclick="purchaseItem('${buyItem}')"]`);
+                        if (itemElement) {
+                            itemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            itemElement.classList.add('highlight-item');
+                            setTimeout(() => itemElement.classList.remove('highlight-item'), 2000);
+                        }
+                    }
+                }, 100);
             }
         });
     </script>
@@ -544,13 +1400,13 @@
             const code = document.getElementById('exportCode').value;
             try {
                 await navigator.clipboard.writeText(code);
-                alert('存档代码已复制到剪贴板！');
+                showToast('存档代码已复制到剪贴板！', 'success');
             } catch (err) {
                 // 降级方案
                 const textarea = document.getElementById('exportCode');
                 textarea.select();
                 document.execCommand('copy');
-                alert('存档代码已复制到剪贴板！');
+                showToast('存档代码已复制到剪贴板！', 'success');
             }
         }
 
@@ -583,13 +1439,28 @@
 
         // 清除所有数据
         function clearAllSaveData() {
-            if (!confirm('⚠️ 确定要清除所有游戏数据吗？此操作不可撤销！')) {
-                return;
-            }
+            customConfirm('⚠️ 确定要清除所有游戏数据吗？此操作不可撤销！', () => {
+                Storage.clearAllData();
+                customAlert('所有数据已清除，页面将重新加载...', 'success', () => {
+                    location.reload();
+                });
+            }, null, { title: '危险操作', type: 'danger', confirmText: '确认清除', danger: true });
+        }
+
+        // 测试功能：增加 1000 积分
+        function addTestScore() {
+            const playerData = Storage.getPlayerData();
+            const currentScore = playerData.availableScore || 0;
+            const addAmount = 1000;
             
-            Storage.clearAllData();
-            alert('所有数据已清除，页面将重新加载...');
-            location.reload();
+            playerData.availableScore = currentScore + addAmount;
+            Storage.savePlayerData(playerData);
+            
+            // 更新显示
+            document.getElementById('shopAvailableScore').textContent = `💰 ${playerData.availableScore}`;
+            updatePlayerInfo();
+            
+            showToast(`测试积分 +${addAmount}，当前可用积分：${playerData.availableScore}`, 'success');
         }
     </script>
 </body>

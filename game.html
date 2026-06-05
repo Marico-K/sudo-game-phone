@@ -6,9 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>数独游戏</title>
     <link rel="stylesheet" href="sudoku.css">
+    <script src="dialog.js"></script>
 </head>
 
 <body>
+    <!-- 海底背景装饰 -->
+    <div class="ocean-background">
+        <!-- 海草装饰 -->
+        <div class="seaweed seaweed-1"></div>
+        <div class="seaweed seaweed-2"></div>
+        <div class="seaweed seaweed-3"></div>
+        <div class="seaweed seaweed-4"></div>
+        
+        <!-- 海底岩石 -->
+        <div class="sea-rock sea-rock-1"></div>
+        <div class="sea-rock sea-rock-2"></div>
+        
+        <!-- 气泡容器 -->
+        <div class="bubbles-container" id="gameBubblesContainer"></div>
+        
+        <!-- 游动的鱼 -->
+        <div class="fish fish-1">🐟</div>
+        <div class="fish fish-2">🐠</div>
+        <div class="fish fish-3">🐡</div>
+        
+        <!-- 水母 -->
+        <div class="jellyfish jellyfish-1">🐙</div>
+    </div>
 
     <!-- ==================== 游戏页面容器 ==================== -->
     <div class="game-container" id="gamePage">
@@ -50,8 +74,8 @@
 
             <!-- 控制按钮 -->
             <div id="gameControls" class="game-controls">
-                <button class="control-btn" onclick="fillAllCandidates()">🎯 一键草稿（开挂）</button>
-                <button class="control-btn" onclick="fillUniqueCandidates()">✅ 一键答题</button>
+                <button class="control-btn" id="autoDraftBtn" onclick="fillAllCandidates()" style="display: none;">🎯 一键草稿</button>
+                <button class="control-btn" id="autoSolveBtn" onclick="fillUniqueCandidates()" style="display: none;">✅ 一键答题</button>
                 <button class="control-btn" onclick="clearAllCandidates()">🗑️ 清除草稿</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
                 <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
@@ -154,8 +178,67 @@
 
     <script src="sudoku.js"></script>
     <script>
+        // 初始化海底气泡
+        function initOceanBubbles() {
+            const container = document.getElementById('gameBubblesContainer');
+            const bubbleCount = 15;
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 10 + 's';
+                bubble.style.animationDuration = (8 + Math.random() * 6) + 's';
+                bubble.style.width = (8 + Math.random() * 16) + 'px';
+                bubble.style.height = bubble.style.width;
+                container.appendChild(bubble);
+            }
+        }
+        
+        // 单元格点击效果
+        function addCellClickEffect(cell) {
+            cell.addEventListener('click', function() {
+                this.classList.add('cell-clicked');
+                setTimeout(() => this.classList.remove('cell-clicked'), 200);
+            });
+        }
+        
+        // 数字输入动画
+        function animateNumberInput(cell) {
+            cell.classList.add('number-entered');
+            setTimeout(() => cell.classList.remove('number-entered'), 300);
+        }
+        
+        // 胜利庆祝动画
+        function playWinCelebration() {
+            const board = document.getElementById('sudokuBoard');
+            board.classList.add('win-celebration');
+            setTimeout(() => board.classList.remove('win-celebration'), 1000);
+            
+            // 创建庆祝粒子
+            const celebrationContainer = document.createElement('div');
+            celebrationContainer.className = 'celebration-container';
+            document.body.appendChild(celebrationContainer);
+            
+            const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '🎁', '🎈'];
+            for (let i = 0; i < 20; i++) {
+                const emoji = document.createElement('span');
+                emoji.className = 'celebration-emoji';
+                emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                emoji.style.left = Math.random() * 100 + '%';
+                emoji.style.animationDelay = Math.random() * 0.3 + 's';
+                emoji.style.fontSize = (16 + Math.random() * 16) + 'px';
+                celebrationContainer.appendChild(emoji);
+            }
+            
+            setTimeout(() => celebrationContainer.remove(), 1500);
+        }
+
         // 游戏页初始化（自动处理：新游戏 + 继续游戏）
         document.addEventListener("DOMContentLoaded", function () {
+            // 初始化海底气泡
+            initOceanBubbles();
+            
             const gameType = localStorage.getItem("currentGameType") || "STANDARD";
             const difficultyType = localStorage.getItem("currentDifficultyType") || "EASY";
             const continuePuzzleId = localStorage.getItem("continuePuzzleId");

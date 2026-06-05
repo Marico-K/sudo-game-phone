@@ -78,9 +78,16 @@ function toggleInputMode() {
 }
 
 /**
- * 自动填写所有空格的候选数字
+ * 自动填写所有空格的候选数字（需要购买一键草稿道具）
  */
 function fillAllCandidates() {
+    // 检查是否拥有一键草稿道具
+    const items = getPlayerItems();
+    if (!items['auto_draft'] || items['auto_draft'] <= 0) {
+        customAlert('您需要先在积分商城购买「一键草稿」道具才能使用此功能！', 'warning');
+        return;
+    }
+    
     const size = currentPuzzle.size || 9;
     // 遍历所有格子
     for (let row = 0; row < size; row++) {
@@ -2479,15 +2486,33 @@ const Storage = {
     getPlayerData() {
         const data = localStorage.getItem(this.KEYS.PLAYER_DATA);
         if (data) {
-            return JSON.parse(data);
+            const playerData = JSON.parse(data);
+            // 兼容旧数据，添加新字段
+            if (playerData.availableScore === undefined) {
+                playerData.availableScore = playerData.totalScore || 0;
+            }
+            if (!playerData.items) {
+                playerData.items = {};
+            }
+            if (!playerData.checkInHistory) {
+                playerData.checkInHistory = [];
+            }
+            if (!playerData.makeupHistory) {
+                playerData.makeupHistory = [];
+            }
+            return playerData;
         }
         // 返回默认值
         return {
             totalScore: 0,
+            availableScore: 0,
             level: 1,
             continueDay: 0,
             achievementList: [],
-            lastPlayDate: null
+            lastPlayDate: null,
+            items: {},
+            checkInHistory: [],
+            makeupHistory: []
         };
     },
 
@@ -2558,7 +2583,7 @@ const dailyTaskTemplates = {
     beginner: [
         { id: 'daily_easy', name: '新手热身', description: '完成1道简单难度数独', type: 'game', target: 1, reward: 3, filter: { difficulty: 'EASY' } },
         { id: 'daily_mini', name: '迷你挑战', description: '完成1道迷你数独', type: 'game', target: 1, reward: 2, filter: { gameType: ['MINI_4x4', 'MINI_6x6'] } },
-        { id: 'daily_quick', name: '快速通关', description: '5分钟内完成1道数独', type: 'time', target: 1, timeLimit: 300, reward: 5, filter: {} },
+        { id: 'daily_quick', name: '快速通关', description: '6分钟内完成1道数独', type: 'time', target: 1, timeLimit: 360, reward: 5, filter: {} },
         { id: 'daily_streak', name: '保持连胜', description: '连续完成2道数独', type: 'streak', target: 2, reward: 4, filter: {} },
         { id: 'daily_first', name: '每日首胜', description: '完成今日第一道数独', type: 'first', target: 1, reward: 5, filter: {} }
     ],
@@ -2566,25 +2591,25 @@ const dailyTaskTemplates = {
     intermediate: [
         { id: 'daily_medium', name: '进阶挑战', description: '完成2道中等难度数独', type: 'game', target: 2, reward: 8, filter: { difficulty: 'MEDIUM' } },
         { id: 'daily_standard', name: '标准练习', description: '完成3道标准数独', type: 'game', target: 3, reward: 6, filter: { gameType: 'STANDARD' } },
-        { id: 'daily_speed', name: '速度挑战', description: '3分钟内完成1道数独', type: 'time', target: 1, timeLimit: 180, reward: 8, filter: {} },
+        { id: 'daily_speed', name: '速度挑战', description: '5分钟内完成1道数独', type: 'time', target: 1, timeLimit: 300, reward: 8, filter: {} },
         { id: 'daily_no_mistake', name: '完美通关', description: '无错误完成1道数独', type: 'perfect', target: 1, reward: 10, filter: {} },
-        { id: 'daily_variant', name: '初尝变体', description: '完成1道变体数独', type: 'game', target: 1, reward: 10, filter: { gameType: ['DIAGONAL', 'ODD_EVEN'] } }
+        { id: 'daily_variant', name: '初尝变体', description: '完成1道变体数独（支持：对角线数独、奇偶数独）', type: 'game', target: 1, reward: 10, filter: { gameType: ['DIAGONAL', 'ODD_EVEN'] } }
     ],
     // Lv7-9: 高手阶段
     advanced: [
         { id: 'daily_hard', name: '高手试炼', description: '完成2道高级难度数独', type: 'game', target: 2, reward: 15, filter: { difficulty: 'HARD' } },
         { id: 'daily_killer', name: '杀手挑战', description: '完成1道杀手数独', type: 'game', target: 1, reward: 12, filter: { gameType: ['KILLER_4x4', 'KILLER_6x6', 'KILLER_9x9'] } },
-        { id: 'daily_master', name: '大师速度', description: '2分钟内完成1道数独', type: 'time', target: 1, timeLimit: 120, reward: 15, filter: {} },
+        { id: 'daily_master', name: '大师速度', description: '4分钟内完成1道数独', type: 'time', target: 1, timeLimit: 240, reward: 15, filter: {} },
         { id: 'daily_streak_5', name: '连胜大师', description: '连续完成5道数独', type: 'streak', target: 5, reward: 12, filter: {} },
-        { id: 'daily_variant_2', name: '变体达人', description: '完成2道不同类型变体数独', type: 'game', target: 2, reward: 15, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU'] } }
+        { id: 'daily_variant_2', name: '变体达人', description: '完成2道不同类型变体数独（支持：对角线数独、奇偶数独、锯齿数独、窗口数独）', type: 'game', target: 2, reward: 15, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU'] } }
     ],
     // Lv10+: 大师阶段
     master: [
         { id: 'daily_hardcore', name: '硬核挑战', description: '完成3道高级难度数独', type: 'game', target: 3, reward: 25, filter: { difficulty: 'HARD' } },
         { id: 'daily_killer_9x9', name: '终极杀手', description: '完成1道9宫杀手数独', type: 'game', target: 1, reward: 20, filter: { gameType: 'KILLER_9x9' } },
-        { id: 'daily_speed_demon', name: '极速通关', description: '1分钟内完成1道标准数独', type: 'time', target: 1, timeLimit: 60, reward: 20, filter: { gameType: 'STANDARD' } },
+        { id: 'daily_speed_demon', name: '极速通关', description: '3分钟内完成1道标准数独', type: 'time', target: 1, timeLimit: 180, reward: 20, filter: { gameType: 'STANDARD' } },
         { id: 'daily_perfect_streak', name: '完美连胜', description: '连续5道无错误通关', type: 'perfect_streak', target: 5, reward: 25, filter: {} },
-        { id: 'daily_all_variant', name: '变体全制霸', description: '完成3道不同类型变体数独', type: 'game', target: 3, reward: 30, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU', 'CENTER_DOT', 'STAR', 'BLACK_WHITE_DOT', 'SANDWICH', 'SKYSCRAPER'] } }
+        { id: 'daily_all_variant', name: '变体全制霸', description: '完成3道不同类型变体数独（支持：对角线、奇偶数独、锯齿、窗口、中心点、星号、黑白点、三明治、摩天楼数独）', type: 'game', target: 3, reward: 30, filter: { gameType: ['DIAGONAL', 'ODD_EVEN', 'IRREGULAR', 'WINDOKU', 'CENTER_DOT', 'STAR', 'BLACK_WHITE_DOT', 'SANDWICH', 'SKYSCRAPER'] } }
     ]
 };
 
@@ -2793,20 +2818,307 @@ const scoreConfig = {
 // 等级配置
 const levelConfig = [
     { level: 1, name: '初学萌新', minScore: 0, title: '萌新' },
-    { level: 2, name: '初学萌新', minScore: 15, title: '萌新' },
-    { level: 3, name: '初学萌新', minScore: 40, title: '萌新' },
-    { level: 4, name: '数独爱好者', minScore: 80, title: '爱好者' },
-    { level: 5, name: '数独爱好者', minScore: 140, title: '爱好者' },
-    { level: 6, name: '数独爱好者', minScore: 220, title: '爱好者' },
-    { level: 7, name: '资深高手', minScore: 330, title: '高手' },
-    { level: 8, name: '资深高手', minScore: 470, title: '高手' },
-    { level: 9, name: '资深高手', minScore: 650, title: '高手' },
-    { level: 10, name: '数独大师', minScore: 880, title: '大师' },
-    { level: 11, name: '数独大师', minScore: 1160, title: '大师' },
-    { level: 12, name: '数独大师', minScore: 1500, title: '大师' },
-    { level: 13, name: '传世宗师', minScore: 1900, title: '宗师' },
-    { level: 14, name: '传世宗师', minScore: 2380, title: '宗师' },
-    { level: 15, name: '封神宗师', minScore: 2950, title: '宗师' }
+    { level: 2, name: '初学萌新', minScore: 50, title: '萌新' },
+    { level: 3, name: '初学萌新', minScore: 120, title: '萌新' },
+    { level: 4, name: '数独爱好者', minScore: 250, title: '爱好者' },
+    { level: 5, name: '数独爱好者', minScore: 450, title: '爱好者' },
+    { level: 6, name: '数独爱好者', minScore: 750, title: '爱好者' },
+    { level: 7, name: '资深高手', minScore: 1150, title: '高手' },
+    { level: 8, name: '资深高手', minScore: 1650, title: '高手' },
+    { level: 9, name: '资深高手', minScore: 2250, title: '高手' },
+    { level: 10, name: '数独大师', minScore: 3000, title: '大师' },
+    { level: 11, name: '数独大师', minScore: 4000, title: '大师' },
+    { level: 12, name: '数独大师', minScore: 5300, title: '大师' },
+    { level: 13, name: '传世宗师', minScore: 7000, title: '宗师' },
+    { level: 14, name: '传世宗师', minScore: 9200, title: '宗师' },
+    { level: 15, name: '封神宗师', minScore: 12000, title: '宗师' }
+];
+
+// 道具配置
+const itemConfig = window.itemConfig = [
+    {
+        id: 'makeup_checkin',
+        name: '补打卡券',
+        description: '使用后可补签一次，保持连续打卡天数',
+        price: 1,
+        icon: '🎫',
+        type: 'consumable',
+        effect: 'makeup_checkin'
+    },
+    {
+        id: 'auto_draft',
+        name: '一键草稿',
+        description: '自动标记所有候选数字',
+        price: 100,
+        icon: '📝',
+        type: 'permanent',
+        effect: 'auto_draft'
+    },
+    {
+        id: 'auto_solve',
+        name: '一键答题',
+        description: '自动填写所有唯一候选数的格子',
+        price: 200,
+        icon: '🤖',
+        type: 'permanent',
+        effect: 'auto_solve'
+    },
+    // 农场经营权
+    {
+        id: 'farm_right',
+        name: '农场经营权',
+        description: '开通数独农场功能，解锁农场经营玩法',
+        price: 5,
+        icon: '🌾',
+        type: 'permanent',
+        effect: 'farm_right'
+    },
+    // 农场道具
+    {
+        id: 'fertilizer',
+        name: '肥料',
+        description: '给作物施肥，大幅增加成长值（每日限用一次）',
+        price: 5,
+        icon: '🧪',
+        type: 'consumable',
+        effect: 'fertilizer',
+        requires: 'farm_right'
+    },
+    {
+        id: 'feed',
+        name: '饲料',
+        description: '给动物加餐，大幅增加成长值（每日限用一次）',
+        price: 5,
+        icon: '🌾',
+        type: 'consumable',
+        effect: 'feed',
+        requires: 'farm_right'
+    },
+    // 蔬菜种子
+    {
+        id: 'carrot_seed',
+        name: '胡萝卜种子',
+        description: '种植胡萝卜，成熟后可兑换积分',
+        price: 3,
+        icon: '🥕',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'tomato_seed',
+        name: '西红柿种子',
+        description: '种植西红柿，成熟后可兑换积分',
+        price: 4,
+        icon: '🍅',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'lettuce_seed',
+        name: '生菜种子',
+        description: '种植生菜，成熟后可兑换积分',
+        price: 2,
+        icon: '🥬',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'corn_seed',
+        name: '玉米种子',
+        description: '种植玉米，成熟后可兑换积分',
+        price: 5,
+        icon: '🌽',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'potato_seed',
+        name: '土豆种子',
+        description: '种植土豆，成熟后可兑换积分',
+        price: 3,
+        icon: '🥔',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'eggplant_seed',
+        name: '茄子种子',
+        description: '种植茄子，成熟后可兑换积分',
+        price: 4,
+        icon: '🍆',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    // 果树苗
+    {
+        id: 'apple_seed',
+        name: '苹果树苗',
+        description: '种植苹果树，成熟后每日产苹果',
+        price: 10,
+        icon: '🍎',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orange_seed',
+        name: '橙子树苗',
+        description: '种植橙子树，成熟后每日产橙子',
+        price: 12,
+        icon: '🍊',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'grape_seed',
+        name: '葡萄树苗',
+        description: '种植葡萄树，成熟后每日产葡萄',
+        price: 9,
+        icon: '🍇',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    {
+        id: 'peach_seed',
+        name: '桃树苗',
+        description: '种植桃树，成熟后每日产桃子',
+        price: 11,
+        icon: '🍑',
+        type: 'consumable',
+        effect: 'seed',
+        requires: 'farm_right'
+    },
+    // 动物
+    {
+        id: 'chicken_baby',
+        name: '小鸡',
+        description: '购买小鸡，长大后每日产鸡蛋',
+        price: 20,
+        icon: '🐣',
+        type: 'permanent',
+        effect: 'animal',
+        requires: 'farm_right'
+    },
+    {
+        id: 'cow_baby',
+        name: '小牛',
+        description: '购买小牛，长大后每日产牛奶',
+        price: 30,
+        icon: '🐮',
+        type: 'permanent',
+        effect: 'animal',
+        requires: 'farm_right'
+    },
+    // 菜园空地
+    {
+        id: 'garden_slot_2',
+        name: '菜园2号地',
+        description: '解锁第二块菜地',
+        price: 50,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_3',
+        name: '菜园3号地',
+        description: '解锁第三块菜地',
+        price: 80,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_4',
+        name: '菜园4号地',
+        description: '解锁第四块菜地',
+        price: 120,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_5',
+        name: '菜园5号地',
+        description: '解锁第五块菜地',
+        price: 180,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_6',
+        name: '菜园6号地',
+        description: '解锁第六块菜地',
+        price: 250,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    // 果园空地
+    {
+        id: 'orchard_slot_2',
+        name: '果园2号地',
+        description: '解锁第二块果园',
+        price: 60,
+        icon: '🍎',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_3',
+        name: '果园3号地',
+        description: '解锁第三块果园',
+        price: 100,
+        icon: '🍊',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_4',
+        name: '果园4号地',
+        description: '解锁第四块果园',
+        price: 150,
+        icon: '🍇',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_5',
+        name: '果园5号地',
+        description: '解锁第五块果园',
+        price: 220,
+        icon: '🍑',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_6',
+        name: '果园6号地',
+        description: '解锁第六块果园',
+        price: 300,
+        icon: '🍐',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    }
 ];
 
 // 成就配置
@@ -2880,6 +3192,7 @@ function getScoreToNextLevel(currentLevel) {
 function addScore(points) {
     const playerData = Storage.getPlayerData();
     playerData.totalScore += points;
+    playerData.availableScore = (playerData.availableScore || 0) + points;
     
     // 更新等级
     const newLevelInfo = getLevelInfo(playerData.totalScore);
@@ -2893,6 +3206,53 @@ function addScore(points) {
         return { levelUp: true, oldLevel, newLevel: playerData.level, levelName: newLevelInfo.name };
     }
     return { levelUp: false };
+}
+
+/**
+ * 扣除可用积分
+ */
+function deductAvailableScore(points) {
+    const playerData = Storage.getPlayerData();
+    if ((playerData.availableScore || 0) < points) {
+        return { success: false, message: '可用积分不足' };
+    }
+    playerData.availableScore -= points;
+    Storage.savePlayerData(playerData);
+    return { success: true, availableScore: playerData.availableScore };
+}
+
+/**
+ * 获取玩家拥有的道具
+ */
+function getPlayerItems() {
+    const playerData = Storage.getPlayerData();
+    return playerData.items || {};
+}
+
+/**
+ * 添加道具到玩家背包
+ */
+function addItemToPlayer(itemId, quantity = 1) {
+    const playerData = Storage.getPlayerData();
+    if (!playerData.items) {
+        playerData.items = {};
+    }
+    playerData.items[itemId] = (playerData.items[itemId] || 0) + quantity;
+    Storage.savePlayerData(playerData);
+    return { success: true, items: playerData.items };
+}
+
+/**
+ * 使用道具
+ */
+function useItem(itemId) {
+    const playerData = Storage.getPlayerData();
+    if (!playerData.items || !playerData.items[itemId] || playerData.items[itemId] <= 0) {
+        return { success: false, message: '道具数量不足' };
+    }
+    playerData.items[itemId]--;
+    Storage.savePlayerData(playerData);
+    return { success: true, remaining: playerData.items[itemId] };
 }
 
 /**
@@ -3382,6 +3742,64 @@ function checkAchievements(gameType, difficulty, completionTime) {
 }
 
 /**
+ * 计算连续打卡奖励积分
+ */
+function getCheckInReward(streak) {
+    if (streak <= 3) return 5;
+    if (streak <= 7) return 10;
+    if (streak <= 14) return 15;
+    if (streak <= 30) return 25;
+    return 50;
+}
+
+/**
+ * 根据打卡历史重新计算连续打卡天数
+ */
+function recalculateContinueDay() {
+    let playerData = Storage.getPlayerData();
+    const checkInHistory = playerData.checkInHistory || [];
+    
+    if (checkInHistory.length === 0) {
+        playerData.continueDay = 0;
+        Storage.savePlayerData(playerData);
+        return 0;
+    }
+    
+    // 将日期字符串转换为日期对象并排序
+    const sortedDates = checkInHistory
+        .map(dateStr => new Date(dateStr))
+        .sort((a, b) => b.getTime() - a.getTime());
+    
+    let streak = 0;
+    const today = new Date(new Date().toDateString());
+    
+    // 从今天开始往前检查连续打卡
+    const checkDate = new Date(today);
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+        const historyDate = new Date(sortedDates[i].toDateString());
+        
+        // 跳过未来的日期
+        if (historyDate > today) {
+            continue;
+        }
+        
+        // 检查是否是预期的日期
+        if (historyDate.getTime() === checkDate.getTime()) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            // 如果日期不连续，停止计算
+            break;
+        }
+    }
+    
+    playerData.continueDay = streak;
+    Storage.savePlayerData(playerData);
+    return streak;
+}
+
+/**
  * 更新连续打卡天数
  */
 function updateContinueDay() {
@@ -3408,7 +3826,25 @@ function updateContinueDay() {
     }
     
     playerData.lastPlayDate = today;
+    
+    // 添加日期到打卡历史（确保不重复）
+    if (!playerData.checkInHistory.includes(today)) {
+        playerData.checkInHistory.push(today);
+    }
+    
     Storage.savePlayerData(playerData);
+    
+    // 计算连续打卡奖励积分
+    const rewardScore = getCheckInReward(playerData.continueDay);
+    if (rewardScore > 0) {
+        addScore(rewardScore);
+        Storage.saveScoreRecord({
+            type: 'checkin',
+            name: '连续打卡积分',
+            description: `连续打卡${playerData.continueDay}天奖励`,
+            score: rewardScore
+        });
+    }
     
     const unlockedAchievements = [];
     
@@ -3580,9 +4016,16 @@ function toggleColorMode() {
 }
 
 /**
- * 一键答题：自动填写所有候选数唯一的格子
+ * 一键答题：自动填写所有候选数唯一的格子（需要购买一键答题道具）
  */
 function fillUniqueCandidates() {
+    // 检查是否拥有一键答题道具
+    const items = getPlayerItems();
+    if (!items['auto_solve'] || items['auto_solve'] <= 0) {
+        customAlert('您需要先在积分商城购买「一键答题」道具才能使用此功能！', 'warning');
+        return;
+    }
+    
     const size = currentPuzzle.size || 9;
     let filledCount = 0;
 
@@ -3934,6 +4377,9 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
 
         // 渲染棋盘
         renderBoard();
+        
+        // 更新游戏控制按钮显示（根据道具权限）
+        updateGameControlButtons();
 
         // 启动计时器
         startTimer();
@@ -5385,14 +5831,14 @@ function checkSolution() {
         Array.isArray(cell) || (typeof cell === 'number' && cell === 0)
     );
     if (hasEmptyOrCandidate) {
-        alert('还有空格或候选数字未填写！');
+        customAlert('还有空格或候选数字未填写！', 'warning');
         return;
     }
 
     // 检查是否有冲突
     const hasConflict = document.querySelector('.cell.conflict');
     if (hasConflict) {
-        alert('存在冲突，请检查红色标记的格子！');
+        customAlert('存在冲突，请检查红色标记的格子！', 'error');
         return;
     }
 
@@ -5473,13 +5919,19 @@ function checkSolution() {
             document.getElementById('bestRecordMsg').style.display = 'block';
             document.getElementById('finalBestTime').textContent = formatTime(record.bestTime);
         }
+        
+        // 播放胜利庆祝动画
+        if (typeof playWinCelebration === 'function') {
+            playWinCelebration();
+        }
+        
         // 显示胜利弹窗，隐藏数字输入和游戏控制
         document.getElementById('winModal').style.display = 'block';
         document.getElementById('numberKeyPad').style.display = 'none';
         document.getElementById('gameControls').style.display = 'none';
         document.getElementById('modeToggleBtn').style.display = 'none';
     } else {
-        alert('答案不正确，请继续尝试！');
+        customAlert('答案不正确，请继续尝试！', 'error');
     }
 }
 
@@ -5525,8 +5977,8 @@ function newPuzzle() {
 }
 
 /**
-    * 重置游戏控制
-    */
+ * 重置游戏控制
+ */
 function resetGameControls() {
     // 重置涂色模式
     isColorMode = false;
@@ -5538,6 +5990,36 @@ function resetGameControls() {
     document.getElementById('numberKeyPad').style.display = 'grid';
     document.getElementById('gameControls').style.display = 'flex';
     document.getElementById('modeToggleBtn').style.display = 'inline-block';
+    
+    // 检查道具权限，显示相应的按钮
+    updateGameControlButtons();
+}
+
+/**
+ * 根据道具权限更新游戏控制按钮显示
+ */
+function updateGameControlButtons() {
+    const items = getPlayerItems();
+    
+    // 一键草稿按钮
+    const autoDraftBtn = document.getElementById('autoDraftBtn');
+    if (autoDraftBtn) {
+        if (items['auto_draft'] && items['auto_draft'] > 0) {
+            autoDraftBtn.style.display = 'inline-block';
+        } else {
+            autoDraftBtn.style.display = 'none';
+        }
+    }
+    
+    // 一键答题按钮
+    const autoSolveBtn = document.getElementById('autoSolveBtn');
+    if (autoSolveBtn) {
+        if (items['auto_solve'] && items['auto_solve'] > 0) {
+            autoSolveBtn.style.display = 'inline-block';
+        } else {
+            autoSolveBtn.style.display = 'none';
+        }
+    }
 }
 
 // ==================== 计时器函数 ====================
@@ -5550,6 +6032,13 @@ function startTimer(startSeconds = 0) {
     stopTimer();
     seconds = startSeconds;
     updateTimerDisplay();
+    
+    // 添加计时器运行动画
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+        timerElement.classList.add('running');
+    }
+    
     timerInterval = setInterval(() => {
         seconds++;
         updateTimerDisplay();
@@ -5563,6 +6052,12 @@ function stopTimer() {
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
+    }
+    
+    // 移除计时器运行动画
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+        timerElement.classList.remove('running');
     }
 }
 
@@ -5605,7 +6100,7 @@ let currentViewPuzzleData = null;
 function viewPuzzle(puzzleId) {
     const record = Storage.getRecord(puzzleId);
     if (!record || !record.originalPuzzle) {
-        alert('无法找到题目数据');
+        customAlert('无法找到题目数据', 'error');
         return;
     }
 
@@ -6273,22 +6768,19 @@ function showContinueGameSection() {
     * 放弃游戏
     */
 function abandonGame() {
-    if (!confirm('确定要放弃这局游戏吗？放弃后将无法继续。')) {
-        return;
-    }
-
-    if (currentPuzzle) {
-        const record = Storage.getRecord(currentPuzzle.id);
-        if (record) {
-            record.completionTime = seconds;
-            record.isAbandoned = true;
-            record.isCompleted = true;
-            Storage.saveRecord(record);
+    customConfirm('确定要放弃这局游戏吗？放弃后将无法继续。', () => {
+        if (currentPuzzle) {
+            const record = Storage.getRecord(currentPuzzle.id);
+            if (record) {
+                record.completionTime = seconds;
+                record.isAbandoned = true;
+                record.isCompleted = true;
+                Storage.saveRecord(record);
+            }
         }
-    }
-
-    stopTimer();
-    goHome();
+        stopTimer();
+        goHome();
+    }, null, { title: '放弃游戏', type: 'warning' });
 }
 
 /**
@@ -6410,6 +6902,9 @@ function restoreGameState(record) {
 
     // 渲染棋盘
     renderBoard();
+    
+    // 更新游戏控制按钮显示（根据道具权限）
+    updateGameControlButtons();
 
     // 启动计时器（从保存的时间继续）
     startTimer(seconds);
@@ -6674,3 +7169,29 @@ document.addEventListener('keydown', function (event) {
         });
     }
 });
+
+/**
+ * 检查农场是否已开通
+ */
+function isFarmUnlocked() {
+    const playerData = Storage.getPlayerData();
+    return playerData.farmUnlocked === true;
+}
+
+/**
+ * 开通农场
+ */
+function unlockFarm() {
+    const playerData = Storage.getPlayerData();
+    playerData.farmUnlocked = true;
+    Storage.savePlayerData(playerData);
+}
+
+/**
+ * 开通农场权限（购买农场相关道具时自动调用）
+ */
+function unlockFarmIfNeeded() {
+    if (!isFarmUnlocked()) {
+        unlockFarm();
+    }
+}

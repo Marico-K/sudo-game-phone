@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独农场 - 农场经营</title>
+    <link rel="stylesheet" href="sudoku.css">
+    <script src="dialog.js"></script>
+    <style>
+        /* 粒子特效容器 */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 3s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
+        
+        body {
+            background: linear-gradient(180deg, #87ceeb 0%, #98d8aa 30%, #e8f5e9 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 太阳动画 */
+        .sun {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 60px;
+            animation: sunRotate 20s linear infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 193, 7, 0.5));
+            z-index: 0;
+        }
+        
+        @keyframes sunRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 云朵动画 */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            z-index: 0;
+        }
+        
+        .cloud {
+            position: absolute;
+            font-size: 40px;
+            opacity: 0.8;
+            animation: cloudFloat 30s linear infinite;
+        }
+        
+        .cloud:nth-child(1) { top: 30px; animation-delay: 0s; }
+        .cloud:nth-child(2) { top: 60px; animation-delay: -10s; }
+        .cloud:nth-child(3) { top: 20px; animation-delay: -20s; }
+        
+        @keyframes cloudFloat {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        .farm-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 农场头部动画 */
+        .farm-header {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .farm-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 70%
+            );
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .farm-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .farm-score {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .nav-tab:active {
+            transform: translateY(0);
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        .grid-container-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        .farm-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .farm-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .farm-item.empty {
+            border: 2px dashed #ddd;
+            cursor: pointer;
+        }
+
+        .farm-item.empty:hover {
+            border-color: #4caf50;
+            background: #f0fdf4;
+        }
+
+        .farm-item.locked {
+            border: 2px dashed #ccc;
+            background: #f5f5f5;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .farm-item.locked:hover {
+            border-color: #ff9800;
+            background: #fff8e1;
+            opacity: 1;
+        }
+
+        .farm-item.locked .item-icon {
+            filter: grayscale(100%);
+        }
+
+        .locked-icon {
+            font-size: 36px !important;
+            filter: grayscale(100%);
+        }
+
+        .slot-price {
+            font-size: 0.75em;
+            color: #ff9800;
+            margin-top: 5px;
+        }
+
+        .farm-item.locked.cannot-afford .slot-price {
+            color: #f44336;
+        }
+
+        .farm-item.locked.cannot-afford {
+            cursor: not-allowed;
+        }
+
+        .farm-item.locked.cannot-afford:hover {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        .item-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+        
+        .item-icon.bounce {
+            animation: iconBounce 0.6s ease-in-out;
+        }
+        
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            25% { transform: translateY(-10px) scale(1.1); }
+            50% { transform: translateY(0) scale(1.05); }
+            75% { transform: translateY(-5px) scale(1.02); }
+        }
+        
+        /* 成熟的作物发光动画 */
+        .item-icon.full {
+            animation: glow 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.5));
+            }
+            50% { 
+                filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.8));
+            }
+        }
+        
+        /* 浇水特效 */
+        .water-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            animation: waterSplash 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        @keyframes waterSplash {
+            0% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -80%) scale(1.2) rotate(15deg);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(-50%, -120%) scale(0.3) rotate(30deg);
+            }
+        }
+        
+        /* 施肥特效 */
+        .fertilizer-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 35px;
+            animation: fertilizerPop 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        @keyframes fertilizerPop {
+            0% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -70%) scale(1.3);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(-50%, -100%) scale(0.5) rotate(360deg);
+            }
+        }
+        
+        /* 收获庆祝特效 */
+        .harvest-celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            pointer-events: none;
+        }
+        
+        .celebration-emoji {
+            font-size: 50px;
+            position: absolute;
+            animation: celebrationPop 1.5s ease-out forwards;
+        }
+        
+        @keyframes celebrationPop {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) rotate(20deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.5) rotate(var(--tr));
+            }
+        }
+
+        .item-icon.small {
+            font-size: 32px;
+        }
+
+        .item-icon.medium {
+            font-size: 40px;
+        }
+
+        .item-icon.large {
+            font-size: 48px;
+        }
+
+        .item-icon.full {
+            font-size: 56px;
+        }
+
+        .item-name {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 6px 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #ff9800;
+            color: white;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            display: none;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .harvest-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%) !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .seed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .seed-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .seed-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .seed-icon {
+            font-size: 28px;
+        }
+
+        .seed-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .seed-name {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .seed-price {
+            font-size: 0.8em;
+            color: #ff9800;
+        }
+
+        .buy-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
+        .buy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .buy-btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .inventory-section {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .inventory-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .inventory-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .inventory-name {
+            font-size: 0.75em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .inventory-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .exchange-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .exchange-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #fff3e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .exchange-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .exchange-icon {
+            font-size: 28px;
+        }
+
+        .exchange-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exchange-name {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .exchange-rate {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .exchange-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .exchange-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .exchange-btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            border: 2px solid #4caf50;
+            color: #333;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-hint {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-hint-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* 图鉴样式 */
+        .collection-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .collection-items {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .collection-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .collection-item.collected {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .collection-item.locked {
+            background: #f5f5f5;
+            opacity: 0.6;
+        }
+
+        .collection-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .collection-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .collection-name {
+            font-size: 0.75em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .collection-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #4caf50;
+            color: white;
+            font-size: 0.7em;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .achievement-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            .farm-container {
+                padding: 12px;
+                max-width: 100%;
+            }
+
+            .farm-header {
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            .farm-title {
+                font-size: 1.25em;
+            }
+
+            .farm-score {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+
+            .nav-tabs {
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+
+            .nav-tab {
+                min-width: 70px;
+                padding: 10px 12px;
+                font-size: 0.8em;
+                border-radius: 10px;
+            }
+
+            .tab-content {
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            .section-title {
+                font-size: 1em;
+                margin-bottom: 12px;
+            }
+
+            .grid-container,
+            .grid-container-2 {
+                gap: 12px;
+            }
+
+            .farm-item {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .item-icon {
+                font-size: 36px !important;
+            }
+
+            .item-icon.small {
+                font-size: 24px !important;
+            }
+
+            .item-icon.medium {
+                font-size: 30px !important;
+            }
+
+            .item-icon.large {
+                font-size: 34px !important;
+            }
+
+            .item-icon.full {
+                font-size: 36px !important;
+            }
+
+            .item-name {
+                font-size: 0.85em;
+            }
+
+            .progress-text {
+                font-size: 0.75em;
+            }
+
+            .action-buttons {
+                gap: 6px;
+            }
+
+            .action-btn {
+                padding: 5px 6px;
+                font-size: 0.7em;
+                border-radius: 5px;
+            }
+
+            .inventory-grid {
+                gap: 10px;
+            }
+
+            .inventory-item {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .inventory-icon {
+                font-size: 28px;
+            }
+
+            .inventory-name {
+                font-size: 0.7em;
+            }
+
+            .exchange-item {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .exchange-icon {
+                font-size: 24px;
+            }
+
+            .exchange-name {
+                font-size: 0.85em;
+            }
+
+            .exchange-rate {
+                font-size: 0.75em;
+            }
+
+            /* 图鉴移动端适配 */
+            .collection-category {
+                margin-bottom: 15px;
+            }
+
+            .category-title {
+                font-size: 0.95em;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .collection-items {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .collection-item {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .collection-icon {
+                font-size: 28px;
+                margin-bottom: 6px;
+            }
+
+            .collection-name {
+                font-size: 0.7em;
+            }
+
+            .collection-badge {
+                width: 16px;
+                height: 16px;
+                font-size: 0.6em;
+            }
+
+            .exchange-btn {
+                padding: 6px 12px;
+                font-size: 0.8em;
+                border-radius: 15px;
+            }
+
+            .back-btn {
+                padding: 6px 12px;
+                font-size: 0.8em;
+                border-radius: 15px;
+                gap: 4px;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .empty-hint {
+                padding: 30px 15px;
+            }
+
+            .empty-hint-icon {
+                font-size: 36px;
+                margin-bottom: 10px;
+            }
+
+            /* 弹窗优化 */
+            .modal-box {
+                padding: 15px;
+                max-width: 280px;
+            }
+
+            .seed-item {
+                padding: 10px;
+            }
+
+            .seed-icon {
+                font-size: 24px;
+            }
+
+            .buy-btn {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+
+        /* 小屏手机优化 */
+        @media (max-width: 320px) {
+            .nav-tab {
+                min-width: 60px;
+                padding: 8px 8px;
+                font-size: 0.75em;
+            }
+
+            .farm-title {
+                font-size: 1.1em;
+            }
+
+            .item-icon {
+                font-size: 30px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 太阳 -->
+    <div class="sun">☀️</div>
+    
+    <!-- 云朵 -->
+    <div class="clouds">
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+    </div>
+    
+    <!-- 粒子特效容器 -->
+    <div class="particles-container" id="particlesContainer"></div>
+    
+    <div class="farm-container">
+        <div class="farm-header">
+            <div class="farm-title">🌾 数独农场</div>
+            <div class="farm-score">💰 积分: <span id="playerScore">0</span></div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('garden')">🥬 菜园</button>
+            <button class="nav-tab" onclick="switchTab('orchard')">🌳 果园</button>
+            <button class="nav-tab" onclick="switchTab('chicken')">🐔 鸡小屋</button>
+            <button class="nav-tab" onclick="switchTab('cow')">🐄 动物屋</button>
+            <button class="nav-tab" onclick="switchTab('collection')">📚 图鉴</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- 菜园 -->
+            <div id="gardenTab" class="tab-panel">
+                <div class="section-title">🥬 我的菜园</div>
+                <div class="grid-container" id="gardenGrid">
+                </div>
+            </div>
+
+            <!-- 果园 -->
+            <div id="orchardTab" class="tab-panel" style="display: none;">
+                <div class="section-title">🌳 我的果园</div>
+                <div class="grid-container" id="orchardGrid">
+                </div>
+            </div>
+
+            <!-- 鸡小屋 -->
+            <div id="chickenTab" class="tab-panel" style="display: none;">
+                <div class="section-title">🐔 鸡小屋</div>
+                <div class="grid-container-2" id="chickenGrid">
+                </div>
+            </div>
+
+            <!-- 动物屋 -->
+            <div id="cowTab" class="tab-panel" style="display: none;">
+                <div class="section-title">🐄 动物屋</div>
+                <div class="grid-container-2" id="cowGrid">
+                </div>
+            </div>
+
+            <!-- 图鉴 -->
+            <div id="collectionTab" class="tab-panel" style="display: none;">
+                <div class="section-title">📚 我的图鉴</div>
+                <div class="grid-container" id="collectionGrid">
+                </div>
+            </div>
+
+            <!-- 背包和兑换 -->
+            <div class="inventory-section">
+                <div class="section-title">🎒 我的背包</div>
+                <div class="inventory-grid" id="inventoryGrid">
+                </div>
+            </div>
+
+            <div class="exchange-section">
+                <div class="section-title">🔄 积分兑换</div>
+                <div id="exchangeList">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购买种子弹窗 -->
+    <div class="modal-overlay" id="seedModal">
+        <div class="modal-box">
+            <span class="modal-close" onclick="closeSeedModal()">&times;</span>
+            <div class="modal-title" id="seedModalTitle"></div>
+            <div class="seed-list" id="seedList">
+            </div>
+        </div>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">🏠 返回首页</button>
+
+    <script src="sudoku.js"></script>
+    <script>
+        // 当前标签页
+        let currentTab = 'garden';
+
+        // 农场配置
+        const farmConfig = {
+            // 蔬菜种子
+            vegetables: [
+                { id: 'carrot', name: '胡萝卜', icon: '🥕', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
+                { id: 'tomato', name: '西红柿', icon: '🍅', maxGrowth: 120, waterGain: 20, fertilizerGain: 40, exchangeScore: 15 },
+                { id: 'lettuce', name: '生菜', icon: '🥬', maxGrowth: 80, waterGain: 25, fertilizerGain: 45, exchangeScore: 8 },
+                { id: 'corn', name: '玉米', icon: '🌽', maxGrowth: 150, waterGain: 15, fertilizerGain: 35, exchangeScore: 20 },
+                { id: 'potato', name: '土豆', icon: '🥔', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
+                { id: 'eggplant', name: '茄子', icon: '🍆', maxGrowth: 130, waterGain: 18, fertilizerGain: 38, exchangeScore: 18 },
+            ],
+            // 果树种子
+            fruits: [
+                { id: 'apple', name: '苹果树', icon: '🍎', maxGrowth: 300, waterGain: 15, fertilizerGain: 30, exchangeScore: 30, harvestIcon: '🍎' },
+                { id: 'orange', name: '橙子树', icon: '🍊', maxGrowth: 350, waterGain: 15, fertilizerGain: 30, exchangeScore: 35, harvestIcon: '🍊' },
+                { id: 'grape', name: '葡萄树', icon: '🍇', maxGrowth: 280, waterGain: 18, fertilizerGain: 35, exchangeScore: 28, harvestIcon: '🍇' },
+                { id: 'peach', name: '桃树', icon: '🍑', maxGrowth: 320, waterGain: 15, fertilizerGain: 30, exchangeScore: 32, harvestIcon: '🍑' },
+            ],
+            // 动物
+            animals: {
+                chicken: { id: 'chicken', name: '小鸡', icon: '🐣', maxGrowth: 200, feedGain: 25, snackGain: 50, product: 'egg', productName: '鸡蛋', productIcon: '🥚', exchangeScore: 8 },
+                cow: { id: 'cow', name: '小牛', icon: '🐮', maxGrowth: 250, feedGain: 20, snackGain: 45, product: 'milk', productName: '牛奶', productIcon: '🥛', exchangeScore: 12 },
+            },
+            // 道具价格
+            items: {
+                fertilizer: { name: '肥料', price: 5 },
+                feed: { name: '饲料', price: 5 },
+                carrot_seed: { name: '胡萝卜种子', price: 3 },
+                tomato_seed: { name: '西红柿种子', price: 4 },
+                lettuce_seed: { name: '生菜种子', price: 2 },
+                corn_seed: { name: '玉米种子', price: 5 },
+                potato_seed: { name: '土豆种子', price: 3 },
+                eggplant_seed: { name: '茄子种子', price: 4 },
+                apple_seed: { name: '苹果树苗', price: 10 },
+                orange_seed: { name: '橙子树苗', price: 12 },
+                grape_seed: { name: '葡萄树苗', price: 9 },
+                peach_seed: { name: '桃树苗', price: 11 },
+                chicken_baby: { name: '小鸡', price: 20 },
+                cow_baby: { name: '小牛', price: 30 },
+            }
+        };
+
+        // 获取农场数据
+        function getFarmData() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            
+            // 计算已解锁的菜园和果园数量
+            let gardenCount = 1; // 第一块免费
+            let orchardCount = 1; // 第一块免费
+            
+            for (let i = 2; i <= 6; i++) {
+                if (items[`garden_slot_${i}`]) gardenCount++;
+                if (items[`orchard_slot_${i}`]) orchardCount++;
+            }
+            
+            let farmData = playerData.farm || {
+                garden: Array(gardenCount).fill(null),
+                orchard: Array(orchardCount).fill(null),
+                chicken: null,
+                cow: null,
+                inventory: {},
+                collection: [],
+                lastActionDate: null,
+            };
+            
+            // 如果现有数据有空地超过已解锁数量，裁剪多余的空地
+            // 同时保留已有种植的数据
+            if (farmData.garden && farmData.garden.length > gardenCount) {
+                // 保留已解锁的部分（包含种植数据）
+                const trimmedGarden = farmData.garden.slice(0, gardenCount);
+                farmData.garden = trimmedGarden;
+                saveFarmData(farmData);
+            }
+            
+            if (farmData.orchard && farmData.orchard.length > orchardCount) {
+                // 保留已解锁的部分（包含种植数据）
+                const trimmedOrchard = farmData.orchard.slice(0, orchardCount);
+                farmData.orchard = trimmedOrchard;
+                saveFarmData(farmData);
+            }
+            
+            return farmData;
+        }
+
+        // 获取当前解锁的菜园数量
+        function getGardenSlotCount() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            let count = 1; // 第一块免费
+            for (let i = 2; i <= 6; i++) {
+                if (items[`garden_slot_${i}`]) count++;
+            }
+            return count;
+        }
+
+        // 获取当前解锁的果园数量
+        function getOrchardSlotCount() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            let count = 1; // 第一块免费
+            for (let i = 2; i <= 6; i++) {
+                if (items[`orchard_slot_${i}`]) count++;
+            }
+            return count;
+        }
+
+        // 保存农场数据
+        function saveFarmData(farmData) {
+            const playerData = Storage.getPlayerData();
+            playerData.farm = farmData;
+            Storage.savePlayerData(playerData);
+        }
+
+        // 切换标签页
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
+            document.getElementById(`${tab}Tab`).style.display = 'block';
+            
+            // 如果切换到图鉴页面，渲染图鉴
+            if (tab === 'collection') {
+                renderCollection();
+            }
+        }
+
+        // 获取成长值对应的图标大小
+        function getGrowthSize(growth, maxGrowth) {
+            const ratio = growth / maxGrowth;
+            if (ratio < 0.25) return 'small';
+            if (ratio < 0.5) return 'medium';
+            if (ratio < 0.75) return 'large';
+            return 'full';
+        }
+
+        // 渲染菜园
+        function renderGarden() {
+            const playerData = Storage.getPlayerData();
+            const farmData = getFarmData();
+            const garden = farmData.garden;
+            const gardenCount = getGardenSlotCount();
+            const grid = document.getElementById('gardenGrid');
+            let html = '';
+
+            // 渲染所有6个槽位
+            for (let index = 0; index < 6; index++) {
+                if (index < gardenCount) {
+                    // 已解锁的槽位
+                    const plant = garden[index];
+                    if (plant) {
+                        const config = farmConfig.vegetables.find(v => v.id === plant.type);
+                        const growthPercent = (plant.growth / config.maxGrowth) * 100;
+                        const sizeClass = getGrowthSize(plant.growth, config.maxGrowth);
+                        const canHarvest = plant.growth >= config.maxGrowth;
+                        const today = new Date().toDateString();
+                        const canWater = plant.lastWater !== today;
+                        const canFertilize = plant.lastFertilize !== today;
+
+                        html += `
+                            <div class="farm-item">
+                                <div class="item-icon ${sizeClass}">${config.icon}</div>
+                                <div class="item-name">${config.name}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
+                                </div>
+                                <div class="progress-text">${plant.growth}/${config.maxGrowth}</div>
+                                <div class="action-buttons">
+                                    <button class="action-btn primary" onclick="water('garden', ${index})" ${!canWater ? 'disabled' : ''}>
+                                        💧
+                                    </button>
+                                    <button class="action-btn secondary" onclick="fertilize('garden', ${index})" ${!canFertilize ? 'disabled' : ''}>
+                                        🧪
+                                    </button>
+                                    <button class="action-btn harvest-btn" onclick="harvest('garden', ${index})" ${!canHarvest ? 'disabled' : ''}>
+                                        🌾
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="farm-item empty" onclick="openSeedModal('vegetable', 'garden', ${index})">
+                                <div class="item-icon">➕</div>
+                                <div class="item-name">空地块${index + 1}号</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 未解锁的槽位
+                    const slotPrice = itemConfig.find(i => i.id === `garden_slot_${index + 1}`)?.price || 10;
+                    const playerScore = (playerData && playerData.availableScore) || 0;
+                    const canAfford = playerScore >= slotPrice;
+                    
+                    html += `
+                        <div class="farm-item locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('garden_slot_${index + 1}')">
+                            <div class="item-icon locked-icon">🔒</div>
+                            <div class="item-name">${index + 1}号菜地</div>
+                            <div class="slot-price">${canAfford ? `💰 ${slotPrice}积分解锁` : `💰 积分不足(${playerScore}/${slotPrice})`}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // 渲染果园
+        function renderOrchard() {
+            const playerData = Storage.getPlayerData();
+            const farmData = getFarmData();
+            const orchard = farmData.orchard;
+            const orchardCount = getOrchardSlotCount();
+            const grid = document.getElementById('orchardGrid');
+            let html = '';
+
+            // 渲染所有6个槽位
+            for (let index = 0; index < 6; index++) {
+                if (index < orchardCount) {
+                    // 已解锁的槽位
+                    const tree = orchard[index];
+                    if (tree) {
+                        const config = farmConfig.fruits.find(f => f.id === tree.type);
+                        const growthPercent = (tree.growth / config.maxGrowth) * 100;
+                        const sizeClass = getGrowthSize(tree.growth, config.maxGrowth);
+                        const canHarvest = tree.growth >= config.maxGrowth;
+                        const today = new Date().toDateString();
+                        const canWater = tree.lastWater !== today;
+                        const canFertilize = tree.lastFertilize !== today;
+
+                        html += `
+                            <div class="farm-item">
+                                <div class="item-icon ${sizeClass}">${config.icon}</div>
+                                <div class="item-name">${config.name}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
+                                </div>
+                                <div class="progress-text">${tree.growth}/${config.maxGrowth}</div>
+                                <div class="action-buttons">
+                                    <button class="action-btn primary" onclick="water('orchard', ${index})" ${!canWater ? 'disabled' : ''}>
+                                        💧
+                                    </button>
+                                    <button class="action-btn secondary" onclick="fertilize('orchard', ${index})" ${!canFertilize ? 'disabled' : ''}>
+                                        🧪
+                                    </button>
+                                    <button class="action-btn harvest-btn" onclick="harvest('orchard', ${index})" ${!canHarvest ? 'disabled' : ''}>
+                                        🌾
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="farm-item empty" onclick="openSeedModal('fruit', 'orchard', ${index})">
+                                <div class="item-icon">➕</div>
+                                <div class="item-name">空地${index + 1}号</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 未解锁的槽位
+                    const slotPrice = itemConfig.find(i => i.id === `orchard_slot_${index + 1}`)?.price || 15;
+                    const playerScore = (playerData && playerData.availableScore) || 0;
+                    const canAfford = playerScore >= slotPrice;
+                    
+                    html += `
+                        <div class="farm-item locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('orchard_slot_${index + 1}')">
+                            <div class="item-icon locked-icon">🔒</div>
+                            <div class="item-name">${index + 1}号果园</div>
+                            <div class="slot-price">${canAfford ? `💰 ${slotPrice}积分解锁` : `💰 积分不足(${playerScore}/${slotPrice})`}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // 渲染鸡小屋
+        function renderChicken() {
+            const farmData = getFarmData();
+            const chicken = farmData.chicken;
+            const grid = document.getElementById('chickenGrid');
+
+            if (chicken) {
+                const config = farmConfig.animals.chicken;
+                const isAdult = chicken.growth >= config.maxGrowth;
+                const today = new Date().toDateString();
+                const canFeed = chicken.lastFeed !== today;
+                const canSnack = chicken.lastSnack !== today;
+                const canHarvest = isAdult && chicken.lastHarvest !== today;
+
+                grid.innerHTML = `
+                    <div class="farm-item">
+                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(chicken.growth, config.maxGrowth)}">${isAdult ? '🐔' : config.icon}</div>
+                        <div class="item-name">${config.name}</div>
+                        ${!isAdult ? `
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(chicken.growth / config.maxGrowth) * 100}%"></div>
+                            </div>
+                            <div class="progress-text">${chicken.growth}/${config.maxGrowth}</div>
+                        ` : ''}
+                        <div class="action-buttons">
+                            <button class="action-btn primary" onclick="feed('chicken')" ${!canFeed ? 'disabled' : ''}>
+                                🌾
+                            </button>
+                            <button class="action-btn secondary" onclick="snack('chicken')" ${!canSnack ? 'disabled' : ''}>
+                                🍖
+                            </button>
+                            <button class="action-btn harvest-btn" onclick="harvestAnimal('chicken')" ${!canHarvest ? 'disabled' : ''}>
+                                🥚
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = `
+                    <div class="farm-item empty" onclick="openSeedModal('chicken', 'chicken', 0)">
+                        <div class="item-icon">➕</div>
+                        <div class="item-name">购买小鸡</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染动物屋（牛）
+        function renderCow() {
+            const farmData = getFarmData();
+            const cow = farmData.cow;
+            const grid = document.getElementById('cowGrid');
+
+            if (cow) {
+                const config = farmConfig.animals.cow;
+                const isAdult = cow.growth >= config.maxGrowth;
+                const today = new Date().toDateString();
+                const canFeed = cow.lastFeed !== today;
+                const canSnack = cow.lastSnack !== today;
+                const canHarvest = isAdult && cow.lastHarvest !== today;
+
+                grid.innerHTML = `
+                    <div class="farm-item">
+                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(cow.growth, config.maxGrowth)}">${isAdult ? '🐄' : config.icon}</div>
+                        <div class="item-name">${config.name}</div>
+                        ${!isAdult ? `
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(cow.growth / config.maxGrowth) * 100}%"></div>
+                            </div>
+                            <div class="progress-text">${cow.growth}/${config.maxGrowth}</div>
+                        ` : ''}
+                        <div class="action-buttons">
+                            <button class="action-btn primary" onclick="feed('cow')" ${!canFeed ? 'disabled' : ''}>
+                                🌾
+                            </button>
+                            <button class="action-btn secondary" onclick="snack('cow')" ${!canSnack ? 'disabled' : ''}>
+                                🍖
+                            </button>
+                            <button class="action-btn harvest-btn" onclick="harvestAnimal('cow')" ${!canHarvest ? 'disabled' : ''}>
+                                🥛
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = `
+                    <div class="farm-item empty" onclick="openSeedModal('cow', 'cow', 0)">
+                        <div class="item-icon">➕</div>
+                        <div class="item-name">购买小牛</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染背包
+        function renderInventory() {
+            const farmData = getFarmData();
+            const inventory = farmData.inventory;
+            const grid = document.getElementById('inventoryGrid');
+            let html = '';
+
+            const items = [
+                { id: 'carrot', icon: '🥕', name: '胡萝卜' },
+                { id: 'tomato', icon: '🍅', name: '西红柿' },
+                { id: 'lettuce', icon: '🥬', name: '生菜' },
+                { id: 'corn', icon: '🌽', name: '玉米' },
+                { id: 'potato', icon: '🥔', name: '土豆' },
+                { id: 'eggplant', icon: '🍆', name: '茄子' },
+                { id: 'apple', icon: '🍎', name: '苹果' },
+                { id: 'orange', icon: '🍊', name: '橙子' },
+                { id: 'grape', icon: '🍇', name: '葡萄' },
+                { id: 'peach', icon: '🍑', name: '桃子' },
+                { id: 'egg', icon: '🥚', name: '鸡蛋' },
+                { id: 'milk', icon: '🥛', name: '牛奶' },
+            ];
+
+            items.forEach(item => {
+                const count = inventory[item.id] || 0;
+                if (count > 0) {
+                    html += `
+                        <div class="inventory-item">
+                            <div class="inventory-icon">${item.icon}</div>
+                            <div class="inventory-name">${item.name}</div>
+                            <div class="inventory-count">${count}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!html) {
+                html = '<div class="empty-hint"><div class="empty-hint-icon">🎒</div><p>背包是空的</p></div>';
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // 渲染兑换列表
+        function renderExchange() {
+            const farmData = getFarmData();
+            const inventory = farmData.inventory;
+            const list = document.getElementById('exchangeList');
+            let html = '';
+
+            const exchangeItems = [
+                { id: 'carrot', icon: '🥕', name: '胡萝卜', rate: 10 },
+                { id: 'tomato', icon: '🍅', name: '西红柿', rate: 15 },
+                { id: 'lettuce', icon: '🥬', name: '生菜', rate: 8 },
+                { id: 'corn', icon: '🌽', name: '玉米', rate: 20 },
+                { id: 'potato', icon: '🥔', name: '土豆', rate: 10 },
+                { id: 'eggplant', icon: '🍆', name: '茄子', rate: 18 },
+                { id: 'apple', icon: '🍎', name: '苹果', rate: 30 },
+                { id: 'orange', icon: '🍊', name: '橙子', rate: 35 },
+                { id: 'grape', icon: '🍇', name: '葡萄', rate: 28 },
+                { id: 'peach', icon: '🍑', name: '桃子', rate: 32 },
+                { id: 'egg', icon: '🥚', name: '鸡蛋', rate: 8 },
+                { id: 'milk', icon: '🥛', name: '牛奶', rate: 12 },
+            ];
+
+            exchangeItems.forEach(item => {
+                const count = inventory[item.id] || 0;
+                
+                // 只有数量大于 0 才显示
+                if (count > 0) {
+                    html += `
+                        <div class="exchange-item">
+                            <div class="exchange-info">
+                                <div class="exchange-icon">${item.icon}</div>
+                                <div class="exchange-details">
+                                    <div class="exchange-name">${item.name} x${count}</div>
+                                    <div class="exchange-rate">兑换 ${item.rate} 积分</div>
+                                </div>
+                            </div>
+                            <button class="exchange-btn" onclick="exchange('${item.id}', ${item.rate})">
+                                兑换
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+
+            // 如果没有任何物品可兑换
+            if (html === '') {
+                html = `
+                    <div class="empty-exchange" style="text-align: center; padding: 40px 20px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
+                        <div style="font-size: 16px; margin-bottom: 5px;">暂无可兑换物品</div>
+                        <div style="font-size: 14px; color: #bbb;">农场收获的物品将显示在这里</div>
+                    </div>
+                `;
+            }
+
+            list.innerHTML = html;
+        }
+
+        // 渲染图鉴
+        function renderCollection() {
+            const farmData = getFarmData();
+            const collection = farmData.collection || [];
+            const grid = document.getElementById('collectionGrid');
+            let html = '';
+
+            // 定义所有可收集的物品
+            const allCollectibles = [
+                // 蔬菜
+                ...farmConfig.vegetables.map(v => ({
+                    id: v.id,
+                    name: v.name,
+                    icon: v.icon,
+                    category: 'vegetable',
+                    categoryName: '蔬菜'
+                })),
+                // 水果
+                ...farmConfig.fruits.map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    icon: f.icon,
+                    category: 'fruit',
+                    categoryName: '水果'
+                })),
+                // 动物产品
+                {
+                    id: 'egg',
+                    name: '鸡蛋',
+                    icon: '🥚',
+                    category: 'animal',
+                    categoryName: '动物产品'
+                },
+                {
+                    id: 'milk',
+                    name: '牛奶',
+                    icon: '🥛',
+                    category: 'animal',
+                    categoryName: '动物产品'
+                }
+            ];
+
+            // 按类别分组
+            const categories = {};
+            allCollectibles.forEach(item => {
+                if (!categories[item.category]) {
+                    categories[item.category] = {
+                        name: item.categoryName,
+                        items: []
+                    };
+                }
+                const isCollected = collection.includes(item.id);
+                categories[item.category].items.push({
+                    ...item,
+                    isCollected
+                });
+            });
+
+            // 渲染每个类别
+            Object.keys(categories).forEach(categoryKey => {
+                const category = categories[categoryKey];
+                html += `<div class="collection-category">
+                    <div class="category-title">${category.name}</div>
+                    <div class="collection-items">`;
+
+                category.items.forEach(item => {
+                    html += `
+                        <div class="collection-item ${item.isCollected ? 'collected' : 'locked'}">
+                            <div class="collection-icon">${item.isCollected ? item.icon : '❓'}</div>
+                            <div class="collection-name">${item.isCollected ? item.name : '???'}</div>
+                            ${item.isCollected ? '<div class="collection-badge">✓</div>' : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
+            // 如果没有收集任何物品
+            if (collection.length === 0) {
+                html = `
+                    <div class="empty-hint">
+                        <div class="empty-hint-icon">📚</div>
+                        <p>还没有收集到任何物品</p>
+                        <p style="font-size: 0.85em; color: #bbb;">收获作物和动物产品来解锁图鉴</p>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // 打开购买种子弹窗
+        function openSeedModal(type, area, index) {
+            const title = type === 'vegetable' ? '🥬 选择种子' : 
+                         type === 'fruit' ? '🌳 选择树苗' :
+                         type === 'chicken' ? '🐔 选择小鸡' : '🐄 选择小牛';
+            
+            document.getElementById('seedModalTitle').textContent = title;
+            
+            let items = [];
+            if (type === 'vegetable') {
+                items = farmConfig.vegetables.map(v => ({
+                    ...v,
+                    seedId: `${v.id}_seed`,
+                    price: farmConfig.items[`${v.id}_seed`].price
+                }));
+            } else if (type === 'fruit') {
+                items = farmConfig.fruits.map(f => ({
+                    ...f,
+                    seedId: `${f.id}_seed`,
+                    price: farmConfig.items[`${f.id}_seed`].price
+                }));
+            } else if (type === 'chicken') {
+                items = [{
+                    id: 'chicken',
+                    name: '小鸡',
+                    icon: '🐣',
+                    seedId: 'chicken_baby',
+                    price: farmConfig.items.chicken_baby.price
+                }];
+            } else if (type === 'cow') {
+                items = [{
+                    id: 'cow',
+                    name: '小牛',
+                    icon: '🐮',
+                    seedId: 'cow_baby',
+                    price: farmConfig.items.cow_baby.price
+                }];
+            }
+
+            const playerData = Storage.getPlayerData();
+            const score = playerData.availableScore || 0;
+            const playerItems = playerData.items || {};
+
+            let html = '';
+            items.forEach(item => {
+                const ownedCount = playerItems[item.seedId] || 0;
+                const canBuy = score >= item.price;
+                
+                let buttonText = '';
+                let buttonClass = '';
+                let buttonDisabled = false;
+                let buttonAction = '';
+                
+                if (ownedCount > 0) {
+                    buttonText = `🌱 播种 (${ownedCount})`;
+                    buttonClass = 'buy-btn';
+                    buttonDisabled = false;
+                    buttonAction = `plantSeedFromInventory('${item.id}', '${item.seedId}', '${area}', ${index})`;
+                } else if (canBuy) {
+                    buttonText = `💰 购买 ${item.price}分`;
+                    buttonClass = 'buy-btn';
+                    buttonDisabled = false;
+                    buttonAction = `buySeed('${item.id}', '${item.seedId}', ${item.price}, '${area}', ${index})`;
+                } else {
+                    buttonText = '积分不足';
+                    buttonClass = 'buy-btn disabled';
+                    buttonDisabled = true;
+                    buttonAction = '';
+                }
+                
+                html += `
+                    <div class="seed-item">
+                        <div class="seed-info">
+                            <div class="seed-icon">${item.icon}</div>
+                            <div class="seed-details">
+                                <div class="seed-name">${item.name}${ownedCount > 0 ? ` (${ownedCount})` : ''}</div>
+                                <div class="seed-price">💰 ${item.price} 积分</div>
+                            </div>
+                        </div>
+                        <button class="${buttonClass}" onclick="${buttonAction}" ${buttonDisabled ? 'disabled' : ''}>
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('seedList').innerHTML = html;
+            document.getElementById('seedModal').classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeSeedModal() {
+            document.getElementById('seedModal').classList.remove('show');
+        }
+
+        // 从库存播种/饲养
+        function plantSeedFromInventory(itemId, seedId, area, index) {
+            const playerData = Storage.getPlayerData();
+            const playerItems = playerData.items || {};
+            
+            // 检查库存
+            if (!playerItems[seedId] || playerItems[seedId] <= 0) {
+                customAlert('库存不足！', 'warning');
+                return;
+            }
+
+            // 扣除库存
+            playerData.items[seedId]--;
+            Storage.savePlayerData(playerData);
+
+            // 更新农场数据
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+
+            if (area === 'garden') {
+                farmData.garden[index] = {
+                    type: itemId,
+                    growth: 0,
+                    lastWater: null,
+                    lastFertilize: null,
+                    plantedDate: today
+                };
+            } else if (area === 'orchard') {
+                farmData.orchard[index] = {
+                    type: itemId,
+                    growth: 0,
+                    lastWater: null,
+                    lastFertilize: null,
+                    plantedDate: today
+                };
+            } else if (area === 'chicken') {
+                farmData.chicken = {
+                    type: itemId,
+                    growth: 0,
+                    lastFeed: null,
+                    lastSnack: null,
+                    lastHarvest: null,
+                    boughtDate: today
+                };
+            } else if (area === 'cow') {
+                farmData.cow = {
+                    type: itemId,
+                    growth: 0,
+                    lastFeed: null,
+                    lastSnack: null,
+                    lastHarvest: null,
+                    boughtDate: today
+                };
+            }
+
+            saveFarmData(farmData);
+            closeSeedModal();
+            refreshPage();
+            
+            // 播放庆祝特效
+            playHarvestCelebration();
+            
+            customAlert('播种成功！', 'success');
+        }
+
+        // 购买种子/动物
+        function buySeed(itemId, seedId, price, area, index) {
+            const playerData = Storage.getPlayerData();
+            const score = playerData.availableScore || 0;
+
+            if (score < price) {
+                customAlert('积分不足！', 'warning');
+                return;
+            }
+
+            // 扣除积分
+            playerData.availableScore = score - price;
+            Storage.savePlayerData(playerData);
+
+            // 更新农场数据
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+
+            if (area === 'garden') {
+                farmData.garden[index] = {
+                    type: itemId,
+                    growth: 0,
+                    lastWater: null,
+                    lastFertilize: null,
+                    plantedDate: today
+                };
+            } else if (area === 'orchard') {
+                farmData.orchard[index] = {
+                    type: itemId,
+                    growth: 0,
+                    lastWater: null,
+                    lastFertilize: null,
+                    plantedDate: today
+                };
+            } else if (area === 'chicken') {
+                farmData.chicken = {
+                    type: itemId,
+                    growth: 0,
+                    lastFeed: null,
+                    lastSnack: null,
+                    lastHarvest: null,
+                    boughtDate: today
+                };
+            } else if (area === 'cow') {
+                farmData.cow = {
+                    type: itemId,
+                    growth: 0,
+                    lastFeed: null,
+                    lastSnack: null,
+                    lastHarvest: null,
+                    boughtDate: today
+                };
+            }
+
+            saveFarmData(farmData);
+            closeSeedModal();
+            refreshPage();
+            
+            // 播放庆祝特效
+            playHarvestCelebration();
+            
+            customAlert('购买成功！', 'success');
+        }
+
+        // 播放浇水特效
+        function playWaterEffect(element) {
+            const effect = document.createElement('div');
+            effect.className = 'water-effect';
+            effect.textContent = '💧';
+            element.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 800);
+        }
+        
+        // 播放施肥特效
+        function playFertilizerEffect(element) {
+            const effect = document.createElement('div');
+            effect.className = 'fertilizer-effect';
+            effect.textContent = '🧪';
+            element.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+        
+        // 播放喂养特效
+        function playFeedEffect(element, type) {
+            const effect = document.createElement('div');
+            effect.className = 'water-effect';
+            effect.textContent = type === 'feed' ? '🌾' : '🍖';
+            element.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 800);
+        }
+        
+        // 播放收获庆祝特效
+        function playHarvestCelebration() {
+            const celebration = document.createElement('div');
+            celebration.className = 'harvest-celebration';
+            
+            const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '🎈', '🎁', '⭐'];
+            
+            for (let i = 0; i < 12; i++) {
+                const emoji = document.createElement('div');
+                emoji.className = 'celebration-emoji';
+                emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 100 + Math.random() * 100;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                const tr = Math.random() * 720 - 360;
+                
+                emoji.style.setProperty('--tx', `${tx}px`);
+                emoji.style.setProperty('--ty', `${ty}px`);
+                emoji.style.setProperty('--tr', `${tr}deg`);
+                
+                celebration.appendChild(emoji);
+            }
+            
+            document.body.appendChild(celebration);
+            setTimeout(() => celebration.remove(), 1500);
+        }
+        
+        // 浇水
+        function water(area, index) {
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+
+            let plant;
+            let config;
+            let gridId;
+
+            if (area === 'garden') {
+                plant = farmData.garden[index];
+                config = farmConfig.vegetables.find(v => v.id === plant.type);
+                gridId = 'gardenGrid';
+            } else if (area === 'orchard') {
+                plant = farmData.orchard[index];
+                config = farmConfig.fruits.find(f => f.id === plant.type);
+                gridId = 'orchardGrid';
+            }
+
+            plant.growth = Math.min(plant.growth + config.waterGain, config.maxGrowth);
+            plant.lastWater = today;
+
+            saveFarmData(farmData);
+            
+            // 播放特效
+            const grid = document.getElementById(gridId);
+            const farmItem = grid.children[index];
+            if (farmItem) {
+                playWaterEffect(farmItem);
+                const icon = farmItem.querySelector('.item-icon');
+                if (icon) {
+                    icon.classList.add('bounce');
+                    setTimeout(() => icon.classList.remove('bounce'), 600);
+                }
+            }
+            
+            refreshPage();
+            customAlert(`浇水成功！成长值 +${config.waterGain}`, 'success');
+        }
+
+        // 施肥
+        function fertilize(area, index) {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            const fertilizerCount = items.fertilizer || 0;
+
+            if (fertilizerCount <= 0) {
+                customAlert('肥料不足！请在积分商城购买肥料。', 'warning');
+                return;
+            }
+
+            // 使用肥料
+            playerData.items.fertilizer = fertilizerCount - 1;
+            Storage.savePlayerData(playerData);
+
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+
+            let plant;
+            let config;
+            let gridId;
+
+            if (area === 'garden') {
+                plant = farmData.garden[index];
+                config = farmConfig.vegetables.find(v => v.id === plant.type);
+                gridId = 'gardenGrid';
+            } else if (area === 'orchard') {
+                plant = farmData.orchard[index];
+                config = farmConfig.fruits.find(f => f.id === plant.type);
+                gridId = 'orchardGrid';
+            }
+
+            plant.growth = Math.min(plant.growth + config.fertilizerGain, config.maxGrowth);
+            plant.lastFertilize = today;
+
+            saveFarmData(farmData);
+            
+            // 播放特效
+            const grid = document.getElementById(gridId);
+            const farmItem = grid.children[index];
+            if (farmItem) {
+                playFertilizerEffect(farmItem);
+                const icon = farmItem.querySelector('.item-icon');
+                if (icon) {
+                    icon.classList.add('bounce');
+                    setTimeout(() => icon.classList.remove('bounce'), 600);
+                }
+            }
+            
+            refreshPage();
+            customAlert(`施肥成功！成长值 +${config.fertilizerGain}`, 'success');
+        }
+
+        // 喂养动物
+        function feed(animalType) {
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+            const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
+            const config = farmConfig.animals[animalType];
+
+            animal.growth = Math.min(animal.growth + config.feedGain, config.maxGrowth);
+            animal.lastFeed = today;
+
+            saveFarmData(farmData);
+            
+            // 播放特效
+            const gridId = animalType === 'chicken' ? 'chickenGrid' : 'cowGrid';
+            const grid = document.getElementById(gridId);
+            const farmItem = grid.children[0];
+            if (farmItem) {
+                playFeedEffect(farmItem, 'feed');
+                const icon = farmItem.querySelector('.item-icon');
+                if (icon) {
+                    icon.classList.add('bounce');
+                    setTimeout(() => icon.classList.remove('bounce'), 600);
+                }
+            }
+            
+            refreshPage();
+            customAlert(`喂养成功！成长值 +${config.feedGain}`, 'success');
+        }
+
+        // 给动物加餐
+        function snack(animalType) {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            const feedCount = items.feed || 0;
+
+            if (feedCount <= 0) {
+                customAlert('饲料不足！请在积分商城购买饲料。', 'warning');
+                return;
+            }
+
+            // 使用饲料
+            playerData.items.feed = feedCount - 1;
+            Storage.savePlayerData(playerData);
+
+            const farmData = getFarmData();
+            const today = new Date().toDateString();
+            const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
+            const config = farmConfig.animals[animalType];
+
+            animal.growth = Math.min(animal.growth + config.snackGain, config.maxGrowth);
+            animal.lastSnack = today;
+
+            saveFarmData(farmData);
+            
+            // 播放特效
+            const gridId = animalType === 'chicken' ? 'chickenGrid' : 'cowGrid';
+            const grid = document.getElementById(gridId);
+            const farmItem = grid.children[0];
+            if (farmItem) {
+                playFeedEffect(farmItem, 'snack');
+                const icon = farmItem.querySelector('.item-icon');
+                if (icon) {
+                    icon.classList.add('bounce');
+                    setTimeout(() => icon.classList.remove('bounce'), 600);
+                }
+            }
+            
+            refreshPage();
+            customAlert(`加餐成功！成长值 +${config.snackGain}`, 'success');
+        }
+
+        // 收获作物
+        function harvest(area, index) {
+            const farmData = getFarmData();
+
+            let plant;
+            let config;
+
+            if (area === 'garden') {
+                plant = farmData.garden[index];
+                config = farmConfig.vegetables.find(v => v.id === plant.type);
+            } else if (area === 'orchard') {
+                plant = farmData.orchard[index];
+                config = farmConfig.fruits.find(f => f.id === plant.type);
+            }
+
+            // 添加到背包
+            farmData.inventory[plant.type] = (farmData.inventory[plant.type] || 0) + 1;
+
+            // 检查是否首次获得（解锁图鉴）
+            const isFirstTime = !farmData.collection.includes(plant.type);
+            if (isFirstTime) {
+                farmData.collection.push(plant.type);
+            }
+
+            // 重新种植
+            farmData[area][index] = null;
+
+            saveFarmData(farmData);
+            
+            // 播放庆祝特效
+            playHarvestCelebration();
+            
+            refreshPage();
+            
+            if (isFirstTime) {
+                customAlert(`🎉 恭喜！首次获得${config.name}，已解锁图鉴！\n\n🌾 收获成功！获得 ${config.icon} ${config.name} x1`, 'success');
+            } else {
+                customAlert(`🌾 收获成功！获得 ${config.icon} ${config.name} x1`, 'success');
+            }
+        }
+
+        // 收获动物产品
+        function harvestAnimal(animalType) {
+            const farmData = getFarmData();
+            const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
+            const config = farmConfig.animals[animalType];
+            const today = new Date().toDateString();
+
+            // 添加到背包
+            farmData.inventory[config.product] = (farmData.inventory[config.product] || 0) + 1;
+
+            // 检查是否首次获得（解锁图鉴）
+            const isFirstTime = !farmData.collection.includes(config.product);
+            if (isFirstTime) {
+                farmData.collection.push(config.product);
+            }
+
+            animal.lastHarvest = today;
+
+            saveFarmData(farmData);
+            
+            // 播放庆祝特效
+            playHarvestCelebration();
+            
+            refreshPage();
+            
+            if (isFirstTime) {
+                customAlert(`🎉 恭喜！首次获得${config.productName}，已解锁图鉴！\n\n🌾 收获成功！获得 ${config.productIcon} ${config.productName} x1`, 'success');
+            } else {
+                customAlert(`🌾 收获成功！获得 ${config.productIcon} ${config.productName} x1`, 'success');
+            }
+        }
+
+        // 兑换积分
+        function exchange(itemId, rate) {
+            const farmData = getFarmData();
+            const inventory = farmData.inventory;
+
+            if (!inventory[itemId] || inventory[itemId] <= 0) {
+                customAlert('物品不足！', 'warning');
+                return;
+            }
+
+            // 扣除物品
+            farmData.inventory[itemId]--;
+            saveFarmData(farmData);
+
+            // 添加积分
+            const playerData = Storage.getPlayerData();
+            playerData.availableScore = (playerData.availableScore || 0) + rate;
+            Storage.savePlayerData(playerData);
+
+            refreshPage();
+            customAlert(`兑换成功！获得 ${rate} 积分`, 'success');
+        }
+
+        // 刷新页面
+        function refreshPage() {
+            const playerData = Storage.getPlayerData();
+            document.getElementById('playerScore').textContent = playerData.availableScore || 0;
+
+            renderGarden();
+            renderOrchard();
+            renderChicken();
+            renderCow();
+            renderInventory();
+            renderExchange();
+        }
+
+        // 跳转到首页商城购买指定道具
+        function goToShopToBuy(itemId) {
+            const slotPrice = itemConfig.find(i => i.id === itemId)?.price || 0;
+            const playerScore = Storage.getPlayerData().availableScore || 0;
+
+            if (playerScore < slotPrice) {
+                customAlert(`积分不足！\n\n需要 ${slotPrice} 积分\n您当前有 ${playerScore} 积分\n\n请先去玩游戏获得更多积分吧！`, 'warning');
+                return;
+            }
+
+            customConfirm('该空地尚未解锁！\n\n是否前往积分商城购买？', () => {
+                window.location.href = 'index.html?showShop=1&buyItem=' + itemId;
+            }, null, { title: '解锁空地', type: 'question', confirmText: '前往购买' });
+        }
+
+        // 返回首页
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查农场是否已开通（购买农场经营权道具）
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            if (!items['farm_right'] || items['farm_right'] <= 0) {
+                customAlert('您还没有开通农场功能！\n\n请先在积分商城购买「农场经营权」来开通农场。', 'warning', () => {
+                    window.location.href = 'index.html';
+                });
+                return;
+            }
+            refreshPage();
+        });
+    </script>
+</body>
+</html>
