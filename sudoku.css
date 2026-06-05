@@ -867,7 +867,7 @@ header p {
 
 /* 连续打卡弹窗样式 */
 .check-in-content {
-    max-width: 380px;
+    max-width: 340px;
     max-height: 90vh;
     text-align: center;
     overflow: hidden;
@@ -876,7 +876,7 @@ header p {
 }
 
 .check-in-header {
-    padding: 15px 20px;
+    padding: 12px 20px;
     background: linear-gradient(135deg, #ff6b6b 0%, #ffa502 100%);
     color: white;
     border-radius: 16px 16px 0 0;
@@ -888,20 +888,20 @@ header p {
 .check-in-header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .check-in-icon {
-    font-size: 32px;
+    font-size: 28px;
 }
 
 .check-in-header h2 {
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .check-in-header .close {
-    font-size: 24px;
+    font-size: 22px;
     color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
     line-height: 1;
@@ -913,58 +913,58 @@ header p {
 }
 
 .check-in-body {
-    padding: 25px 20px;
+    padding: 15px 20px;
     flex: 1;
     overflow-y: auto;
 }
 
 .check-in-streak {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .streak-number {
-    font-size: 48px;
+    font-size: 36px;
     font-weight: 700;
     color: #ff6b6b;
 }
 
 .streak-label {
-    font-size: 1.2em;
+    font-size: 1em;
     color: #666;
     margin-left: 5px;
 }
 
 .check-in-message {
-    font-size: 1.1em;
+    font-size: 0.95em;
     color: #333;
-    margin-bottom: 15px;
-    line-height: 1.5;
+    margin-bottom: 10px;
+    line-height: 1.4;
 }
 
 .check-in-reward-info {
     background: #fff3cd;
     border: 1px solid #ffeeba;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 0.95em;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.85em;
     color: #856404;
 }
 
 .check-in-footer {
-    padding: 15px 20px;
+    padding: 10px 20px;
     border-top: 1px solid #eee;
 }
 
 .check-in-hint {
     margin: 0;
     color: #666;
-    font-size: 0.95em;
+    font-size: 0.85em;
 }
 
 /* 打卡日历样式 */
 .check-in-calendar-section {
-    margin-top: 20px;
-    padding-top: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
@@ -972,16 +972,16 @@ header p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .calendar-nav-btn {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border: none;
     background: #f0f0f0;
     border-radius: 50%;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -991,7 +991,7 @@ header p {
 }
 
 .calendar-month-year {
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 600;
     color: #333;
 }
@@ -999,8 +999,8 @@ header p {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 15px;
+    gap: 3px;
+    margin-bottom: 10px;
 }
 
 .calendar-day {
@@ -1008,8 +1008,8 @@ header p {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9em;
-    border-radius: 8px;
+    font-size: 0.8em;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     background: #f8f9fa;
@@ -1020,7 +1020,7 @@ header p {
     color: #666;
     background: transparent;
     cursor: default;
-    font-size: 0.8em;
+    font-size: 0.7em;
 }
 
 .calendar-day.weekend {
@@ -1030,7 +1030,7 @@ header p {
 .calendar-day.checked {
     background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
     color: white;
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5);
+    box-shadow: 0 0 0 1px rgba(76, 175, 80, 0.5);
     font-weight: 600;
 }
 
@@ -1045,8 +1045,8 @@ header p {
 }
 
 .calendar-day.available:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.4);
 }
 
 .calendar-day.other-month {
@@ -1056,13 +1056,13 @@ header p {
 }
 
 .calendar-day.today {
-    border: 2px solid #ff6b6b;
+    border: 1px solid #ff6b6b;
 }
 
 .calendar-day.today.checked {
     background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
     color: white;
-    border: 2px solid #ff6b6b;
+    border: 1px solid #ff6b6b;
 }
 
 .calendar-day.future {
