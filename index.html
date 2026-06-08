@@ -38,7 +38,10 @@
                     <div class="check-in-icon">🔥</div>
                     <h2>连续打卡</h2>
                 </div>
-                <span class="close" onclick="closeModal('checkInModal')">&times;</span>
+                <div class="check-in-header-right">
+                    <span class="refresh-btn" onclick="refreshStreak()" title="刷新连续打卡天数">🔄</span>
+                    <span class="close" onclick="closeModal('checkInModal')">&times;</span>
+                </div>
             </div>
             <div class="check-in-body">
                 <div class="check-in-streak">
@@ -579,6 +582,48 @@
             }
 
             customAlert(`成功补签${dateFormat}！连续打卡天数已更新为 ${streak} 天！`, 'success');
+        }
+        
+        // 刷新连续打卡天数
+        function refreshStreak() {
+            // 重新计算连续打卡天数
+            recalculateContinueDay();
+            
+            // 刷新日历
+            renderCalendar();
+            
+            // 刷新连续打卡天数显示
+            const playerData = Storage.getPlayerData();
+            const streak = playerData.continueDay;
+            document.getElementById('streakNumber').textContent = streak;
+            
+            // 更新消息和奖励信息
+            let message = '';
+            let rewardInfo = '';
+            
+            if (streak === 0) {
+                message = '开始你的打卡之旅吧！';
+                rewardInfo = '每日完成数独即可打卡，连续打卡可获得额外积分奖励';
+            } else if (streak < 7) {
+                message = `太棒了！你已经连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else if (streak < 30) {
+                message = `🔥 优秀！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            } else {
+                message = `🏆 传奇！连续打卡 ${streak} 天！`;
+                rewardInfo = `当前连续打卡奖励：+${getCheckInReward(streak)} 积分/天`;
+            }
+            
+            document.getElementById('checkInMessage').textContent = message;
+            document.getElementById('checkInRewardInfo').innerHTML = `${rewardInfo}<br><span onclick="showCheckInRewardRule()" style="font-size: 0.8em; display: block; text-align: center;">(点击查看规则)</span>`;
+            
+            // 刷新首页的连续打卡天数显示
+            if (document.getElementById('continueDay')) {
+                document.getElementById('continueDay').textContent = streak;
+            }
+            
+            customAlert(`连续打卡天数已刷新！当前连续打卡 ${streak} 天`, 'success');
         }
         
         // 显示连续打卡积分规则弹窗

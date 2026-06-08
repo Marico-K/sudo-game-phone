@@ -3753,41 +3753,62 @@ function getCheckInReward(streak) {
 }
 
 /**
+ * 将日期字符串统一转换为 YYYY-MM-DD 格式
+ */
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/**
  * 根据打卡历史重新计算连续打卡天数
  */
 function recalculateContinueDay() {
     let playerData = Storage.getPlayerData();
     const checkInHistory = playerData.checkInHistory || [];
+    const makeupHistory = playerData.makeupHistory || [];
     
-    if (checkInHistory.length === 0) {
+    // 合并正常打卡和补签历史，去重，并统一日期格式
+    const allCheckedDates = [...new Set([
+        ...checkInHistory.map(d => formatDate(d)), 
+        ...makeupHistory.map(d => formatDate(d))
+    ])];
+    
+    if (allCheckedDates.length === 0) {
         playerData.continueDay = 0;
         Storage.savePlayerData(playerData);
         return 0;
     }
     
-    // 将日期字符串转换为日期对象并排序
-    const sortedDates = checkInHistory
-        .map(dateStr => new Date(dateStr))
-        .sort((a, b) => b.getTime() - a.getTime());
+    // 排序（降序）
+    const sortedDates = allCheckedDates.sort((a, b) => new Date(b) - new Date(a));
     
     let streak = 0;
-    const today = new Date(new Date().toDateString());
+    const today = new Date();
+    const todayStr = formatDate(today);
     
-    // 从今天开始往前检查连续打卡
-    const checkDate = new Date(today);
+    // 找到最后一个打卡日期（最新的日期）
+    const lastCheckedDate = sortedDates[0];
+    
+    // 如果最后一个打卡日期是今天或者未来，从今天开始计算
+    // 否则从最后一个打卡日期开始计算
+    let checkDateStr = lastCheckedDate >= todayStr ? todayStr : lastCheckedDate;
     
     for (let i = 0; i < sortedDates.length; i++) {
-        const historyDate = new Date(sortedDates[i].toDateString());
+        const historyDate = sortedDates[i];
         
         // 跳过未来的日期
-        if (historyDate > today) {
+        if (historyDate > todayStr) {
             continue;
         }
         
         // 检查是否是预期的日期
-        if (historyDate.getTime() === checkDate.getTime()) {
+        if (historyDate === checkDateStr) {
             streak++;
+            // 计算前一天
+            const checkDate = new Date(checkDateStr);
             checkDate.setDate(checkDate.getDate() - 1);
+            checkDateStr = formatDate(checkDate);
         } else {
             // 如果日期不连续，停止计算
             break;
@@ -3804,20 +3825,36 @@ function recalculateContinueDay() {
  */
 function updateContinueDay() {
     let playerData = Storage.getPlayerData();
-    const today = new Date().toDateString();
     
-    if (playerData.lastPlayDate === today) {
+    // 使用标准化日期格式（YYYY-MM-DD）
+    const today = new Date();
+    const todayStr = formatDate(today);
+    
+    // 统一 lastPlayDate 格式
+    const lastPlayDate = playerData.lastPlayDate ? formatDate(playerData.lastPlayDate) : null;
+    
+    if (lastPlayDate === todayStr) {
         // 今天已经更新过了
         return playerData.continueDay;
     }
     
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = formatDate(yesterday);
     
-    if (playerData.lastPlayDate === yesterday.toDateString()) {
+    // 获取补签历史
+    const makeupHistory = playerData.makeupHistory || [];
+    
+    // 检查昨天是否有打卡（包括正常打卡和补签）
+    // 使用 formatDate 统一格式进行比较
+    const yesterdayChecked = playerData.checkInHistory.some(d => formatDate(d) === yesterdayStr) || 
+                           makeupHistory.some(d => formatDate(d) === yesterdayStr);
+    
+    // 使用统一格式比较
+    if (lastPlayDate === yesterdayStr || yesterdayChecked) {
         // 连续打卡
         playerData.continueDay++;
-    } else if (playerData.lastPlayDate) {
+    } else if (lastPlayDate) {
         // 断签，重置
         playerData.continueDay = 1;
     } else {
@@ -3825,11 +3862,11 @@ function updateContinueDay() {
         playerData.continueDay = 1;
     }
     
-    playerData.lastPlayDate = today;
+    playerData.lastPlayDate = todayStr;
     
     // 添加日期到打卡历史（确保不重复）
-    if (!playerData.checkInHistory.includes(today)) {
-        playerData.checkInHistory.push(today);
+    if (!playerData.checkInHistory.some(d => formatDate(d) === todayStr)) {
+        playerData.checkInHistory.push(todayStr);
     }
     
     Storage.savePlayerData(playerData);
