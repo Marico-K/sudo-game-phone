@@ -683,6 +683,20 @@
             document.getElementById('checkInRewardRuleModal').style.display = 'block';
         }
         
+        // 获取农场数据（用于检查小鸡和小牛是否已购买）
+        function getFarmData() {
+            const playerData = Storage.getPlayerData();
+            return playerData.farm || {
+                garden: [],
+                orchard: [],
+                chicken: null,
+                cow: null,
+                inventory: {},
+                collection: [],
+                lastActionDate: null,
+            };
+        }
+        
         // 显示积分商城
         function showShopModal() {
             const playerData = Storage.getPlayerData();
