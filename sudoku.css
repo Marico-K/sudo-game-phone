@@ -27,75 +27,6 @@ body::before {
     z-index: 0;
 }
 
-/* ==================== 背景粒子动画 ==================== */
-.particles-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-}
-
-.particle {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: floatUp 8s infinite ease-in;
-}
-
-@keyframes floatUp {
-    0% {
-        opacity: 0;
-        transform: translateY(100vh) scale(0);
-    }
-    10% {
-        opacity: 1;
-        transform: translateY(90vh) scale(1);
-    }
-    90% {
-        opacity: 1;
-        transform: translateY(10vh) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-10vh) scale(0);
-    }
-}
-
-/* ==================== 浮动气泡动画 ==================== */
-.bubble {
-    position: fixed;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(102, 126, 234, 0.1));
-    pointer-events: none;
-    z-index: 0;
-    animation: floatBubble 12s infinite ease-in-out;
-}
-
-@keyframes floatBubble {
-    0%, 100% {
-        transform: translateY(0) translateX(0) scale(1);
-        opacity: 0.3;
-    }
-    25% {
-        transform: translateY(-20px) translateX(10px) scale(1.1);
-        opacity: 0.5;
-    }
-    50% {
-        transform: translateY(-10px) translateX(-5px) scale(0.9);
-        opacity: 0.3;
-    }
-    75% {
-        transform: translateY(-30px) translateX(15px) scale(1.05);
-        opacity: 0.4;
-    }
-}
-
 /* ==================== 按钮涟漪效果 ==================== */
 .home-btn, .gameType-btn {
     position: relative;
@@ -107,44 +38,12 @@ body::before {
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.4);
     transform: scale(0);
-    animation: ripple-animation 0.6s ease-out;
     pointer-events: none;
 }
 
-@keyframes ripple-animation {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
-}
-
-/* ==================== 等级提升庆祝动画 ==================== */
-.level-up-animation {
-    animation: levelUpBounce 0.6s ease-out;
-}
-
-@keyframes levelUpBounce {
-    0% { transform: scale(0.5); opacity: 0; }
-    50% { transform: scale(1.2); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* ==================== 积分变化动画 ==================== */
-.score-change {
-    animation: scorePulse 0.4s ease-out;
-}
-
-@keyframes scorePulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); color: #ffd700; }
-    100% { transform: scale(1); }
-}
-
-/* ==================== 每日任务展开动画 ==================== */
+/* ==================== 每日任务展开效果 ==================== */
 .daily-tasks-section {
     overflow: hidden;
-    transition: all 0.3s ease;
 }
 
 .daily-tasks-section.collapsed #dailyTasksContent {
@@ -158,43 +57,6 @@ body::before {
     max-height: 500px;
     opacity: 1;
     padding: 15px 0;
-    transition: all 0.3s ease;
-}
-
-/* ==================== 成就解锁动画 ==================== */
-.achievement-item.unlocked {
-    animation: achievementUnlock 0.5s ease-out;
-}
-
-@keyframes achievementUnlock {
-    0% {
-        transform: scale(0.8);
-        opacity: 0;
-        filter: brightness(2);
-    }
-    50% {
-        transform: scale(1.1);
-        filter: brightness(1.5);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-        filter: brightness(1);
-    }
-}
-
-/* ==================== 高亮闪烁效果 ==================== */
-.highlight-item {
-    animation: highlightFlash 0.5s ease-in-out 3;
-}
-
-@keyframes highlightFlash {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
-    }
-    50% {
-        box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.6);
-    }
 }
 
 /* ==================== 海底世界主题样式 ==================== */
@@ -229,12 +91,6 @@ body::before {
     background: 
         radial-gradient(ellipse at 30% 0%, rgba(100, 200, 255, 0.15) 0%, transparent 50%),
         radial-gradient(ellipse at 70% 10%, rgba(150, 220, 255, 0.1) 0%, transparent 40%);
-    animation: lightRay 8s ease-in-out infinite;
-}
-
-@keyframes lightRay {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
 }
 
 /* 海草样式 */
@@ -274,15 +130,10 @@ body::before {
     transform-origin: bottom left;
 }
 
-.seaweed-1 { left: 5%; animation: seaweedSway 4s ease-in-out infinite; }
-.seaweed-2 { left: 10%; height: 150px; animation: seaweedSway 5s ease-in-out infinite 0.5s; }
-.seaweed-3 { right: 8%; animation: seaweedSway 4.5s ease-in-out infinite 1s; }
-.seaweed-4 { right: 15%; height: 100px; animation: seaweedSway 5.5s ease-in-out infinite 0.3s; }
-
-@keyframes seaweedSway {
-    0%, 100% { transform: rotate(-3deg); }
-    50% { transform: rotate(3deg); }
-}
+.seaweed-1 { left: 5%; }
+.seaweed-2 { left: 10%; height: 150px; }
+.seaweed-3 { right: 8%; }
+.seaweed-4 { right: 15%; height: 100px; }
 
 /* 海底岩石 */
 .sea-rock {
@@ -320,183 +171,62 @@ body::before {
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(100, 200, 255, 0.2));
     border: 1px solid rgba(255, 255, 255, 0.3);
-    animation: bubbleRise 8s ease-in forwards;
-}
-
-@keyframes bubbleRise {
-    0% {
-        opacity: 0;
-        transform: translateY(0) scale(0.5);
-    }
-    10% {
-        opacity: 0.8;
-        transform: translateY(-10vh) scale(1);
-    }
-    50% {
-        opacity: 0.6;
-        transform: translateY(-50vh) translateX(20px) scale(0.9);
-    }
-    90% {
-        opacity: 0.4;
-        transform: translateY(-90vh) translateX(-10px) scale(0.7);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-100vh) translateX(5px) scale(0.5);
-    }
 }
 
 /* 游动的鱼 */
 .fish {
     position: absolute;
     font-size: 28px;
-    animation: fishSwim 15s linear infinite;
 }
 
 .fish-1 {
     top: 20%;
-    animation-duration: 18s;
+    left: 20%;
 }
 
 .fish-2 {
     top: 45%;
     font-size: 32px;
-    animation-duration: 22s;
-    animation-delay: 3s;
+    left: 60%;
 }
 
 .fish-3 {
     top: 70%;
     font-size: 24px;
-    animation-duration: 16s;
-    animation-delay: 7s;
-}
-
-@keyframes fishSwim {
-    0% {
-        left: -50px;
-        transform: scaleX(-1);
-    }
-    49% {
-        transform: scaleX(-1);
-    }
-    50% {
-        left: 100%;
-        transform: scaleX(-1);
-    }
-    51% {
-        transform: scaleX(1);
-    }
-    100% {
-        left: -50px;
-        transform: scaleX(1);
-    }
+    left: 40%;
 }
 
 /* 水母 */
 .jellyfish {
     position: absolute;
     font-size: 40px;
-    animation: jellyfishFloat 12s ease-in-out infinite;
 }
 
 .jellyfish-1 {
     left: 60%;
-    animation-delay: 2s;
+    top: 20%;
 }
 
-@keyframes jellyfishFloat {
-    0% {
-        top: 10%;
-        transform: translateX(0) rotate(-5deg);
-    }
-    25% {
-        top: 25%;
-        transform: translateX(20px) rotate(5deg);
-    }
-    50% {
-        top: 15%;
-        transform: translateX(0) rotate(-5deg);
-    }
-    75% {
-        top: 30%;
-        transform: translateX(-20px) rotate(5deg);
-    }
-    100% {
-        top: 10%;
-        transform: translateX(0) rotate(-5deg);
-    }
-}
-
-/* ==================== 游戏页面动画效果 ==================== */
+/* ==================== 游戏页面样式 ==================== */
 
 /* 单元格点击效果 */
 .cell-clicked {
-    animation: cellClick 0.2s ease-out;
+    background: #e3f2fd;
 }
 
-@keyframes cellClick {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(0.95);
-        background: #e3f2fd;
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* 数字输入动画 */
+/* 数字输入效果 */
 .number-entered {
-    animation: numberPop 0.3s ease-out;
+    opacity: 1;
 }
 
-@keyframes numberPop {
-    0% {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-    50% {
-        transform: scale(1.2);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* 胜利庆祝动画 */
+/* 胜利效果 */
 .win-celebration {
-    animation: winPulse 1s ease-out;
-}
-
-@keyframes winPulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
-    25% {
-        transform: scale(1.02);
-        box-shadow: 0 12px 40px rgba(76, 175, 80, 0.4);
-    }
-    50% {
-        transform: scale(0.98);
-        box-shadow: 0 6px 25px rgba(76, 175, 80, 0.3);
-    }
-    75% {
-        transform: scale(1.01);
-        box-shadow: 0 10px 35px rgba(76, 175, 80, 0.35);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
+    box-shadow: 0 8px 30px rgba(76, 175, 80, 0.3);
 }
 
 /* 庆祝粒子容器 */
 .celebration-container {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -507,77 +237,17 @@ body::before {
     overflow: hidden;
 }
 
-/* 庆祝emoji动画 */
-.celebration-emoji {
-    position: absolute;
-    top: -30px;
-    animation: celebrationFloat 1.5s ease-out forwards;
-}
-
-@keyframes celebrationFloat {
-    0% {
-        opacity: 1;
-        transform: translateY(0) rotate(0deg) scale(0);
-    }
-    10% {
-        opacity: 1;
-        transform: translateY(-10px) rotate(10deg) scale(1.2);
-    }
-    20% {
-        transform: translateY(10vh) rotate(-10deg) scale(1);
-    }
-    40% {
-        transform: translateY(30vh) rotate(20deg);
-    }
-    60% {
-        transform: translateY(50vh) rotate(-15deg);
-    }
-    80% {
-        opacity: 0.8;
-        transform: translateY(70vh) rotate(10deg);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(100vh) rotate(-5deg) scale(0.5);
-    }
-}
-
-/* 计时器跳动动画 */
+/* 计时器样式 */
 .timer {
     font-family: 'Courier New', monospace;
-    transition: all 0.2s ease;
 }
 
 .timer.running {
-    animation: timerPulse 2s ease-in-out infinite;
-}
-
-@keyframes timerPulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.8;
-    }
-}
-
-/* 控制按钮悬停效果 */
-.control-btn {
-    transition: all 0.25s ease;
-}
-
-.control-btn:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.control-btn:active {
-    transform: translateY(0) scale(0.98);
+    opacity: 1;
 }
 
 /* 数字键盘按钮点击效果 */
 .number-keypad button {
-    transition: all 0.15s ease;
     position: relative;
     overflow: hidden;
 }
@@ -586,42 +256,14 @@ body::before {
     transform: scale(0.95);
 }
 
-/* 选中单元格高亮动画 */
+/* 选中单元格高亮 */
 .cell.selected {
-    animation: selectedPulse 1.5s ease-in-out infinite;
+    box-shadow: inset 0 0 0 3px rgba(102, 126, 234, 0.6);
 }
 
-@keyframes selectedPulse {
-    0%, 100% {
-        box-shadow: inset 0 0 0 3px rgba(102, 126, 234, 0.6);
-    }
-    50% {
-        box-shadow: inset 0 0 0 3px rgba(102, 126, 234, 0.3);
-    }
-}
-
-/* 错误提示动画 */
+/* 错误提示 */
 .cell.error {
-    animation: errorShake 0.5s ease-out;
-}
-
-@keyframes errorShake {
-    0%, 100% {
-        transform: translateX(0);
-        background: #ffebee;
-    }
-    20% {
-        transform: translateX(-3px);
-    }
-    40% {
-        transform: translateX(3px);
-    }
-    60% {
-        transform: translateX(-2px);
-    }
-    80% {
-        transform: translateX(2px);
-    }
+    background: #ffebee;
 }
 
 /* 容器淡入动画 ==================== */
@@ -720,19 +362,6 @@ header p {
 
 .level-icon {
     font-size: 1.5em;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
 }
 
 .level-number {
@@ -1473,16 +1102,6 @@ header p {
 .test-add-score-btn::before {
     content: '⚗️';
     font-size: 1.1em;
-    animation: testBtnFloat 2s ease-in-out infinite;
-}
-
-@keyframes testBtnFloat {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    50% {
-        transform: translateY(-2px) rotate(10deg);
-    }
 }
 
 .test-add-score-btn:hover {
@@ -1508,24 +1127,10 @@ header p {
     border-radius: 20px;
     z-index: -1;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    animation: gradientRotate 3s linear infinite;
 }
 
 .test-add-score-btn:hover::after {
     opacity: 0.5;
-}
-
-@keyframes gradientRotate {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
 }
 
 .shop-items-grid {
@@ -1534,21 +1139,10 @@ header p {
     gap: 14px;
 }
 
-/* 道具高亮动画 */
-@keyframes highlightPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(255, 159, 67, 0.7);
-        border-color: #ff9f43;
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(255, 159, 67, 0);
-        border-color: #ffc048;
-    }
-}
-
+/* 道具高亮效果 */
 .highlight-item {
-    animation: highlightPulse 0.5s ease-in-out 3;
     border-color: #ff9f43 !important;
+    box-shadow: 0 0 0 2px rgba(255, 159, 67, 0.5);
 }
 
 .shop-item {
@@ -1807,20 +1401,6 @@ header p {
 .daily-task-item.completed {
     background: #e8f5e9;
     border-left-color: #4caf50;
-    animation: taskComplete 0.5s ease-out;
-}
-
-@keyframes taskComplete {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.03);
-        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    }
-    100% {
-        transform: scale(1);
-    }
 }
 
 .task-status {
@@ -1835,24 +1415,10 @@ header p {
     font-size: 0.7em;
     font-weight: bold;
     flex-shrink: 0;
-    transition: all 0.3s ease;
 }
 
 .daily-task-item.completed .task-status {
     background: #4caf50;
-    animation: statusPulse 0.4s ease-out;
-}
-
-@keyframes statusPulse {
-    0% {
-        transform: scale(0);
-    }
-    50% {
-        transform: scale(1.3);
-    }
-    100% {
-        transform: scale(1);
-    }
 }
 
 .task-info {
@@ -3017,19 +2583,6 @@ header p {
     overflow: hidden;
     transform: scale(0.7) translateY(-20px);
     opacity: 0;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
-    animation: dialogEntry 0.25s ease-out forwards;
-}
-
-@keyframes dialogEntry {
-    from {
-        transform: scale(0.7) translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
 }
 
 .custom-dialog-overlay.show .custom-dialog {
