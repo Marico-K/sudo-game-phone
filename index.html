@@ -707,8 +707,15 @@
                 
                 const owned = items[item.id] > 0;
                 const canAfford = (playerData.availableScore || 0) >= item.price;
+                
+                // 检查动物类道具是否已在农场中（小鸡、小牛只能购买一次）
+                const farmData = getFarmData();
+                const isAnimalPurchased = (item.id === 'chicken_baby' && farmData.chicken) || 
+                                         (item.id === 'cow_baby' && farmData.cow);
+                const isPurchased = owned || isAnimalPurchased;
+                
                 // 消耗品可以重复购买，永久道具只能购买一次
-                const canPurchase = item.type === 'consumable' ? canAfford : (!owned && canAfford);
+                const canPurchase = item.type === 'consumable' ? canAfford : (!isPurchased && canAfford);
                 const typeLabel = item.type === 'permanent' ? '永久道具' : '消耗品';
                 const typeClass = item.type === 'permanent' ? 'permanent' : 'consumable';
                 const ownedCount = items[item.id] || 0;
@@ -717,13 +724,14 @@
                 const maxBuyCount = item.type === 'consumable' ? Math.floor((playerData.availableScore || 0) / item.price) : 1;
                 
                 itemsHtml += `
-                    <div class="shop-item ${item.type === 'permanent' && owned ? 'purchased' : ''} ${!canPurchase ? 'disabled' : ''}" ${canPurchase ? `onclick="showPurchaseModal('${item.id}')"` : ''}>
-                        <div class="shop-item-type ${typeClass}">${typeLabel} ${owned ? `(${ownedCount})` : ''}</div>
+                    <div class="shop-item ${item.type === 'permanent' && isPurchased ? 'purchased' : ''} ${!canPurchase ? 'disabled' : ''}" ${canPurchase ? `onclick="showPurchaseModal('${item.id}')"` : ''}>
+                        <div class="shop-item-type ${typeClass}">${typeLabel} ${isPurchased ? '(已拥有)' : (ownedCount > 0 ? `(${ownedCount})` : '')}</div>
                         <div class="shop-item-icon">${item.icon}</div>
                         <div class="shop-item-name">${item.name}</div>
                         <div class="shop-item-description">${item.description}</div>
                         <div class="shop-item-price">💰 ${item.price}</div>
-                        ${!canPurchase && !owned ? '<div class="shop-item-locked">积分不足</div>' : ''}
+                        ${!canPurchase && !isPurchased ? '<div class="shop-item-locked">积分不足</div>' : ''}
+                        ${isPurchased ? '<div class="shop-item-locked">已购买</div>' : ''}
                         ${item.type === 'consumable' ? '<div class="shop-item-batch-hint">点击批量购买</div>' : ''}
                     </div>
                 `;
@@ -741,8 +749,13 @@
             const playerData = Storage.getPlayerData();
             const items = getPlayerItems();
             
-            // 检查是否已拥有永久道具
-            if (item.type === 'permanent' && items[itemId] > 0) {
+            // 检查动物类道具是否已在农场中（小鸡、小牛只能购买一次）
+            const farmData = getFarmData();
+            const isAnimalPurchased = (itemId === 'chicken_baby' && farmData.chicken) || 
+                                     (itemId === 'cow_baby' && farmData.cow);
+            
+            // 检查是否已拥有永久道具（包括动物类道具）
+            if (item.type === 'permanent' && (items[itemId] > 0 || isAnimalPurchased)) {
                 customAlert('您已拥有此永久道具！', 'warning');
                 return;
             }

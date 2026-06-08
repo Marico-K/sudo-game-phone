@@ -2675,7 +2675,8 @@ function updateDailyTasks(gameType, difficulty, completionTime, attemptCount) {
                 shouldProgress = completionTime <= task.timeLimit;
                 break;
             case 'perfect':
-                shouldProgress = attemptCount === 1;
+                // 完美通关：从未重置即完成（attemptCount === 0）
+                shouldProgress = attemptCount === 0;
                 break;
             case 'first':
                 // 检查是否是今日第一个完成的任务（通过游戏记录判断）
