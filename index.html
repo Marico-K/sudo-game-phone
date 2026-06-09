@@ -292,8 +292,9 @@
         function showCheckInInfo() {
             const playerData = Storage.getPlayerData();
             const streak = playerData.continueDay || 0;
-            const today = new Date().toDateString();
-            const hasCheckedInToday = playerData.lastPlayDate === today;
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const hasCheckedInToday = playerData.lastPlayDate === todayStr;
             
             document.getElementById('streakNumber').textContent = streak;
             
@@ -392,7 +393,8 @@
             const playerData = Storage.getPlayerData();
             const checkInHistory = playerData.checkInHistory || [];
             const makeupHistory = playerData.makeupHistory || [];
-            const today = new Date().toDateString();
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             
             // 获取第一次游戏日期（限制补打卡的最早日期）
             const firstGameDate = getFirstGameDate();
@@ -418,7 +420,8 @@
                     const prevMonth = month - 1;
                     const prevYear = prevMonth < 0 ? year - 1 : year;
                     const actualMonth = prevMonth < 0 ? 11 : prevMonth;
-                    dateStr = new Date(prevYear, actualMonth, dayNum).toDateString();
+                    const d = new Date(prevYear, actualMonth, dayNum);
+                    dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 } else if (dayNum > daysInMonth) {
                     // 下月的日期
                     dayNum = dayNum - daysInMonth;
@@ -426,14 +429,15 @@
                     const nextMonth = month + 1;
                     const nextYear = nextMonth > 11 ? year + 1 : year;
                     const actualMonth = nextMonth > 11 ? 0 : nextMonth;
-                    dateStr = new Date(nextYear, actualMonth, dayNum).toDateString();
+                    const d = new Date(nextYear, actualMonth, dayNum);
+                    dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 } else {
                     // 当月的日期
-                    dateStr = new Date(year, month, dayNum).toDateString();
+                    dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                 }
                 
                 // 判断是否是今天
-                const isToday = dateStr === today;
+                const isToday = dateStr === todayStr;
                 
                 // 判断是否是未来日期
                 const cellDate = new Date(year, month, dayNum);
@@ -739,7 +743,7 @@
                 
                 itemsHtml += `
                     <div class="shop-item ${item.type === 'permanent' && isPurchased ? 'purchased' : ''} ${!canPurchase ? 'disabled' : ''}" ${canPurchase ? `onclick="showPurchaseModal('${item.id}')"` : ''}>
-                        <div class="shop-item-type ${typeClass}">${typeLabel} ${item.type === 'permanent' && isPurchased ? '(已拥有)' : (item.type === 'consumable' && ownedCount > 0 ? `(${ownedCount})` : '')}</div>
+                        <div class="shop-item-type ${typeClass}">${typeLabel} ${item.type === 'permanent' && isPurchased ? '(已拥有)' : (item.type === 'consumable' && ownedCount > 0 ? `( ${ownedCount})` : '')}</div>
                         <div class="shop-item-icon">${item.icon}</div>
                         <div class="shop-item-name">${item.name}</div>
                         <div class="shop-item-description">${item.description}</div>
