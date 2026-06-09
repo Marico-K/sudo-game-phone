@@ -3181,6 +3181,17 @@ const itemConfig = window.itemConfig = [
         effect: 'animal',
         requires: 'farm_right'
     },
+    // 鱼塘道具
+    {
+        id: 'bait',
+        name: '鱼饵',
+        description: '用于在鱼塘钓鱼',
+        price: 5,
+        icon: '🎣',
+        type: 'consumable',
+        effect: 'bait',
+        requires: 'farm_right'
+    },
     // 菜园空地
     {
         id: 'garden_slot_2',

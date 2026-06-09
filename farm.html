@@ -924,6 +924,7 @@
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('garden')">🥬 菜园</button>
             <button class="nav-tab" onclick="switchTab('orchard')">🌳 果园</button>
+            <button class="nav-tab" onclick="switchTab('fishpond')">🎣 鱼塘</button>
             <button class="nav-tab" onclick="switchTab('chicken')">🐔 鸡小屋</button>
             <button class="nav-tab" onclick="switchTab('cow')">🐄 动物屋</button>
             <button class="nav-tab" onclick="switchTab('collection')">📚 图鉴</button>
@@ -941,6 +942,15 @@
             <div id="orchardTab" class="tab-panel" style="display: none;">
                 <div class="section-title">🌳 我的果园</div>
                 <div class="grid-container" id="orchardGrid">
+                </div>
+            </div>
+
+            <!-- 鱼塘 -->
+            <div id="fishpondTab" class="tab-panel" style="display: none;">
+                <div class="section-title">🎣 鱼塘</div>
+                <div class="grid-container-2" id="fishpondGrid">
+                </div>
+                <div class="fish-stats" id="fishStats" style="margin-top: 15px;">
                 </div>
             </div>
 
@@ -1020,10 +1030,24 @@
                 chicken: { id: 'chicken', name: '小鸡', icon: '🐣', maxGrowth: 200, feedGain: 25, snackGain: 50, product: 'egg', productName: '鸡蛋', productIcon: '🥚', exchangeScore: 8 },
                 cow: { id: 'cow', name: '小牛', icon: '🐮', maxGrowth: 250, feedGain: 20, snackGain: 45, product: 'milk', productName: '牛奶', productIcon: '🥛', exchangeScore: 12 },
             },
+            // 鱼类配置（包含无价值物品）
+            fishes: [
+                { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 25, exchangeScore: 0 },
+                { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 15, exchangeScore: 0 },
+                { id: 'bottle', name: '破瓶子', icon: '🍾', rarity: 'trash', probability: 5, exchangeScore: 0 },
+                { id: 'stone', name: '石头', icon: '🪨', rarity: 'trash', probability: 2, exchangeScore: 0 },
+                { id: 'carp', name: '鲤鱼', icon: '🐟', rarity: 'common', probability: 20, exchangeScore: 10 },
+                { id: 'grasscarp', name: '草鱼', icon: '🐠', rarity: 'common', probability: 15, exchangeScore: 15 },
+                { id: 'crucian', name: '鲫鱼', icon: '🐡', rarity: 'common', probability: 10, exchangeScore: 20 },
+                { id: 'goldfish', name: '金鱼', icon: '🐠', rarity: 'rare', probability: 5, exchangeScore: 50 },
+                { id: 'koi', name: '锦鲤', icon: '🎏', rarity: 'rare', probability: 2, exchangeScore: 100 },
+                { id: 'golddragon', name: '金龙鱼', icon: '🐉', rarity: 'legendary', probability: 1, exchangeScore: 500 },
+            ],
             // 道具价格
             items: {
                 fertilizer: { name: '肥料', price: 5 },
                 feed: { name: '饲料', price: 5 },
+                bait: { name: '鱼饵', price: 5 },
                 carrot_seed: { name: '胡萝卜种子', price: 30 },
                 tomato_seed: { name: '西红柿种子', price: 40 },
                 lettuce_seed: { name: '生菜种子', price: 20 },
@@ -1058,10 +1082,22 @@
                 orchard: Array(orchardCount).fill(null),
                 chicken: null,
                 cow: null,
-                inventory: {},
+                inventory: {}, // 库存
+                fishInventory: {}, // 鱼库存
+                lastFishingTime: null, // 上次钓鱼时间
                 collection: [],
                 lastActionDate: null,
             };
+            
+            // 确保 inventory 字段存在
+            if (!farmData.inventory) {
+                farmData.inventory = {};
+            }
+            
+            // 确保 fishInventory 字段存在
+            if (!farmData.fishInventory) {
+                farmData.fishInventory = {};
+            }
             
             // 如果现有数据有空地超过已解锁数量，裁剪多余的空地
             // 同时保留已有种植的数据
@@ -1122,6 +1158,10 @@
             // 如果切换到图鉴页面，渲染图鉴
             if (tab === 'collection') {
                 renderCollection();
+            }
+            // 如果切换到鱼塘页面，渲染鱼塘
+            if (tab === 'fishpond') {
+                renderFishpond();
             }
         }
 
@@ -1372,6 +1412,203 @@
             }
         }
 
+        // 渲染鱼塘
+        function renderFishpond() {
+            const farmData = getFarmData();
+            const grid = document.getElementById('fishpondGrid');
+            const stats = document.getElementById('fishStats');
+            const items = Storage.getPlayerData().items || {};
+            const baitCount = items.bait || 0;
+            
+            // 渲染鱼塘操作区域
+            grid.innerHTML = `
+                <div class="farm-item">
+                    <div class="item-icon fishpond-icon">🐟</div>
+                    <div class="item-name">鱼塘</div>
+                    <div class="item-desc">使用鱼饵钓鱼，可能钓到稀有鱼类！</div>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="fish()" ${baitCount <= 0 ? 'disabled' : ''}>
+                            🎣 钓鱼
+                        </button>
+                        <button class="action-btn secondary" onclick="exchangeAllFish()">
+                            💰 兑换全部
+                        </button>
+                    </div>
+                    <div class="bait-count">🎣 鱼饵: ${baitCount}</div>
+                </div>
+            `;
+            
+            // 渲染鱼库存
+            const fishInventory = farmData.fishInventory || {};
+            let inventoryHtml = '<div class="section-title">🐟 我的鱼获</div><div class="fish-inventory">';
+            let hasFish = false;
+            
+            for (const [fishId, count] of Object.entries(fishInventory)) {
+                if (count > 0) {
+                    hasFish = true;
+                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    if (fish) {
+                        inventoryHtml += `
+                            <div class="fish-item">
+                                <span class="fish-icon">${fish.icon}</span>
+                                <span class="fish-name">${fish.name}</span>
+                                <span class="fish-count">x${count}</span>
+                                <span class="fish-value">💰${fish.exchangeScore}</span>
+                                <button class="fish-exchange-btn" onclick="exchangeFish('${fishId}')">兑换</button>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            if (!hasFish) {
+                inventoryHtml += '<div class="empty-fish">还没有钓到鱼，快去钓鱼吧！</div>';
+            }
+            
+            inventoryHtml += '</div>';
+            stats.innerHTML = inventoryHtml;
+        }
+
+        // 钓鱼功能
+        function fish() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            const baitCount = items.bait || 0;
+            
+            if (baitCount <= 0) {
+                customAlert('鱼饵不足！请先去积分商城购买鱼饵。', 'warning');
+                return;
+            }
+            
+            // 消耗鱼饵
+            items.bait = baitCount - 1;
+            playerData.items = items;
+            
+            // 先保存玩家数据（包含物品消耗）
+            Storage.savePlayerData(playerData);
+            
+            // 随机钓鱼
+            const random = Math.random() * 100;
+            let cumulative = 0;
+            let caughtFish = null;
+            
+            for (const fish of farmConfig.fishes) {
+                cumulative += fish.probability;
+                if (random <= cumulative) {
+                    caughtFish = fish;
+                    break;
+                }
+            }
+            
+            // 添加到鱼库存（只有有价值的鱼才入库）
+            const farmData = getFarmData();
+            if (!farmData.fishInventory) farmData.fishInventory = {};
+            
+            if (caughtFish.exchangeScore > 0) {
+                farmData.fishInventory[caughtFish.id] = (farmData.fishInventory[caughtFish.id] || 0) + 1;
+                // 更新图鉴
+                if (!farmData.collection.includes(caughtFish.id)) {
+                    farmData.collection.push(caughtFish.id);
+                }
+            }
+            
+            farmData.lastFishingTime = new Date().toDateString();
+            
+            // 保存农场数据（saveFarmData内部会保存playerData）
+            saveFarmData(farmData);
+            
+            // 显示结果
+            let rarityText = '';
+            if (caughtFish.rarity === 'rare') rarityText = '✨ 稀有！';
+            if (caughtFish.rarity === 'legendary') rarityText = '🐉 传说！';
+            
+            let message = '';
+            if (caughtFish.exchangeScore > 0) {
+                message = `\ud83c\udfa3 恭喜钓到了 ${caughtFish.icon} ${caughtFish.name}！${rarityText}\n\n价值 ${caughtFish.exchangeScore} 积分`;
+            } else {
+                message = `😅 钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
+            }
+            
+            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning');
+            
+            // 刷新界面
+            renderFishpond();
+            document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
+        }
+
+        // 兑换鱼为积分
+        function exchangeFish(fishId) {
+            const farmData = getFarmData();
+            const fishInventory = farmData.fishInventory || {};
+            
+            if (!fishInventory[fishId] || fishInventory[fishId] <= 0) {
+                return;
+            }
+            
+            const fish = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fish) return;
+            
+            // 减少鱼数量
+            fishInventory[fishId]--;
+            farmData.fishInventory = fishInventory;
+            
+            // 添加积分
+            addScore(fish.exchangeScore);
+            
+            // 保存数据
+            saveFarmData(farmData);
+            
+            // 显示结果
+            customAlert(`\ud83d\udcb0 成功兑换 ${fish.icon} ${fish.name}，获得 ${fish.exchangeScore} 积分！`, 'success');
+            
+            // 刷新界面
+            renderFishpond();
+            document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
+        }
+
+        // 批量兑换所有鱼
+        function exchangeAllFish() {
+            const farmData = getFarmData();
+            const fishInventory = farmData.fishInventory || {};
+            
+            // 检查是否有鱼
+            const hasFish = Object.values(fishInventory).some(count => count > 0);
+            if (!hasFish) {
+                customAlert('没有可兑换的鱼！', 'warning');
+                return;
+            }
+            
+            // 计算总积分
+            let totalScore = 0;
+            let exchangeList = [];
+            
+            for (const [fishId, count] of Object.entries(fishInventory)) {
+                if (count > 0) {
+                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    if (fish) {
+                        totalScore += fish.exchangeScore * count;
+                        exchangeList.push(`${fish.icon} ${fish.name} x${count}`);
+                    }
+                }
+            }
+            
+            // 清空鱼库存
+            farmData.fishInventory = {};
+            
+            // 添加积分
+            addScore(totalScore);
+            
+            // 保存数据
+            saveFarmData(farmData);
+            
+            // 显示结果
+            customAlert(`\ud83d\udcb0 成功兑换所有鱼！\n\n${exchangeList.join('\n')}\n\n共获得 ${totalScore} 积分！`, 'success');
+            
+            // 刷新界面
+            renderFishpond();
+            document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
+        }
+
         // 渲染背包
         function renderInventory() {
             const farmData = getFarmData();
@@ -1511,7 +1748,15 @@
                     icon: '🥛',
                     category: 'animal',
                     categoryName: '动物产品'
-                }
+                },
+                // 鱼类（只显示有价值的鱼）
+                ...farmConfig.fishes.filter(f => f.exchangeScore > 0).map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    icon: f.icon,
+                    category: 'fish',
+                    categoryName: '鱼类'
+                }))
             ];
 
             // 按类别分组

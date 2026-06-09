@@ -4878,3 +4878,71 @@ footer {
         font-size: 0.8em;
     }
 }
+
+/* ==================== 渔获兑换按钮样式 ==================== */
+.fish-exchange-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
+}
+
+.fish-exchange-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    opacity: 0.95;
+}
+
+.fish-exchange-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.3);
+}
+
+/* 鱼获列表样式 */
+.fish-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.fish-icon {
+    font-size: 20px;
+}
+
+.fish-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.fish-count {
+    font-size: 12px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.fish-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f59e0b;
+}
+
+.fish-inventory {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
