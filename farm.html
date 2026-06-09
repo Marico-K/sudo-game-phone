@@ -1683,8 +1683,10 @@
             fishInventory[fishId]--;
             farmData.fishInventory = fishInventory;
             
-            // 添加积分
-            addScore(fish.exchangeScore);
+            // 只更新可用积分，不更新等级统计积分
+            const playerData = Storage.getPlayerData();
+            playerData.availableScore = (playerData.availableScore || 0) + fish.exchangeScore;
+            Storage.savePlayerData(playerData);
             
             // 保存数据
             saveFarmData(farmData);
@@ -1726,8 +1728,10 @@
             // 清空鱼库存
             farmData.fishInventory = {};
             
-            // 添加积分
-            addScore(totalScore);
+            // 只更新可用积分，不更新等级统计积分
+            const playerData = Storage.getPlayerData();
+            playerData.availableScore = (playerData.availableScore || 0) + totalScore;
+            Storage.savePlayerData(playerData);
             
             // 保存数据
             saveFarmData(farmData);
