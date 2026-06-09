@@ -1286,8 +1286,9 @@
                 const config = farmConfig.animals.chicken;
                 const isAdult = chicken.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
-                const canFeed = chicken.lastFeed !== today;
-                const canSnack = chicken.lastSnack !== today;
+                // 成年后不能再喂养，只能收获
+                const canFeed = !isAdult && chicken.lastFeed !== today;
+                const canSnack = !isAdult && chicken.lastSnack !== today;
                 const canHarvest = isAdult && chicken.lastHarvest !== today;
 
                 grid.innerHTML = `
@@ -1333,8 +1334,9 @@
                 const config = farmConfig.animals.cow;
                 const isAdult = cow.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
-                const canFeed = cow.lastFeed !== today;
-                const canSnack = cow.lastSnack !== today;
+                // 成年后不能再喂养，只能收获
+                const canFeed = !isAdult && cow.lastFeed !== today;
+                const canSnack = !isAdult && cow.lastSnack !== today;
                 const canHarvest = isAdult && cow.lastHarvest !== today;
 
                 grid.innerHTML = `
