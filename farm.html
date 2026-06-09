@@ -1087,6 +1087,18 @@
                 lastFishingTime: null, // 上次钓鱼时间
                 collection: [],
                 lastActionDate: null,
+                // 技能系统
+                skills: {
+                    watering: { level: 1, exp: 0 }, // 浇水技能
+                    feeding: { level: 1, exp: 0 },  // 喂养技能
+                    fishing: { level: 1, exp: 0 }   // 钓鱼技能
+                },
+                // 技能次数统计
+                actionCounts: {
+                    watering: 0,
+                    feeding: 0,
+                    fishing: 0
+                }
             };
             
             // 确保 inventory 字段存在
@@ -1117,6 +1129,93 @@
             
             return farmData;
         }
+
+        // ==================== 技能系统 ====================
+        
+        // 获取技能等级（确保兼容性）
+        function getSkillLevel(skillType) {
+            const farmData = getFarmData();
+            if (!farmData.skills) {
+                farmData.skills = {
+                    watering: { level: 1, exp: 0 },
+                    feeding: { level: 1, exp: 0 },
+                    fishing: { level: 1, exp: 0 }
+                };
+                saveFarmData(farmData);
+            }
+            if (!farmData.actionCounts) {
+                farmData.actionCounts = { watering: 0, feeding: 0, fishing: 0 };
+                saveFarmData(farmData);
+            }
+            return farmData.skills[skillType]?.level || 1;
+        }
+
+        // 获取技能加成倍率（等级1=1.0, 等级10=2.0）
+        function getSkillBonus(skillType) {
+            const level = getSkillLevel(skillType);
+            return 1.0 + (level - 1) * 0.1; // 每级增加10%
+        }
+
+        // 获取钓鱼稀有度加成（等级越高，稀有鱼概率越大）
+        function getFishingRarityBonus() {
+            const level = getSkillLevel('fishing');
+            return (level - 1) * 0.02; // 每级增加2%稀有度权重
+        }
+
+        // 更新技能经验值
+        function updateSkillExp(skillType) {
+            const farmData = getFarmData();
+            
+            // 初始化技能数据（兼容旧数据）
+            if (!farmData.skills) {
+                farmData.skills = {
+                    watering: { level: 1, exp: 0 },
+                    feeding: { level: 1, exp: 0 },
+                    fishing: { level: 1, exp: 0 }
+                };
+            }
+            if (!farmData.actionCounts) {
+                farmData.actionCounts = { watering: 0, feeding: 0, fishing: 0 };
+            }
+            
+            // 增加操作次数
+            farmData.actionCounts[skillType] = (farmData.actionCounts[skillType] || 0) + 1;
+            
+            // 增加经验值
+            const skill = farmData.skills[skillType];
+            skill.exp += 10; // 每次操作获得10经验
+            
+            // 检查是否升级（每100经验升一级，最高10级）
+            const expNeeded = skill.level * 100;
+            if (skill.exp >= expNeeded && skill.level < 10) {
+                skill.exp -= expNeeded;
+                skill.level++;
+                customAlert(`🎉 ${getSkillName(skillType)}升级了！当前等级: ${skill.level}`, 'success');
+            }
+            
+            saveFarmData(farmData);
+        }
+
+        // 获取技能名称
+        function getSkillName(skillType) {
+            const names = {
+                watering: '浇水技能',
+                feeding: '喂养技能',
+                fishing: '钓鱼技能'
+            };
+            return names[skillType] || skillType;
+        }
+
+        // 获取技能等级进度（百分比）
+        function getSkillProgress(skillType) {
+            const farmData = getFarmData();
+            const skill = farmData.skills?.[skillType];
+            if (!skill) return 0;
+            const expNeeded = skill.level * 100;
+            return Math.min((skill.exp / expNeeded) * 100, 100);
+        }
+
+        // ==================== 技能系统结束 ====================
 
         // 获取当前解锁的菜园数量
         function getGardenSlotCount() {
@@ -1435,6 +1534,14 @@
                         </button>
                     </div>
                     <div class="bait-count">🎣 鱼饵: ${baitCount}</div>
+                    <div class="skill-info">
+                        <div class="skill-bar">
+                            <span class="skill-label">🎣 钓鱼技能 Lv.${getSkillLevel('fishing')}</span>
+                            <div class="skill-progress-bar">
+                                <div class="skill-progress" style="width: ${getSkillProgress('fishing')}%"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
             
@@ -1487,18 +1594,42 @@
             // 先保存玩家数据（包含物品消耗）
             Storage.savePlayerData(playerData);
             
-            // 随机钓鱼
+            // 随机钓鱼（考虑技能等级加成）
             const random = Math.random() * 100;
             let cumulative = 0;
             let caughtFish = null;
             
+            // 获取钓鱼技能加成（等级越高，稀有鱼概率越大）
+            const rarityBonus = getFishingRarityBonus();
+            
+            // 重新计算概率：稀有度越高，加成越多
             for (const fish of farmConfig.fishes) {
-                cumulative += fish.probability;
+                let adjustedProbability = fish.probability;
+                
+                // 根据稀有度增加概率（无价值物品减少，稀有物品增加）
+                if (fish.rarity === 'trash') {
+                    adjustedProbability *= (1 - rarityBonus * 2); // 减少垃圾概率
+                } else if (fish.rarity === 'rare') {
+                    adjustedProbability *= (1 + rarityBonus * 3); // 增加稀有鱼概率
+                } else if (fish.rarity === 'legendary') {
+                    adjustedProbability *= (1 + rarityBonus * 5); // 大幅增加传说鱼概率
+                }
+                
+                cumulative += adjustedProbability;
                 if (random <= cumulative) {
                     caughtFish = fish;
                     break;
                 }
             }
+            
+            // 如果没找到（概率和超过100），重新随机
+            if (!caughtFish) {
+                const fallbackRandom = Math.random() * farmConfig.fishes.length;
+                caughtFish = farmConfig.fishes[Math.floor(fallbackRandom)];
+            }
+            
+            // 更新钓鱼技能经验
+            updateSkillExp('fishing');
             
             // 添加到鱼库存（只有有价值的鱼才入库）
             const farmData = getFarmData();
@@ -2124,25 +2255,20 @@
                 gridId = 'orchardGrid';
             }
 
-            plant.growth = Math.min(plant.growth + config.waterGain, config.maxGrowth);
+            // 计算技能加成后的成长值
+            const bonus = getSkillBonus('watering');
+            const waterGain = Math.floor(config.waterGain * bonus);
+            
+            plant.growth = Math.min(plant.growth + waterGain, config.maxGrowth);
             plant.lastWater = today;
 
             saveFarmData(farmData);
             
-            // 播放特效
-            const grid = document.getElementById(gridId);
-            const farmItem = grid.children[index];
-            if (farmItem) {
-                playWaterEffect(farmItem);
-                const icon = farmItem.querySelector('.item-icon');
-                if (icon) {
-                    icon.classList.add('bounce');
-                    setTimeout(() => icon.classList.remove('bounce'), 600);
-                }
-            }
+            // 更新浇水技能经验
+            updateSkillExp('watering');
             
             refreshPage();
-            customAlert(`浇水成功！成长值 +${config.waterGain}`, 'success');
+            customAlert(`浇水成功！成长值 +${waterGain}`, 'success');
         }
 
         // 施肥
@@ -2205,26 +2331,20 @@
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
             const config = farmConfig.animals[animalType];
 
-            animal.growth = Math.min(animal.growth + config.feedGain, config.maxGrowth);
+            // 计算技能加成后的成长值
+            const bonus = getSkillBonus('feeding');
+            const feedGain = Math.floor(config.feedGain * bonus);
+            
+            animal.growth = Math.min(animal.growth + feedGain, config.maxGrowth);
             animal.lastFeed = today;
 
             saveFarmData(farmData);
             
-            // 播放特效
-            const gridId = animalType === 'chicken' ? 'chickenGrid' : 'cowGrid';
-            const grid = document.getElementById(gridId);
-            const farmItem = grid.children[0];
-            if (farmItem) {
-                playFeedEffect(farmItem, 'feed');
-                const icon = farmItem.querySelector('.item-icon');
-                if (icon) {
-                    icon.classList.add('bounce');
-                    setTimeout(() => icon.classList.remove('bounce'), 600);
-                }
-            }
+            // 更新喂养技能经验
+            updateSkillExp('feeding');
             
             refreshPage();
-            customAlert(`喂养成功！成长值 +${config.feedGain}`, 'success');
+            customAlert(`喂养成功！成长值 +${feedGain}`, 'success');
         }
 
         // 给动物加餐
@@ -2247,26 +2367,20 @@
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
             const config = farmConfig.animals[animalType];
 
-            animal.growth = Math.min(animal.growth + config.snackGain, config.maxGrowth);
+            // 计算技能加成后的成长值
+            const bonus = getSkillBonus('feeding');
+            const snackGain = Math.floor(config.snackGain * bonus);
+            
+            animal.growth = Math.min(animal.growth + snackGain, config.maxGrowth);
             animal.lastSnack = today;
 
             saveFarmData(farmData);
             
-            // 播放特效
-            const gridId = animalType === 'chicken' ? 'chickenGrid' : 'cowGrid';
-            const grid = document.getElementById(gridId);
-            const farmItem = grid.children[0];
-            if (farmItem) {
-                playFeedEffect(farmItem, 'snack');
-                const icon = farmItem.querySelector('.item-icon');
-                if (icon) {
-                    icon.classList.add('bounce');
-                    setTimeout(() => icon.classList.remove('bounce'), 600);
-                }
-            }
+            // 更新喂养技能经验
+            updateSkillExp('feeding');
             
             refreshPage();
-            customAlert(`加餐成功！成长值 +${config.snackGain}`, 'success');
+            customAlert(`加餐成功！成长值 +${snackGain}`, 'success');
         }
 
         // 收获作物
