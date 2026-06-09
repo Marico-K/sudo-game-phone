@@ -3929,6 +3929,11 @@ header p {
     color: #1565c0;
 }
 
+.gameType-badge.untouchable {
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+    color: #c2185b;
+}
+
 .status-badge {
     padding: 6px 12px;
     border-radius: 20px;

@@ -739,13 +739,13 @@
                 
                 itemsHtml += `
                     <div class="shop-item ${item.type === 'permanent' && isPurchased ? 'purchased' : ''} ${!canPurchase ? 'disabled' : ''}" ${canPurchase ? `onclick="showPurchaseModal('${item.id}')"` : ''}>
-                        <div class="shop-item-type ${typeClass}">${typeLabel} ${isPurchased ? '(已拥有)' : (ownedCount > 0 ? `(${ownedCount})` : '')}</div>
+                        <div class="shop-item-type ${typeClass}">${typeLabel} ${item.type === 'permanent' && isPurchased ? '(已拥有)' : (item.type === 'consumable' && ownedCount > 0 ? `(${ownedCount})` : '')}</div>
                         <div class="shop-item-icon">${item.icon}</div>
                         <div class="shop-item-name">${item.name}</div>
                         <div class="shop-item-description">${item.description}</div>
                         <div class="shop-item-price">💰 ${item.price}</div>
                         ${!canPurchase && !isPurchased ? '<div class="shop-item-locked">积分不足</div>' : ''}
-                        ${isPurchased ? '<div class="shop-item-locked">已购买</div>' : ''}
+                        ${item.type === 'permanent' && isPurchased ? '<div class="shop-item-locked">已购买</div>' : ''}
                         ${item.type === 'consumable' ? '<div class="shop-item-batch-hint">点击批量购买</div>' : ''}
                     </div>
                 `;
@@ -935,7 +935,7 @@
             showShopModal();
 
             // 刷新首页积分显示
-            updatePlayerInfo();
+            loadPlayerLevelInfo();
 
             // 如果购买的是农场空地道具，购买后跳转回农场
             if (item.effect === 'farm_slot') {
@@ -1154,58 +1154,8 @@
             document.getElementById('AchievementModal').style.display = 'none';
         }
         
-        // 初始化背景粒子
-        function initParticles() {
-            const container = document.getElementById('particlesContainer');
-            const particleCount = 15;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 8 + 's';
-                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
-                particle.style.width = (4 + Math.random() * 6) + 'px';
-                particle.style.height = particle.style.width;
-                container.appendChild(particle);
-            }
-        }
-        
-        // 按钮涟漪效果
-        function createRipple(event) {
-            const button = event.currentTarget;
-            const rect = button.getBoundingClientRect();
-            const ripple = document.createElement('span');
-            const size = Math.max(rect.width, rect.height);
-            const x = event.clientX - rect.left - size / 2;
-            const y = event.clientY - rect.top - size / 2;
-            
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            ripple.classList.add('ripple');
-            
-            button.appendChild(ripple);
-            
-            setTimeout(() => ripple.remove(), 600);
-        }
-        
-        // 为所有按钮添加涟漪效果
-        function initButtonRipple() {
-            const buttons = document.querySelectorAll('.home-btn, .gameType-btn');
-            buttons.forEach(btn => {
-                btn.addEventListener('click', createRipple);
-            });
-        }
-        
         // 首页一进来就执行
         document.addEventListener("DOMContentLoaded", function () {
-            // 初始化粒子动画
-            initParticles();
-            
-            // 初始化按钮涟漪效果
-            initButtonRipple();
-            
             loadPlayerLevelInfo();
             if (hasInProgressGame()) {
                 showContinueGameSection();
@@ -1376,6 +1326,13 @@
                             <span class="gameType-desc">从外部看到的建筑数</span>
                         </span>
                     </button>
+                    <button class="gameType-btn" onclick="showDifficultyModal('UNTOUCHABLE')">
+                        <span class="gameType-icon">🚫</span>
+                        <span class="gameType-text">
+                            <span class="gameType-name">无缘数独</span>
+                            <span class="gameType-desc">相同数不相邻</span>
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1534,7 +1491,7 @@
             
             // 更新显示
             document.getElementById('shopAvailableScore').textContent = `💰 ${playerData.availableScore}`;
-            updatePlayerInfo();
+            loadPlayerLevelInfo();
             
             showToast(`测试积分 +${addAmount}，当前可用积分：${playerData.availableScore}`, 'success');
         }
