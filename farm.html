@@ -1688,6 +1688,14 @@
             playerData.availableScore = (playerData.availableScore || 0) + fish.exchangeScore;
             Storage.savePlayerData(playerData);
             
+            // 保存积分记录
+            Storage.saveScoreRecord({
+                type: 'fish_exchange',
+                name: fish.name,
+                description: `兑换${fish.name} x1`,
+                score: fish.exchangeScore
+            });
+            
             // 保存数据
             saveFarmData(farmData);
             
@@ -1732,6 +1740,21 @@
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + totalScore;
             Storage.savePlayerData(playerData);
+            
+            // 保存积分记录（为每种鱼单独记录）
+            for (const [fishId, count] of Object.entries(fishInventory)) {
+                if (count > 0) {
+                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    if (fish) {
+                        Storage.saveScoreRecord({
+                            type: 'fish_exchange',
+                            name: fish.name,
+                            description: `兑换${fish.name} x${count}`,
+                            score: fish.exchangeScore * count
+                        });
+                    }
+                }
+            }
             
             // 保存数据
             saveFarmData(farmData);
@@ -2470,6 +2493,11 @@
                 return;
             }
 
+            // 查找物品信息
+            const item = farmConfig.vegetables.find(v => v.id === itemId) ||
+                        farmConfig.fruits.find(f => f.id === itemId) ||
+                        farmConfig.animals.find(a => a.id === itemId);
+            
             // 扣除物品
             farmData.inventory[itemId]--;
             saveFarmData(farmData);
@@ -2478,6 +2506,16 @@
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + rate;
             Storage.savePlayerData(playerData);
+            
+            // 保存积分记录
+            if (item) {
+                Storage.saveScoreRecord({
+                    type: 'farm_exchange',
+                    name: item.name,
+                    description: `兑换${item.name} x1`,
+                    score: rate
+                });
+            }
 
             refreshPage();
             customAlert(`兑换成功！获得 ${rate} 积分`, 'success');
