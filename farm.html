@@ -2122,7 +2122,9 @@
             
             let message = '';
             if (caughtFish.exchangeScore > 0) {
-                message = `\ud83c\udfa3 恭喜钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${caughtFish.exchangeScore} 积分`;
+                const rarityMultiplier = rarityConfig[displayRarity]?.multiplier || 1;
+                const actualScore = Math.floor(caughtFish.exchangeScore * rarityMultiplier);
+                message = `\ud83c\udfa3 恭喜钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
             } else {
                 message = `😅 钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }
@@ -2477,7 +2479,9 @@
             const seaName = seaType === 'shallow' ? '浅海' : '深海';
             let message = '';
             if (caughtFish.exchangeScore > 0) {
-                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${caughtFish.exchangeScore} 积分`;
+                const rarityMultiplier = rarityConfig[displayRarity]?.multiplier || 1;
+                const actualScore = Math.floor(caughtFish.exchangeScore * rarityMultiplier);
+                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
             } else {
                 message = `😅 在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }

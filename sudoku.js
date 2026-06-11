@@ -3207,7 +3207,7 @@ const itemConfig = window.itemConfig = [
         name: '鱼饵',
         description: '用于在鱼塘钓鱼',
         price: 5,
-        icon: '🗾',
+        icon: '🪱',
         type: 'consumable',
         effect: 'bait',
         requires: 'fishing_rod'

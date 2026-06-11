@@ -717,13 +717,13 @@
             let itemsHtml = '';
             
             itemConfig.forEach(item => {
-                // 检查是否需要农场经营权
-                const needsFarmRight = item.requires === 'farm_right';
-                const hasFarmRight = items['farm_right'] > 0;
-                
-                // 如果需要农场经营权但未购买，跳过显示
-                if (needsFarmRight && !hasFarmRight) {
-                    return;
+                // 检查是否需要特定道具
+                if (item.requires) {
+                    const hasRequiredItem = items[item.requires] > 0;
+                    // 如果需要特定道具但未拥有，跳过显示
+                    if (!hasRequiredItem) {
+                        return;
+                    }
                 }
                 
                 const owned = items[item.id] > 0;
