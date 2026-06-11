@@ -3034,6 +3034,13 @@ header p {
     box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35);
 }
 
+.control-btn .shortcut-key {
+    font-size: 0.75em;
+    opacity: 0.7;
+    margin-left: 4px;
+    font-weight: 500;
+}
+
 .control-btn.abandon-btn {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     box-shadow: 0 4px 12px rgba(245, 87, 108, 0.35);
