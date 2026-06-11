@@ -1460,6 +1460,17 @@ header p {
     text-overflow: ellipsis;
 }
 
+.daily-task-item.expanded .task-desc {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.daily-task-item.expanded {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .task-meta {
     display: flex;
     flex-direction: column;
@@ -4942,9 +4953,61 @@ footer {
 }
 
 .fish-inventory {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
+}
+
+.fish-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.fish-icon {
+    font-size: 18px;
+}
+
+.fish-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+}
+
+.fish-count {
+    font-size: 11px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.fish-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: #f59e0b;
+}
+
+.fish-exchange-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.fish-exchange-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
 }
 
 /* ==================== 技能等级样式 ==================== */

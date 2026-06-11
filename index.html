@@ -1081,6 +1081,10 @@
                     </div>
                 `;
                 
+                taskItem.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                });
+                
                 taskList.appendChild(taskItem);
             });
             

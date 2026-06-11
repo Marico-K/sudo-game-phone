@@ -145,6 +145,12 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
+        /* 图鉴容器样式 - 单列布局 */
+        .collection-grid-container {
+            display: block;
+            width: 100%;
+        }
+
         .grid-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -457,15 +463,75 @@
             cursor: not-allowed;
         }
 
+        /* 提示文本样式 */
+        .hint-text {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* 技能显示样式 */
+        .skill-display {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .skill-display span {
+            margin-bottom: 4px;
+        }
+
+        .mini-skill-bar {
+            width: 80px;
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .mini-skill-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
         .inventory-section {
             margin-top: 20px;
+        }
+
+        /* 标题容器样式 - 支持标题和按钮并排 */
+        .section-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
         .section-title {
             font-size: 1.1em;
             font-weight: 600;
-            margin-bottom: 15px;
             color: #333;
+        }
+
+        .exchange-all-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .exchange-all-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
         }
 
         .inventory-grid {
@@ -602,6 +668,7 @@
         /* 图鉴样式 */
         .collection-category {
             margin-bottom: 20px;
+            clear: both; /* 确保每个分类独立成行 */
         }
 
         .category-title {
@@ -617,6 +684,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
+            clear: both; /* 确保网格独立成行 */
         }
 
         .collection-item {
@@ -724,6 +792,21 @@
                 gap: 12px;
             }
 
+            /* 移动端标题容器样式 */
+            .section-title-container {
+                margin-bottom: 12px;
+            }
+
+            .section-title {
+                font-size: 0.95em;
+                margin-bottom: 0;
+            }
+
+            .exchange-all-btn {
+                padding: 6px 12px;
+                font-size: 0.75em;
+            }
+
             .farm-item {
                 padding: 12px;
                 border-radius: 10px;
@@ -804,6 +887,7 @@
             /* 图鉴移动端适配 */
             .collection-category {
                 margin-bottom: 15px;
+                clear: both; /* 确保每个分类独立成行 */
             }
 
             .category-title {
@@ -815,8 +899,9 @@
 
             .collection-items {
                 display: grid;
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(4, 1fr);
                 gap: 10px;
+                clear: both; /* 确保网格独立成行 */
             }
 
             .collection-item {
@@ -924,7 +1009,8 @@
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('garden')">🥬 菜园</button>
             <button class="nav-tab" onclick="switchTab('orchard')">🌳 果园</button>
-            <button class="nav-tab" onclick="switchTab('fishpond')">🎣 鱼塘</button>
+            <button class="nav-tab" id="fishpondNav" onclick="switchTab('fishpond')">🎣 鱼塘</button>
+            <button class="nav-tab" id="oceanNav" onclick="switchTab('ocean')">🌊 海洋</button>
             <button class="nav-tab" onclick="switchTab('chicken')">🐔 鸡小屋</button>
             <button class="nav-tab" onclick="switchTab('cow')">🐄 动物屋</button>
             <button class="nav-tab" onclick="switchTab('collection')">📚 图鉴</button>
@@ -933,37 +1019,64 @@
         <div class="tab-content">
             <!-- 菜园 -->
             <div id="gardenTab" class="tab-panel">
-                <div class="section-title">🥬 我的菜园</div>
+                <div class="section-title-container">
+                    <div class="section-title">🥬 我的菜园</div>
+                    <div class="skill-display" id="gardenSkill"></div>
+                </div>
                 <div class="grid-container" id="gardenGrid">
                 </div>
             </div>
 
             <!-- 果园 -->
             <div id="orchardTab" class="tab-panel" style="display: none;">
-                <div class="section-title">🌳 我的果园</div>
+                <div class="section-title-container">
+                    <div class="section-title">🌳 我的果园</div>
+                    <div class="skill-display" id="orchardSkill"></div>
+                </div>
                 <div class="grid-container" id="orchardGrid">
                 </div>
             </div>
 
             <!-- 鱼塘 -->
             <div id="fishpondTab" class="tab-panel" style="display: none;">
-                <div class="section-title">🎣 鱼塘</div>
+                <div class="section-title-container">
+                    <div class="section-title">🎣 鱼塘</div>
+                    <div class="skill-display" id="fishpondSkill"></div>
+                </div>
                 <div class="grid-container-2" id="fishpondGrid">
                 </div>
                 <div class="fish-stats" id="fishStats" style="margin-top: 15px;">
                 </div>
             </div>
 
+            <!-- 海洋 -->
+            <div id="oceanTab" class="tab-panel" style="display: none;">
+                <div class="section-title-container">
+                    <div class="section-title">🌊 海洋</div>
+                    <div class="skill-display" id="oceanSkill"></div>
+                </div>
+                <div class="grid-container-2" id="oceanGrid">
+                </div>
+                <div class="fish-stats" id="oceanStats" style="margin-top: 15px;">
+                </div>
+            </div>
+
             <!-- 鸡小屋 -->
             <div id="chickenTab" class="tab-panel" style="display: none;">
-                <div class="section-title">🐔 鸡小屋</div>
+                <div class="section-title-container">
+                    <div class="section-title">🐔 鸡小屋</div>
+                    <div class="skill-display" id="chickenSkill"></div>
+                </div>
                 <div class="grid-container-2" id="chickenGrid">
                 </div>
             </div>
 
             <!-- 动物屋 -->
             <div id="cowTab" class="tab-panel" style="display: none;">
-                <div class="section-title">🐄 动物屋</div>
+                <div class="section-title-container">
+                    <div class="section-title">🐄 动物屋</div>
+                    <div class="skill-display" id="cowSkill"></div>
+                </div>
                 <div class="grid-container-2" id="cowGrid">
                 </div>
             </div>
@@ -971,7 +1084,7 @@
             <!-- 图鉴 -->
             <div id="collectionTab" class="tab-panel" style="display: none;">
                 <div class="section-title">📚 我的图鉴</div>
-                <div class="grid-container" id="collectionGrid">
+                <div class="collection-grid-container" id="collectionGrid">
                 </div>
             </div>
 
@@ -1043,6 +1156,44 @@
                 { id: 'koi', name: '锦鲤', icon: '🎏', rarity: 'rare', probability: 2, exchangeScore: 100 },
                 { id: 'golddragon', name: '金龙鱼', icon: '🐉', rarity: 'legendary', probability: 1, exchangeScore: 500 },
             ],
+            // 浅海鱼类配置
+            shallowSeaFishes: [
+                { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 20, exchangeScore: 0 },
+                { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 10, exchangeScore: 0 },
+                { id: 'bottle', name: '破瓶子', icon: '🍾', rarity: 'trash', probability: 5, exchangeScore: 0 },
+                { id: 'stone', name: '石头', icon: '🪨', rarity: 'trash', probability: 2, exchangeScore: 0 },
+                { id: 'carp', name: '鲤鱼', icon: '🐟', rarity: 'common', probability: 15, exchangeScore: 10 },
+                { id: 'grasscarp', name: '草鱼', icon: '🐠', rarity: 'common', probability: 12, exchangeScore: 15 },
+                { id: 'crucian', name: '鲫鱼', icon: '🐡', rarity: 'common', probability: 10, exchangeScore: 20 },
+                { id: 'goldfish', name: '金鱼', icon: '🐠', rarity: 'rare', probability: 5, exchangeScore: 50 },
+                { id: 'koi', name: '锦鲤', icon: '🎏', rarity: 'rare', probability: 3, exchangeScore: 100 },
+                { id: 'crab', name: '螃蟹', icon: '🦀', rarity: 'common', probability: 8, exchangeScore: 25 },
+                { id: 'lobster', name: '龙虾', icon: '🦞', rarity: 'rare', probability: 5, exchangeScore: 80 },
+                { id: 'shrimp', name: '虾', icon: '🦐', rarity: 'common', probability: 10, exchangeScore: 30 },
+                { id: 'shell', name: '贝壳', icon: '🐚', rarity: 'common', probability: 5, exchangeScore: 15 },
+            ],
+            // 深海鱼类配置
+            deepSeaFishes: [
+                { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 15, exchangeScore: 0 },
+                { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 8, exchangeScore: 0 },
+                { id: 'bottle', name: '破瓶子', icon: '🍾', rarity: 'trash', probability: 3, exchangeScore: 0 },
+                { id: 'stone', name: '石头', icon: '🪨', rarity: 'trash', probability: 1, exchangeScore: 0 },
+                { id: 'carp', name: '鲤鱼', icon: '🐟', rarity: 'common', probability: 10, exchangeScore: 10 },
+                { id: 'grasscarp', name: '草鱼', icon: '🐠', rarity: 'common', probability: 8, exchangeScore: 15 },
+                { id: 'crucian', name: '鲫鱼', icon: '🐡', rarity: 'common', probability: 6, exchangeScore: 20 },
+                { id: 'goldfish', name: '金鱼', icon: '🐠', rarity: 'rare', probability: 4, exchangeScore: 50 },
+                { id: 'koi', name: '锦鲤', icon: '🎏', rarity: 'rare', probability: 2, exchangeScore: 100 },
+                { id: 'golddragon', name: '金龙鱼', icon: '🐉', rarity: 'legendary', probability: 1, exchangeScore: 500 },
+                { id: 'crab', name: '螃蟹', icon: '🦀', rarity: 'common', probability: 6, exchangeScore: 25 },
+                { id: 'lobster', name: '龙虾', icon: '🦞', rarity: 'rare', probability: 4, exchangeScore: 80 },
+                { id: 'shrimp', name: '虾', icon: '🦐', rarity: 'common', probability: 8, exchangeScore: 30 },
+                { id: 'shell', name: '贝壳', icon: '🐚', rarity: 'common', probability: 4, exchangeScore: 15 },
+                { id: 'dolphin', name: '海豚', icon: '🐬', rarity: 'rare', probability: 3, exchangeScore: 150 },
+                { id: 'whale', name: '鲸鱼', icon: '🐋', rarity: 'legendary', probability: 1.5, exchangeScore: 300 },
+                { id: 'bluewhale', name: '蓝鲸', icon: '🐳', rarity: 'legendary', probability: 1, exchangeScore: 500 },
+                { id: 'shark', name: '鲨鱼', icon: '🦈', rarity: 'rare', probability: 2, exchangeScore: 200 },
+                { id: 'octopus', name: '章鱼', icon: '🐙', rarity: 'rare', probability: 2.5, exchangeScore: 180 },
+            ],
             // 道具价格
             items: {
                 fertilizer: { name: '肥料', price: 5 },
@@ -1084,6 +1235,8 @@
                 cow: null,
                 inventory: {}, // 库存
                 fishInventory: {}, // 鱼库存
+                shallowSeaInventory: {}, // 浅海库存
+                deepSeaInventory: {}, // 深海库存
                 lastFishingTime: null, // 上次钓鱼时间
                 collection: [],
                 lastActionDate: null,
@@ -1109,6 +1262,16 @@
             // 确保 fishInventory 字段存在
             if (!farmData.fishInventory) {
                 farmData.fishInventory = {};
+            }
+            
+            // 确保 shallowSeaInventory 字段存在
+            if (!farmData.shallowSeaInventory) {
+                farmData.shallowSeaInventory = {};
+            }
+            
+            // 确保 deepSeaInventory 字段存在
+            if (!farmData.deepSeaInventory) {
+                farmData.deepSeaInventory = {};
             }
             
             // 如果现有数据有空地超过已解锁数量，裁剪多余的空地
@@ -1248,6 +1411,26 @@
 
         // 切换标签页
         function switchTab(tab) {
+            // 检查鱼塘权限
+            if (tab === 'fishpond') {
+                const playerData = Storage.getPlayerData();
+                const items = playerData.items || {};
+                if (!items['fishing_rod'] || items['fishing_rod'] <= 0) {
+                    customAlert('您还没有解锁鱼塘功能！\n\n请先在积分商城购买「钓竿」来解锁鱼塘。', 'warning');
+                    return;
+                }
+            }
+            
+            // 检查海洋权限
+            if (tab === 'ocean') {
+                const playerData = Storage.getPlayerData();
+                const items = playerData.items || {};
+                if (!items['boat'] || items['boat'] <= 0) {
+                    customAlert('您还没有解锁海洋功能！\n\n请先在积分商城购买「船」来解锁海洋。', 'warning');
+                    return;
+                }
+            }
+            
             currentTab = tab;
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
@@ -1262,6 +1445,10 @@
             if (tab === 'fishpond') {
                 renderFishpond();
             }
+            // 如果切换到海洋页面，渲染海洋
+            if (tab === 'ocean') {
+                renderOcean();
+            }
         }
 
         // 获取成长值对应的图标大小
@@ -1271,6 +1458,21 @@
             if (ratio < 0.5) return 'medium';
             if (ratio < 0.75) return 'large';
             return 'full';
+        }
+
+        // 渲染技能显示
+        function renderSkillDisplay(elementId, skillType, icon, skillName) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                const level = getSkillLevel(skillType);
+                const progress = getSkillProgress(skillType);
+                element.innerHTML = `
+                    <span>${icon} ${skillName} Lv.${level}</span>
+                    <div class="mini-skill-bar">
+                        <div class="mini-skill-progress" style="width: ${progress}%"></div>
+                    </div>
+                `;
+            }
         }
 
         // 渲染菜园
@@ -1342,6 +1544,8 @@
             }
 
             grid.innerHTML = html;
+            // 渲染技能显示
+            renderSkillDisplay('gardenSkill', 'watering', '💧', '浇水技能');
         }
 
         // 渲染果园
@@ -1413,6 +1617,8 @@
             }
 
             grid.innerHTML = html;
+            // 渲染技能显示
+            renderSkillDisplay('orchardSkill', 'watering', '💧', '浇水技能');
         }
 
         // 渲染鸡小屋
@@ -1425,10 +1631,11 @@
                 const config = farmConfig.animals.chicken;
                 const isAdult = chicken.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
-                // 成年后不能再喂养，只能收获
-                const canFeed = !isAdult && chicken.lastFeed !== today;
+                // 成年前：可以喂食和加餐；成年后：只能喂食（每天一次，喂食后才能收获）
+                const canFeed = chicken.lastFeed !== today;
                 const canSnack = !isAdult && chicken.lastSnack !== today;
-                const canHarvest = isAdult && chicken.lastHarvest !== today;
+                // 成年后需要当天喂食才能收获
+                const canHarvest = isAdult && chicken.lastFeed === today && chicken.lastHarvest !== today;
 
                 grid.innerHTML = `
                     <div class="farm-item">
@@ -1451,6 +1658,7 @@
                                 🥚
                             </button>
                         </div>
+                        ${isAdult && chicken.lastFeed !== today ? '<div class="hint-text">💡 请先喂食再收获</div>' : ''}
                     </div>
                 `;
             } else {
@@ -1461,6 +1669,8 @@
                     </div>
                 `;
             }
+            // 渲染技能显示
+            renderSkillDisplay('chickenSkill', 'feeding', '🍽️', '喂食技能');
         }
 
         // 渲染动物屋（牛）
@@ -1473,10 +1683,11 @@
                 const config = farmConfig.animals.cow;
                 const isAdult = cow.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
-                // 成年后不能再喂养，只能收获
-                const canFeed = !isAdult && cow.lastFeed !== today;
+                // 成年前：可以喂食和加餐；成年后：只能喂食（每天一次，喂食后才能收获）
+                const canFeed = cow.lastFeed !== today;
                 const canSnack = !isAdult && cow.lastSnack !== today;
-                const canHarvest = isAdult && cow.lastHarvest !== today;
+                // 成年后需要当天喂食才能收获
+                const canHarvest = isAdult && cow.lastFeed === today && cow.lastHarvest !== today;
 
                 grid.innerHTML = `
                     <div class="farm-item">
@@ -1499,6 +1710,7 @@
                                 🥛
                             </button>
                         </div>
+                        ${isAdult && cow.lastFeed !== today ? '<div class="hint-text">💡 请先喂食再收获</div>' : ''}
                     </div>
                 `;
             } else {
@@ -1509,6 +1721,78 @@
                     </div>
                 `;
             }
+            // 渲染技能显示
+            renderSkillDisplay('cowSkill', 'feeding', '🍽️', '喂食技能');
+        }
+
+        // 获取合并的鱼获库存（合并池塘、浅海、深海）
+        function getCombinedFishInventory() {
+            const farmData = getFarmData();
+            const combined = {};
+            
+            // 合并池塘鱼获
+            const pondFish = farmData.fishInventory || {};
+            for (const [fishId, count] of Object.entries(pondFish)) {
+                combined[fishId] = (combined[fishId] || 0) + count;
+            }
+            
+            // 合并浅海鱼获
+            const shallowFish = farmData.shallowSeaInventory || {};
+            for (const [fishId, count] of Object.entries(shallowFish)) {
+                combined[fishId] = (combined[fishId] || 0) + count;
+            }
+            
+            // 合并深海鱼获
+            const deepFish = farmData.deepSeaInventory || {};
+            for (const [fishId, count] of Object.entries(deepFish)) {
+                combined[fishId] = (combined[fishId] || 0) + count;
+            }
+            
+            return combined;
+        }
+
+        // 获取鱼的配置信息（从所有配置中查找）
+        function getFishConfig(fishId) {
+            // 先从池塘鱼类配置查找
+            let fish = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fish) {
+                // 再从浅海鱼类配置查找
+                fish = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            }
+            if (!fish) {
+                // 最后从深海鱼类配置查找
+                fish = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            }
+            return fish;
+        }
+
+        // 从合并库存中兑换鱼（自动从各个库存中扣除）
+        function exchangeFromCombinedInventory(fishId) {
+            const farmData = getFarmData();
+            const pondFish = farmData.fishInventory || {};
+            const shallowFish = farmData.shallowSeaInventory || {};
+            const deepFish = farmData.deepSeaInventory || {};
+            
+            // 查找鱼的配置
+            const fish = getFishConfig(fishId);
+            if (!fish) return null;
+            
+            // 优先从池塘扣除，然后浅海，然后深海
+            if (pondFish[fishId] && pondFish[fishId] > 0) {
+                pondFish[fishId]--;
+                farmData.fishInventory = pondFish;
+            } else if (shallowFish[fishId] && shallowFish[fishId] > 0) {
+                shallowFish[fishId]--;
+                farmData.shallowSeaInventory = shallowFish;
+            } else if (deepFish[fishId] && deepFish[fishId] > 0) {
+                deepFish[fishId]--;
+                farmData.deepSeaInventory = deepFish;
+            } else {
+                return null; // 没有找到鱼
+            }
+            
+            saveFarmData(farmData);
+            return fish;
         }
 
         // 渲染鱼塘
@@ -1519,7 +1803,7 @@
             const items = Storage.getPlayerData().items || {};
             const baitCount = items.bait || 0;
             
-            // 渲染鱼塘操作区域
+            // 渲染鱼塘操作区域（移除兑换全部按钮）
             grid.innerHTML = `
                 <div class="farm-item">
                     <div class="item-icon fishpond-icon">🐟</div>
@@ -1529,31 +1813,20 @@
                         <button class="action-btn primary" onclick="fish()" ${baitCount <= 0 ? 'disabled' : ''}>
                             🎣 钓鱼
                         </button>
-                        <button class="action-btn secondary" onclick="exchangeAllFish()">
-                            💰 兑换全部
-                        </button>
                     </div>
                     <div class="bait-count">🎣 鱼饵: ${baitCount}</div>
-                    <div class="skill-info">
-                        <div class="skill-bar">
-                            <span class="skill-label">🎣 钓鱼技能 Lv.${getSkillLevel('fishing')}</span>
-                            <div class="skill-progress-bar">
-                                <div class="skill-progress" style="width: ${getSkillProgress('fishing')}%"></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             `;
             
-            // 渲染鱼库存
-            const fishInventory = farmData.fishInventory || {};
-            let inventoryHtml = '<div class="section-title">🐟 我的鱼获</div><div class="fish-inventory">';
+            // 渲染鱼库存（合并池塘、浅海、深海）
+            const fishInventory = getCombinedFishInventory();
+            let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
             let hasFish = false;
             
             for (const [fishId, count] of Object.entries(fishInventory)) {
                 if (count > 0) {
                     hasFish = true;
-                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    const fish = getFishConfig(fishId);
                     if (fish) {
                         inventoryHtml += `
                             <div class="fish-item">
@@ -1574,6 +1847,8 @@
             
             inventoryHtml += '</div>';
             stats.innerHTML = inventoryHtml;
+            // 渲染技能显示
+            renderSkillDisplay('fishpondSkill', 'fishing', '🎣', '钓鱼技能');
         }
 
         // 钓鱼功能
@@ -1669,19 +1944,11 @@
 
         // 兑换鱼为积分
         function exchangeFish(fishId) {
-            const farmData = getFarmData();
-            const fishInventory = farmData.fishInventory || {};
-            
-            if (!fishInventory[fishId] || fishInventory[fishId] <= 0) {
+            // 从合并库存中兑换鱼
+            const fish = exchangeFromCombinedInventory(fishId);
+            if (!fish) {
                 return;
             }
-            
-            const fish = farmConfig.fishes.find(f => f.id === fishId);
-            if (!fish) return;
-            
-            // 减少鱼数量
-            fishInventory[fishId]--;
-            farmData.fishInventory = fishInventory;
             
             // 只更新可用积分，不更新等级统计积分
             const playerData = Storage.getPlayerData();
@@ -1696,9 +1963,6 @@
                 score: fish.exchangeScore
             });
             
-            // 保存数据
-            saveFarmData(farmData);
-            
             // 显示结果
             customAlert(`\ud83d\udcb0 成功兑换 ${fish.icon} ${fish.name}，获得 ${fish.exchangeScore} 积分！`, 'success');
             
@@ -1707,10 +1971,10 @@
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
-        // 批量兑换所有鱼
+        // 批量兑换所有鱼（合并池塘、浅海、深海）
         function exchangeAllFish() {
             const farmData = getFarmData();
-            const fishInventory = farmData.fishInventory || {};
+            const fishInventory = getCombinedFishInventory();
             
             // 检查是否有鱼
             const hasFish = Object.values(fishInventory).some(count => count > 0);
@@ -1725,7 +1989,7 @@
             
             for (const [fishId, count] of Object.entries(fishInventory)) {
                 if (count > 0) {
-                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    const fish = getFishConfig(fishId);
                     if (fish) {
                         totalScore += fish.exchangeScore * count;
                         exchangeList.push(`${fish.icon} ${fish.name} x${count}`);
@@ -1733,8 +1997,10 @@
                 }
             }
             
-            // 清空鱼库存
+            // 清空所有鱼库存
             farmData.fishInventory = {};
+            farmData.shallowSeaInventory = {};
+            farmData.deepSeaInventory = {};
             
             // 只更新可用积分，不更新等级统计积分
             const playerData = Storage.getPlayerData();
@@ -1744,7 +2010,7 @@
             // 保存积分记录（为每种鱼单独记录）
             for (const [fishId, count] of Object.entries(fishInventory)) {
                 if (count > 0) {
-                    const fish = farmConfig.fishes.find(f => f.id === fishId);
+                    const fish = getFishConfig(fishId);
                     if (fish) {
                         Storage.saveScoreRecord({
                             type: 'fish_exchange',
@@ -1764,6 +2030,169 @@
             
             // 刷新界面
             renderFishpond();
+            document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
+        }
+
+        // 渲染海洋
+        function renderOcean() {
+            const farmData = getFarmData();
+            const grid = document.getElementById('oceanGrid');
+            const stats = document.getElementById('oceanStats');
+            const items = Storage.getPlayerData().items || {};
+            const baitCount = items.bait || 0;
+            
+            // 渲染浅海和深海操作区域（移除兑换全部按钮）
+            grid.innerHTML = `
+                <div class="farm-item">
+                    <div class="item-icon fishpond-icon">🌊</div>
+                    <div class="item-name">浅海</div>
+                    <div class="item-desc">使用鱼饵钓鱼，可钓到池塘鱼类和海鲜！</div>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="oceanFish('shallow')" ${baitCount <= 0 ? 'disabled' : ''}>
+                            🎣 钓鱼
+                        </button>
+                    </div>
+                    <div class="bait-count">🎣 鱼饵: ${baitCount}</div>
+                </div>
+                <div class="farm-item">
+                    <div class="item-icon fishpond-icon">🌊</div>
+                    <div class="item-name">深海</div>
+                    <div class="item-desc">使用鱼饵钓鱼，可钓到更多稀有海鲜！</div>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="oceanFish('deep')" ${baitCount <= 0 ? 'disabled' : ''}>
+                            🎣 钓鱼
+                        </button>
+                    </div>
+                    <div class="bait-count">🎣 鱼饵: ${baitCount}</div>
+                </div>
+            `;
+            
+            // 渲染合并的鱼获库存（包含池塘、浅海、深海）
+            const fishInventory = getCombinedFishInventory();
+            let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
+            let hasFish = false;
+            
+            for (const [fishId, count] of Object.entries(fishInventory)) {
+                if (count > 0) {
+                    hasFish = true;
+                    const fish = getFishConfig(fishId);
+                    if (fish) {
+                        inventoryHtml += `
+                            <div class="fish-item">
+                                <span class="fish-icon">${fish.icon}</span>
+                                <span class="fish-name">${fish.name}</span>
+                                <span class="fish-count">x${count}</span>
+                                <span class="fish-value">💰${fish.exchangeScore}</span>
+                                <button class="fish-exchange-btn" onclick="exchangeFish('${fishId}')">兑换</button>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            if (!hasFish) {
+                inventoryHtml += '<div class="empty-fish">还没有钓到鱼，快去钓鱼吧！</div>';
+            }
+            
+            inventoryHtml += '</div>';
+            stats.innerHTML = inventoryHtml;
+            // 渲染技能显示
+            renderSkillDisplay('oceanSkill', 'fishing', '🎣', '钓鱼技能');
+        }
+
+        // 海洋钓鱼功能
+        function oceanFish(seaType) {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            const baitCount = items.bait || 0;
+            
+            if (baitCount <= 0) {
+                customAlert('鱼饵不足！请先去积分商城购买鱼饵。', 'warning');
+                return;
+            }
+            
+            // 消耗鱼饵
+            items.bait = baitCount - 1;
+            playerData.items = items;
+            
+            // 先保存玩家数据（包含物品消耗）
+            Storage.savePlayerData(playerData);
+            
+            // 根据海域类型选择鱼类配置
+            const fishConfig = seaType === 'shallow' ? farmConfig.shallowSeaFishes : farmConfig.deepSeaFishes;
+            const inventoryKey = seaType === 'shallow' ? 'shallowSeaInventory' : 'deepSeaInventory';
+            
+            // 随机钓鱼（考虑技能等级加成）
+            const random = Math.random() * 100;
+            let cumulative = 0;
+            let caughtFish = null;
+            
+            // 获取钓鱼技能加成（等级越高，稀有鱼概率越大）
+            const rarityBonus = getFishingRarityBonus();
+            
+            // 重新计算概率：稀有度越高，加成越多
+            for (const fish of fishConfig) {
+                let adjustedProbability = fish.probability;
+                
+                // 根据稀有度增加概率（无价值物品减少，稀有物品增加）
+                if (fish.rarity === 'trash') {
+                    adjustedProbability *= (1 - rarityBonus * 2); // 减少垃圾概率
+                } else if (fish.rarity === 'rare') {
+                    adjustedProbability *= (1 + rarityBonus * 3); // 增加稀有鱼概率
+                } else if (fish.rarity === 'legendary') {
+                    adjustedProbability *= (1 + rarityBonus * 5); // 大幅增加传说鱼概率
+                }
+                
+                cumulative += adjustedProbability;
+                if (random <= cumulative) {
+                    caughtFish = fish;
+                    break;
+                }
+            }
+            
+            // 如果没找到（概率和超过100），重新随机
+            if (!caughtFish) {
+                const fallbackRandom = Math.random() * fishConfig.length;
+                caughtFish = fishConfig[Math.floor(fallbackRandom)];
+            }
+            
+            // 更新钓鱼技能经验
+            updateSkillExp('fishing');
+            
+            // 添加到对应海域库存（只有有价值的鱼才入库）
+            const farmData = getFarmData();
+            if (!farmData[inventoryKey]) farmData[inventoryKey] = {};
+            
+            if (caughtFish.exchangeScore > 0) {
+                farmData[inventoryKey][caughtFish.id] = (farmData[inventoryKey][caughtFish.id] || 0) + 1;
+                // 更新图鉴
+                if (!farmData.collection.includes(caughtFish.id)) {
+                    farmData.collection.push(caughtFish.id);
+                }
+            }
+            
+            farmData.lastFishingTime = new Date().toDateString();
+            
+            // 保存农场数据（saveFarmData内部会保存playerData）
+            saveFarmData(farmData);
+            
+            // 显示结果
+            let rarityText = '';
+            if (caughtFish.rarity === 'rare') rarityText = '✨ 稀有！';
+            if (caughtFish.rarity === 'legendary') rarityText = '🐉 传说！';
+            
+            const seaName = seaType === 'shallow' ? '浅海' : '深海';
+            let message = '';
+            if (caughtFish.exchangeScore > 0) {
+                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}！${rarityText}\n\n价值 ${caughtFish.exchangeScore} 积分`;
+            } else {
+                message = `😅 在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
+            }
+            
+            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning');
+            
+            // 刷新界面
+            renderOcean();
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
@@ -1914,7 +2343,27 @@
                     icon: f.icon,
                     category: 'fish',
                     categoryName: '鱼类'
-                }))
+                })),
+                // 浅海鱼类（排除池塘已有的鱼）
+                ...farmConfig.shallowSeaFishes
+                    .filter(f => f.exchangeScore > 0 && !farmConfig.fishes.find(pf => pf.id === f.id))
+                    .map(f => ({
+                        id: f.id,
+                        name: f.name,
+                        icon: f.icon,
+                        category: 'fish',
+                        categoryName: '鱼类'
+                    })),
+                // 深海鱼类（排除浅海已有的鱼）
+                ...farmConfig.deepSeaFishes
+                    .filter(f => f.exchangeScore > 0 && !farmConfig.shallowSeaFishes.find(sf => sf.id === f.id))
+                    .map(f => ({
+                        id: f.id,
+                        name: f.name,
+                        icon: f.icon,
+                        category: 'fish',
+                        categoryName: '鱼类'
+                    }))
             ];
 
             // 按类别分组
@@ -2565,6 +3014,23 @@
                 });
                 return;
             }
+            
+            // 检查钓竿权限，未购买则隐藏鱼塘导航
+            if (!items['fishing_rod'] || items['fishing_rod'] <= 0) {
+                const fishpondNav = document.getElementById('fishpondNav');
+                if (fishpondNav) {
+                    fishpondNav.style.display = 'none';
+                }
+            }
+            
+            // 检查船权限，未购买则隐藏海洋导航
+            if (!items['boat'] || items['boat'] <= 0) {
+                const oceanNav = document.getElementById('oceanNav');
+                if (oceanNav) {
+                    oceanNav.style.display = 'none';
+                }
+            }
+            
             refreshPage();
         });
     </script>

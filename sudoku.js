@@ -3183,14 +3183,34 @@ const itemConfig = window.itemConfig = [
     },
     // 鱼塘道具
     {
+        id: 'fishing_rod',
+        name: '钓竿',
+        description: '解锁鱼塘功能，可在鱼塘进行钓鱼',
+        price: 1000,
+        icon: '🎣',
+        type: 'permanent',
+        effect: 'fishing_rod',
+        requires: 'farm_right'
+    },
+    {
+        id: 'boat',
+        name: '船',
+        description: '解锁海洋功能，可在浅海和深海进行钓鱼',
+        price: 2000,
+        icon: '🚢',
+        type: 'permanent',
+        effect: 'boat',
+        requires: 'farm_right'
+    },
+    {
         id: 'bait',
         name: '鱼饵',
         description: '用于在鱼塘钓鱼',
         price: 5,
-        icon: '🎣',
+        icon: '🗾',
         type: 'consumable',
         effect: 'bait',
-        requires: 'farm_right'
+        requires: 'fishing_rod'
     },
     // 菜园空地
     {
