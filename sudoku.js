@@ -4304,6 +4304,1214 @@ function fillUniqueCandidates() {
 }
 
 /**
+ * 数独提示系统：分析当前盘面，找出下一步可应用的推理技巧
+ */
+function analyzeBoardForHint() {
+    const size = currentPuzzle.size || 9;
+    const gameTypeStr = currentPuzzle.gameTypeStr || 'STANDARD';
+    const irregularBoxes = currentPuzzle.irregularBoxes;
+    
+    // 1. 检查唯一候选数法（Naked Single）
+    const nakedSingleResult = findNakedSingle(size);
+    if (nakedSingleResult) {
+        return nakedSingleResult;
+    }
+    
+    // 2. 检查隐藏候选数法（Hidden Single）
+    const hiddenSingleResult = findHiddenSingle(size, gameTypeStr, irregularBoxes);
+    if (hiddenSingleResult) {
+        return hiddenSingleResult;
+    }
+    
+    // 3. 检查数对法（Naked Pair）
+    const nakedPairResult = findNakedPair(size);
+    if (nakedPairResult) {
+        return nakedPairResult;
+    }
+    
+    // 4. 检查隐藏数对法（Hidden Pair）
+    const hiddenPairResult = findHiddenPair(size);
+    if (hiddenPairResult) {
+        return hiddenPairResult;
+    }
+    
+    // 5. 检查三数法（Naked Triplet）
+    const tripletResult = findNakedTriplet(size);
+    if (tripletResult) {
+        return tripletResult;
+    }
+    
+    // 6. 检查宫排除法（Box Line Reduction）
+    const boxLineResult = findBoxLineReduction(size);
+    if (boxLineResult) {
+        return boxLineResult;
+    }
+    
+    // 7. 检查区块排除法
+    const blockResult = findBlockExclusion(size);
+    if (blockResult) {
+        return blockResult;
+    }
+    
+    // 8. 检查X-Wing技巧
+    const xwingResult = findXWing(size);
+    if (xwingResult) {
+        return xwingResult;
+    }
+    
+    // 9. 检查剑鱼技巧（Swordfish）
+    const swordfishResult = findSwordfish(size);
+    if (swordfishResult) {
+        return swordfishResult;
+    }
+    
+    return null;
+}
+
+/**
+ * 查找唯一候选数（Naked Single）
+ * 某个格子只有一个候选数，可直接填入
+ */
+function findNakedSingle(size) {
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            // 跳过固定数字和已有确定值的格子
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length === 1) {
+                return {
+                    technique: 'naked_single',
+                    name: '唯一候选数法',
+                    description: '该格子只有一个候选数字，可以直接填入。',
+                    detail: `在第${row + 1}行第${col + 1}列的格子中，候选数只有 ${cellValue[0]}，因此可以确定填入 ${cellValue[0]}。`,
+                    location: { row, col },
+                    number: cellValue[0],
+                    highlightCells: [{ row, col }],
+                    affectedCells: []
+                };
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * 查找隐藏候选数（Hidden Single）
+ * 某个数字在某行/列/宫中只有一个可能位置
+ */
+function findHiddenSingle(size, gameTypeStr, irregularBoxes) {
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        for (let num = 1; num <= size; num++) {
+            let possibleCols = [];
+            for (let col = 0; col < size; col++) {
+                const index = row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    // 如果已有确定值，检查是否是当前数字
+                    if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                        possibleCols = [];
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    possibleCols.push(col);
+                }
+            }
+            if (possibleCols.length === 1) {
+                const col = possibleCols[0];
+                return {
+                    technique: 'hidden_single_row',
+                    name: '隐藏候选数法（行）',
+                    description: '某个数字在某一行中只有一个可能的填入位置。',
+                    detail: `数字 ${num} 在第${row + 1}行中只能填入第${col + 1}列的格子，因为其他位置都已被排除。`,
+                    location: { row, col },
+                    number: num,
+                    highlightCells: [{ row, col }],
+                    affectedCells: getRowCells(row, size).filter(c => c.col !== col)
+                };
+            }
+        }
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        for (let num = 1; num <= size; num++) {
+            let possibleRows = [];
+            for (let row = 0; row < size; row++) {
+                const index = row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                        possibleRows = [];
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    possibleRows.push(row);
+                }
+            }
+            if (possibleRows.length === 1) {
+                const row = possibleRows[0];
+                return {
+                    technique: 'hidden_single_col',
+                    name: '隐藏候选数法（列）',
+                    description: '某个数字在某一列中只有一个可能的填入位置。',
+                    detail: `数字 ${num} 在第${col + 1}列中只能填入第${row + 1}行的格子，因为其他位置都已被排除。`,
+                    location: { row, col },
+                    number: num,
+                    highlightCells: [{ row, col }],
+                    affectedCells: getColCells(col, size).filter(c => c.row !== row)
+                };
+            }
+        }
+    }
+    
+    // 检查每个宫
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
+        // 锯齿数独
+        for (const box of irregularBoxes) {
+            for (let num = 1; num <= size; num++) {
+                let possibleCells = [];
+                let foundNumber = false;
+                for (const cell of box) {
+                    const [r, c] = cell;
+                    const index = r * size + c;
+                    if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                        if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                            foundNumber = true;
+                            break;
+                        }
+                        continue;
+                    }
+                    const cellValue = currentBoard[index];
+                    if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                        possibleCells.push({ row: r, col: c });
+                    }
+                }
+                if (foundNumber) continue;
+                if (possibleCells.length === 1) {
+                    const { row, col } = possibleCells[0];
+                    return {
+                        technique: 'hidden_single_box',
+                        name: '隐藏候选数法（宫）',
+                        description: '某个数字在某个宫中只有一个可能的填入位置。',
+                        detail: `数字 ${num} 在当前宫中只能填入第${row + 1}行第${col + 1}列的格子，因为其他位置都已被排除。`,
+                        location: { row, col },
+                        number: num,
+                        highlightCells: [{ row, col }],
+                        affectedCells: box.map(cell => ({ row: cell[0], col: cell[1] })).filter(c => c.row !== row || c.col !== col)
+                    };
+                }
+            }
+        }
+    } else {
+        // 标准数独
+        for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+            for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+                const boxRowStart = boxRow * boxRows;
+                const boxColStart = boxCol * boxCols;
+                for (let num = 1; num <= size; num++) {
+                    let possibleCells = [];
+                    let foundNumber = false;
+                    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                            const index = r * size + c;
+                            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                                if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                                    foundNumber = true;
+                                    break;
+                                }
+                                continue;
+                            }
+                            const cellValue = currentBoard[index];
+                            if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                possibleCells.push({ row: r, col: c });
+                            }
+                        }
+                        if (foundNumber) break;
+                    }
+                    if (foundNumber) continue;
+                    if (possibleCells.length === 1) {
+                        const { row, col } = possibleCells[0];
+                        return {
+                            technique: 'hidden_single_box',
+                            name: '隐藏候选数法（宫）',
+                            description: '某个数字在某个宫中只有一个可能的填入位置。',
+                            detail: `数字 ${num} 在第${boxRow + 1}宫（第${row + 1}行第${col + 1}列附近）中只能填入第${row + 1}行第${col + 1}列的格子。`,
+                            location: { row, col },
+                            number: num,
+                            highlightCells: [{ row, col }],
+                            affectedCells: getBoxCells(row, col, size).filter(c => c.row !== row || c.col !== col)
+                        };
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找数对（Naked Pair）
+ * 两个格子共享相同的两个候选数
+ */
+function findNakedPair(size) {
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        const pairs = {};
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length === 2) {
+                const key = cellValue.sort().join(',');
+                if (!pairs[key]) {
+                    pairs[key] = [];
+                }
+                pairs[key].push({ row, col });
+            }
+        }
+        for (const [key, cells] of Object.entries(pairs)) {
+            if (cells.length === 2) {
+                const nums = key.split(',').map(Number);
+                // 计算受影响的格子（该行其他格子）
+                const affectedCells = getRowCells(row, size).filter(c => c.col !== cells[0].col && c.col !== cells[1].col);
+                
+                // 检查是否有可以排除的候选数（至少有一个受影响格子包含这些候选数）
+                const hasExcludableCells = affectedCells.some(cell => {
+                    const idx = cell.row * size + cell.col;
+                    return Array.isArray(currentBoard[idx]) && nums.some(n => currentBoard[idx].includes(n));
+                });
+                
+                // 如果没有可以排除的候选数，跳过这个数对
+                if (!hasExcludableCells) {
+                    continue;
+                }
+                
+                return {
+                    technique: 'naked_pair_row',
+                    name: '数对法（行）',
+                    description: '同一行中有两个格子，它们的候选数完全相同（只有两个），这两个数字只能填入这两个格子。',
+                    detail: `在第${row + 1}行中，第${cells[0].col + 1}列和第${cells[1].col + 1}列的格子都只有候选数 ${nums.join('和')}，因此这两个数字必然填入这两个格子，可以从该行其他格子中排除这两个候选数。`,
+                    location: cells[0],
+                    number: nums,
+                    highlightCells: cells,
+                    affectedCells: affectedCells
+                };
+            }
+        }
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        const pairs = {};
+        for (let row = 0; row < size; row++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length === 2) {
+                const key = cellValue.sort().join(',');
+                if (!pairs[key]) {
+                    pairs[key] = [];
+                }
+                pairs[key].push({ row, col });
+            }
+        }
+        for (const [key, cells] of Object.entries(pairs)) {
+            if (cells.length === 2) {
+                const nums = key.split(',').map(Number);
+                // 计算受影响的格子（该列其他格子）
+                const affectedCells = getColCells(col, size).filter(c => c.row !== cells[0].row && c.row !== cells[1].row);
+                
+                // 检查是否有可以排除的候选数
+                const hasExcludableCells = affectedCells.some(cell => {
+                    const idx = cell.row * size + cell.col;
+                    return Array.isArray(currentBoard[idx]) && nums.some(n => currentBoard[idx].includes(n));
+                });
+                
+                // 如果没有可以排除的候选数，跳过这个数对
+                if (!hasExcludableCells) {
+                    continue;
+                }
+                
+                return {
+                    technique: 'naked_pair_col',
+                    name: '数对法（列）',
+                    description: '同一列中有两个格子，它们的候选数完全相同（只有两个），这两个数字只能填入这两个格子。',
+                    detail: `在第${col + 1}列中，第${cells[0].row + 1}行和第${cells[1].row + 1}行的格子都只有候选数 ${nums.join('和')}，因此这两个数字必然填入这两个格子，可以从该列其他格子中排除这两个候选数。`,
+                    location: cells[0],
+                    number: nums,
+                    highlightCells: cells,
+                    affectedCells: affectedCells
+                };
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找隐藏数对法（Hidden Pair）
+ * 两个数字只出现在两个格子中，可以排除这两个格子中的其他候选数
+ */
+function findHiddenPair(size) {
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        const numPositions = {};
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue)) {
+                cellValue.forEach(num => {
+                    if (!numPositions[num]) {
+                        numPositions[num] = [];
+                    }
+                    numPositions[num].push(col);
+                });
+            }
+        }
+        
+        // 找只出现在两个位置的数字
+        const numsWithTwoPositions = Object.entries(numPositions).filter(([num, cols]) => cols.length === 2);
+        if (numsWithTwoPositions.length >= 2) {
+            for (let i = 0; i < numsWithTwoPositions.length; i++) {
+                for (let j = i + 1; j < numsWithTwoPositions.length; j++) {
+                    const [num1, cols1] = numsWithTwoPositions[i];
+                    const [num2, cols2] = numsWithTwoPositions[j];
+                    // 如果两个数字出现在相同的两个位置，找到了隐藏数对
+                    if (cols1.sort().join(',') === cols2.sort().join(',')) {
+                        const cells = [{ row, col: cols1[0] }, { row, col: cols1[1] }];
+                        const nums = [parseInt(num1), parseInt(num2)];
+                        
+                        // 检查这两个格子是否还有其他候选数可以排除
+                        const canExclude = cells.some(cell => {
+                            const idx = cell.row * size + cell.col;
+                            return Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 2;
+                        });
+                        
+                        if (!canExclude) continue;
+                        
+                        return {
+                            technique: 'hidden_pair_row',
+                            name: '隐藏数对法（行）',
+                            description: '两个数字在某一行中只出现在相同的两个格子中，可以排除这两个格子中的其他候选数。',
+                            detail: `数字 ${nums[0]} 和 ${nums[1]} 在第${row + 1}行中只出现在第${cols1[0] + 1}列和第${cols1[1] + 1}列，因此这两个格子只能填入这两个数字，可以排除其他候选数。`,
+                            location: cells[0],
+                            number: nums,
+                            highlightCells: cells,
+                            affectedCells: cells
+                        };
+                    }
+                }
+            }
+        }
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        const numPositions = {};
+        for (let row = 0; row < size; row++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue)) {
+                cellValue.forEach(num => {
+                    if (!numPositions[num]) {
+                        numPositions[num] = [];
+                    }
+                    numPositions[num].push(row);
+                });
+            }
+        }
+        
+        const numsWithTwoPositions = Object.entries(numPositions).filter(([num, rows]) => rows.length === 2);
+        if (numsWithTwoPositions.length >= 2) {
+            for (let i = 0; i < numsWithTwoPositions.length; i++) {
+                for (let j = i + 1; j < numsWithTwoPositions.length; j++) {
+                    const [num1, rows1] = numsWithTwoPositions[i];
+                    const [num2, rows2] = numsWithTwoPositions[j];
+                    if (rows1.sort().join(',') === rows2.sort().join(',')) {
+                        const cells = [{ row: rows1[0], col }, { row: rows1[1], col }];
+                        const nums = [parseInt(num1), parseInt(num2)];
+                        
+                        const canExclude = cells.some(cell => {
+                            const idx = cell.row * size + cell.col;
+                            return Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 2;
+                        });
+                        
+                        if (!canExclude) continue;
+                        
+                        return {
+                            technique: 'hidden_pair_col',
+                            name: '隐藏数对法（列）',
+                            description: '两个数字在某一列中只出现在相同的两个格子中，可以排除这两个格子中的其他候选数。',
+                            detail: `数字 ${nums[0]} 和 ${nums[1]} 在第${col + 1}列中只出现在第${rows1[0] + 1}行和第${rows1[1] + 1}行，因此这两个格子只能填入这两个数字，可以排除其他候选数。`,
+                            location: cells[0],
+                            number: nums,
+                            highlightCells: cells,
+                            affectedCells: cells
+                        };
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找三数法（Naked Triplet）
+ * 三个格子共享相同的三个候选数
+ */
+function findNakedTriplet(size) {
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        const cellsByCandidates = {};
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length >= 2 && cellValue.length <= 3) {
+                const key = cellValue.sort().join(',');
+                if (!cellsByCandidates[key]) {
+                    cellsByCandidates[key] = [];
+                }
+                cellsByCandidates[key].push({ row, col });
+            }
+        }
+        
+        // 查找三数组合
+        const allCandidates = new Set();
+        const candidateCells = [];
+        for (const [key, cells] of Object.entries(cellsByCandidates)) {
+            const nums = key.split(',').map(Number);
+            nums.forEach(n => allCandidates.add(n));
+            candidateCells.push(...cells.map(c => ({ ...c, nums })));
+        }
+        
+        // 如果有3个数字只出现在3个格子中
+        if (allCandidates.size === 3) {
+            const uniqueCells = candidateCells.filter((cell, index, self) => 
+                index === self.findIndex(c => c.row === cell.row && c.col === cell.col)
+            );
+            if (uniqueCells.length === 3) {
+                const nums = Array.from(allCandidates);
+                const cells = uniqueCells.map(c => ({ row: c.row, col: c.col }));
+                
+                // 计算受影响的格子
+                const affectedCells = getRowCells(row, size).filter(c => 
+                    !cells.some(cell => cell.row === c.row && cell.col === c.col)
+                );
+                
+                // 检查是否有可以排除的候选数
+                const hasExcludableCells = affectedCells.some(cell => {
+                    const idx = cell.row * size + cell.col;
+                    return Array.isArray(currentBoard[idx]) && nums.some(n => currentBoard[idx].includes(n));
+                });
+                
+                if (!hasExcludableCells) continue;
+                
+                return {
+                    technique: 'naked_triplet_row',
+                    name: '三数法（行）',
+                    description: '三个格子共享相同的三个候选数（或其子集），这三个数字只能填入这三个格子。',
+                    detail: `在第${row + 1}行中，第${cells.map(c => c.col + 1).join('、')}列的格子共同拥有候选数 ${nums.join('、')}，因此这三个数字必然填入这三个格子，可以从该行其他格子中排除这些候选数。`,
+                    location: cells[0],
+                    number: nums,
+                    highlightCells: cells,
+                    affectedCells: affectedCells
+                };
+            }
+        }
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        const cellsByCandidates = {};
+        for (let row = 0; row < size; row++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length >= 2 && cellValue.length <= 3) {
+                const key = cellValue.sort().join(',');
+                if (!cellsByCandidates[key]) {
+                    cellsByCandidates[key] = [];
+                }
+                cellsByCandidates[key].push({ row, col });
+            }
+        }
+        
+        const allCandidates = new Set();
+        const candidateCells = [];
+        for (const [key, cells] of Object.entries(cellsByCandidates)) {
+            const nums = key.split(',').map(Number);
+            nums.forEach(n => allCandidates.add(n));
+            candidateCells.push(...cells.map(c => ({ ...c, nums })));
+        }
+        
+        if (allCandidates.size === 3) {
+            const uniqueCells = candidateCells.filter((cell, index, self) => 
+                index === self.findIndex(c => c.row === cell.row && c.col === cell.col)
+            );
+            if (uniqueCells.length === 3) {
+                const nums = Array.from(allCandidates);
+                const cells = uniqueCells.map(c => ({ row: c.row, col: c.col }));
+                
+                const affectedCells = getColCells(col, size).filter(c => 
+                    !cells.some(cell => cell.row === c.row && cell.col === c.col)
+                );
+                
+                const hasExcludableCells = affectedCells.some(cell => {
+                    const idx = cell.row * size + cell.col;
+                    return Array.isArray(currentBoard[idx]) && nums.some(n => currentBoard[idx].includes(n));
+                });
+                
+                if (!hasExcludableCells) continue;
+                
+                return {
+                    technique: 'naked_triplet_col',
+                    name: '三数法（列）',
+                    description: '三个格子共享相同的三个候选数（或其子集），这三个数字只能填入这三个格子。',
+                    detail: `在第${col + 1}列中，第${cells.map(c => c.row + 1).join('、')}行的格子共同拥有候选数 ${nums.join('、')}，因此这三个数字必然填入这三个格子，可以从该列其他格子中排除这些候选数。`,
+                    location: cells[0],
+                    number: nums,
+                    highlightCells: cells,
+                    affectedCells: affectedCells
+                };
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找X-Wing技巧
+ * 某个数字在两行中只出现在相同的两列，可以排除这两列其他行的该数字
+ */
+function findXWing(size) {
+    for (let num = 1; num <= size; num++) {
+        const rowColMap = {};
+        
+        // 收集每一行中该数字可能出现的列
+        for (let row = 0; row < size; row++) {
+            const cols = [];
+            for (let col = 0; col < size; col++) {
+                const index = row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if (originalPuzzle[index] === String(num) || currentBoard[index] === num) {
+                        cols.length = 0;
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    cols.push(col);
+                }
+            }
+            if (cols.length === 2) {
+                const key = cols.sort().join(',');
+                if (!rowColMap[key]) {
+                    rowColMap[key] = [];
+                }
+                rowColMap[key].push(row);
+            }
+        }
+        
+        // 找有两行共享相同两列的情况
+        for (const [colsKey, rows] of Object.entries(rowColMap)) {
+            if (rows.length >= 2) {
+                const cols = colsKey.split(',').map(Number);
+                const affectedCells = [];
+                
+                // 收集这两列中除了这两行之外的其他格子
+                for (const col of cols) {
+                    for (let row = 0; row < size; row++) {
+                        if (!rows.includes(row)) {
+                            const index = row * size + col;
+                            if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                const cellValue = currentBoard[index];
+                                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                    affectedCells.push({ row, col });
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (affectedCells.length > 0) {
+                    const highlightCells = [
+                        { row: rows[0], col: cols[0] },
+                        { row: rows[0], col: cols[1] },
+                        { row: rows[1], col: cols[0] },
+                        { row: rows[1], col: cols[1] }
+                    ];
+                    
+                    return {
+                        technique: 'xwing',
+                        name: 'X-Wing 技巧',
+                        description: '某个数字在两行中只出现在相同的两列，形成X形结构，可以排除这两列其他行的该数字。',
+                        detail: `数字 ${num} 在第${rows[0] + 1}行和第${rows[1] + 1}行中只出现在第${cols[0] + 1}列和第${cols[1] + 1}列，形成X形结构。因此可以从这两列的其他行中排除数字 ${num}。`,
+                        location: { row: rows[0], col: cols[0] },
+                        number: num,
+                        highlightCells: highlightCells,
+                        affectedCells: affectedCells
+                    };
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找剑鱼技巧（Swordfish）
+ * 某个数字在三行中只出现在相同的三列，可以排除这三列其他行的该数字
+ */
+function findSwordfish(size) {
+    for (let num = 1; num <= size; num++) {
+        const rowColMap = {};
+        
+        for (let row = 0; row < size; row++) {
+            const cols = [];
+            for (let col = 0; col < size; col++) {
+                const index = row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if (originalPuzzle[index] === String(num) || currentBoard[index] === num) {
+                        cols.length = 0;
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    cols.push(col);
+                }
+            }
+            if (cols.length >= 2 && cols.length <= 3) {
+                rowColMap[row] = cols;
+            }
+        }
+        
+        // 找出所有可能的三行组合
+        const rows = Object.keys(rowColMap).map(Number);
+        for (let i = 0; i < rows.length; i++) {
+            for (let j = i + 1; j < rows.length; j++) {
+                for (let k = j + 1; k < rows.length; k++) {
+                    const row1 = rows[i];
+                    const row2 = rows[j];
+                    const row3 = rows[k];
+                    
+                    const allCols = new Set([
+                        ...rowColMap[row1],
+                        ...rowColMap[row2],
+                        ...rowColMap[row3]
+                    ]);
+                    
+                    // 如果这三行的候选列合并起来正好是3列
+                    if (allCols.size === 3) {
+                        const cols = Array.from(allCols);
+                        const affectedCells = [];
+                        
+                        for (const col of cols) {
+                            for (let row = 0; row < size; row++) {
+                                if (row !== row1 && row !== row2 && row !== row3) {
+                                    const index = row * size + col;
+                                    if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                        const cellValue = currentBoard[index];
+                                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                            affectedCells.push({ row, col });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (affectedCells.length > 0) {
+                            const highlightCells = [
+                                { row: row1, col: cols[0] },
+                                { row: row1, col: cols[1] },
+                                { row: row1, col: cols[2] },
+                                { row: row2, col: cols[0] },
+                                { row: row2, col: cols[1] },
+                                { row: row2, col: cols[2] },
+                                { row: row3, col: cols[0] },
+                                { row: row3, col: cols[1] },
+                                { row: row3, col: cols[2] }
+                            ].filter(cell => 
+                                rowColMap[cell.row].includes(cell.col)
+                            );
+                            
+                            return {
+                                technique: 'swordfish',
+                                name: '剑鱼技巧（Swordfish）',
+                                description: '某个数字在三行中只出现在相同的三列，形成剑鱼结构，可以排除这三列其他行的该数字。',
+                                detail: `数字 ${num} 在第${row1 + 1}、${row2 + 1}、${row3 + 1}行中只出现在第${cols.map(c => c + 1).join('、')}列，形成剑鱼结构。因此可以从这三列的其他行中排除数字 ${num}。`,
+                                location: { row: row1, col: cols[0] },
+                                number: num,
+                                highlightCells: highlightCells,
+                                affectedCells: affectedCells
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找宫排除法（Box Line Reduction）
+ */
+function findBoxLineReduction(size) {
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    // 检查行方向的宫排除
+    for (let num = 1; num <= size; num++) {
+        for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+            const boxRowStart = boxRow * boxRows;
+            let possibleCols = new Set();
+            
+            for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+                const boxColStart = boxCol * boxCols;
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const index = r * size + c;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                                possibleCols = new Set();
+                                boxCol = boxCols;
+                                r = boxRowStart + boxRows;
+                                c = boxColStart + boxCols;
+                                continue;
+                            }
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            possibleCols.add(c);
+                        }
+                    }
+                }
+            }
+            
+            // 如果某个数字在某几行的宫中只能出现在同一列，则可以排除该列其他宫的该数字
+            if (possibleCols.size > 0 && possibleCols.size <= boxCols) {
+                const cols = Array.from(possibleCols);
+                for (const col of cols) {
+                    for (let r = 0; r < size; r++) {
+                        const boxOfRow = Math.floor(r / boxRows);
+                        if (boxOfRow === boxRow) continue;
+                        const index = r * size + col;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            return {
+                                technique: 'box_line_row',
+                                name: '宫排除法（行方向）',
+                                description: '某个数字在某几个相邻宫中只能出现在同一列，可以排除该列其他位置的该数字。',
+                                detail: `数字 ${num} 在第${boxRow + 1}行组的宫中只能出现在第${cols.map(c => c + 1).join('、')}列，因此可以从第${col + 1}列其他行的格子中排除数字 ${num}。`,
+                                location: { row: boxRowStart, col },
+                                number: num,
+                                highlightCells: [{ row: r, col }],
+                                affectedCells: [{ row: r, col }]
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找区块排除法
+ */
+function findBlockExclusion(size) {
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    for (let num = 1; num <= size; num++) {
+        for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+            for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+                const boxRowStart = boxRow * boxRows;
+                const boxColStart = boxCol * boxCols;
+                let foundInBox = false;
+                let rowPositions = new Set();
+                let colPositions = new Set();
+                
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const index = r * size + c;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                                foundInBox = true;
+                                break;
+                            }
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            rowPositions.add(r);
+                            colPositions.add(c);
+                        }
+                    }
+                    if (foundInBox) break;
+                }
+                
+                if (foundInBox) continue;
+                
+                // 如果某个数字在宫中只出现在某一行，可以排除该行其他宫的该数字
+                if (rowPositions.size === 1) {
+                    const row = Array.from(rowPositions)[0];
+                    for (let c = 0; c < size; c++) {
+                        const boxOfCol = Math.floor(c / boxCols);
+                        if (boxOfCol === boxCol) continue;
+                        const index = row * size + c;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            return {
+                                technique: 'block_exclusion_row',
+                                name: '区块排除法（行）',
+                                description: '某个数字在某宫中只出现在某一行，可以排除该行其他位置的该数字。',
+                                detail: `数字 ${num} 在第${boxRow + 1}宫第${boxCol + 1}列组中只出现在第${row + 1}行，因此可以从第${row + 1}行其他宫中排除数字 ${num}。`,
+                                location: { row, col: Array.from(colPositions)[0] },
+                                number: num,
+                                highlightCells: [{ row, col: c }],
+                                affectedCells: [{ row, col: c }]
+                            };
+                        }
+                    }
+                }
+                
+                // 如果某个数字在宫中只出现在某一列，可以排除该列其他宫的该数字
+                if (colPositions.size === 1) {
+                    const col = Array.from(colPositions)[0];
+                    for (let r = 0; r < size; r++) {
+                        const boxOfRow = Math.floor(r / boxRows);
+                        if (boxOfRow === boxRow) continue;
+                        const index = r * size + col;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            return {
+                                technique: 'block_exclusion_col',
+                                name: '区块排除法（列）',
+                                description: '某个数字在某宫中只出现在某一列，可以排除该列其他位置的该数字。',
+                                detail: `数字 ${num} 在第${boxRow + 1}宫第${boxCol + 1}列组中只出现在第${col + 1}列，因此可以从第${col + 1}列其他宫中排除数字 ${num}。`,
+                                location: { row: Array.from(rowPositions)[0], col },
+                                number: num,
+                                highlightCells: [{ row: r, col }],
+                                affectedCells: [{ row: r, col }]
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 获取某行所有格子
+ */
+function getRowCells(row, size) {
+    const cells = [];
+    for (let c = 0; c < size; c++) {
+        cells.push({ row, col: c });
+    }
+    return cells;
+}
+
+/**
+ * 获取某列所有格子
+ */
+function getColCells(col, size) {
+    const cells = [];
+    for (let r = 0; r < size; r++) {
+        cells.push({ row: r, col });
+    }
+    return cells;
+}
+
+/**
+ * 获取某宫所有格子
+ */
+function getBoxCells(row, col, size) {
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    const boxRowStart = Math.floor(row / boxRows) * boxRows;
+    const boxColStart = Math.floor(col / boxCols) * boxCols;
+    const cells = [];
+    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+        for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+            cells.push({ row: r, col: c });
+        }
+    }
+    return cells;
+}
+
+/**
+ * 显示提示
+ */
+function showHint() {
+    const hint = analyzeBoardForHint();
+    
+    if (!hint) {
+        customAlert('当前盘面无法使用基础技巧找到下一步！\n\n建议尝试更高阶的技巧或使用其他方法。', 'info');
+        return;
+    }
+    
+    // 高亮显示相关格子
+    highlightHintCells(hint);
+    
+    // 显示浮动提示面板（不遮挡棋盘）
+    showHintPanel(hint);
+}
+
+/**
+ * 高亮显示提示相关的格子
+ */
+function highlightHintCells(hint) {
+    // 清除之前的高亮
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.classList.remove('hint-highlight', 'hint-affected');
+    });
+    
+    // 高亮主格子
+    hint.highlightCells.forEach(cell => {
+        const element = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+        if (element) {
+            element.classList.add('hint-highlight');
+        }
+    });
+    
+    // 高亮受影响的格子
+    hint.affectedCells.forEach(cell => {
+        const element = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+        if (element) {
+            element.classList.add('hint-affected');
+        }
+    });
+}
+
+/**
+ * 显示提示弹窗
+ */
+/**
+ * 显示浮动提示面板（不遮挡棋盘）
+ */
+function showHintPanel(hint) {
+    // 先移除之前的提示面板
+    const existingPanel = document.getElementById('hintPanel');
+    if (existingPanel) {
+        existingPanel.remove();
+    }
+    
+    const panel = document.createElement('div');
+    panel.id = 'hintPanel';
+    panel.className = 'hint-panel';
+    
+    // 技巧名称
+    const title = document.createElement('div');
+    title.className = 'hint-panel-title';
+    title.innerHTML = `💡 ${hint.name}`;
+    panel.appendChild(title);
+    
+    // 技巧描述
+    const desc = document.createElement('div');
+    desc.className = 'hint-panel-desc';
+    desc.textContent = hint.description;
+    panel.appendChild(desc);
+    
+    // 详细说明
+    const detail = document.createElement('div');
+    detail.className = 'hint-panel-detail';
+    detail.innerHTML = `<strong>详细说明：</strong>${hint.detail}`;
+    panel.appendChild(detail);
+    
+    // 关键信息
+    const infoRow = document.createElement('div');
+    infoRow.className = 'hint-panel-info';
+    
+    if (hint.number) {
+        const numberInfo = document.createElement('span');
+        numberInfo.className = 'hint-panel-tag hint-panel-number';
+        if (Array.isArray(hint.number)) {
+            numberInfo.textContent = `涉及数字: ${hint.number.join(',')}`;
+        } else {
+            numberInfo.textContent = `填入数字: ${hint.number}`;
+        }
+        infoRow.appendChild(numberInfo);
+    }
+    
+    if (hint.highlightCells && hint.highlightCells.length > 0) {
+        const locationInfo = document.createElement('span');
+        locationInfo.className = 'hint-panel-tag hint-panel-location';
+        if (hint.highlightCells.length === 1) {
+            locationInfo.textContent = `位置: 第${hint.highlightCells[0].row + 1}行, 第${hint.highlightCells[0].col + 1}列`;
+        } else {
+            const locations = hint.highlightCells.map(cell => `第${cell.row + 1}行, 第${cell.col + 1}列`).join('；');
+            locationInfo.textContent = `位置: ${locations}`;
+        }
+        infoRow.appendChild(locationInfo);
+    }
+    
+    panel.appendChild(infoRow);
+    
+    // 操作按钮
+    const actions = document.createElement('div');
+    actions.className = 'hint-panel-actions';
+    
+    const applyBtn = document.createElement('button');
+    applyBtn.className = 'hint-panel-btn hint-panel-apply';
+    applyBtn.innerHTML = '📝 应用提示';
+    applyBtn.onclick = () => {
+        applyHint(hint);
+        closeHintPanel();
+    };
+    actions.appendChild(applyBtn);
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'hint-panel-btn hint-panel-close';
+    closeBtn.innerHTML = '✕ 关闭提示';
+    closeBtn.onclick = closeHintPanel;
+    actions.appendChild(closeBtn);
+    
+    panel.appendChild(actions);
+    
+    document.body.appendChild(panel);
+}
+
+/**
+ * 关闭提示面板
+ */
+function closeHintPanel() {
+    const panel = document.getElementById('hintPanel');
+    if (panel) {
+        panel.remove();
+    }
+    // 清除高亮
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.classList.remove('hint-highlight', 'hint-affected');
+    });
+}
+
+/**
+ * 应用提示
+ */
+function applyHint(hint) {
+    const size = currentPuzzle.size || 9;
+    
+    // 如果是可以直接填入数字的技巧
+    if (hint.technique.startsWith('naked_single') || hint.technique.startsWith('hidden_single')) {
+        const { row, col } = hint.location;
+        const index = row * size + col;
+        currentBoard[index] = hint.number;
+        
+        // 删除同行、同列、同宫中的重复候选数字
+        const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+        affectedIndices.forEach(idx => {
+            if (Array.isArray(currentBoard[idx])) {
+                const candidateIdx = currentBoard[idx].indexOf(hint.number);
+                if (candidateIdx >= 0) {
+                    currentBoard[idx].splice(candidateIdx, 1);
+                }
+            }
+        });
+        
+        renderBoard();
+        updateNumberButtons();
+        scheduleSaveProgress();
+    } else {
+        // 对于排除类技巧，自动移除受影响格子的候选数
+        const num = Array.isArray(hint.number) ? hint.number : [hint.number];
+        hint.affectedCells.forEach(cell => {
+            const index = cell.row * size + cell.col;
+            if (Array.isArray(currentBoard[index])) {
+                num.forEach(n => {
+                    const candidateIdx = currentBoard[index].indexOf(n);
+                    if (candidateIdx >= 0) {
+                        currentBoard[index].splice(candidateIdx, 1);
+                    }
+                });
+            }
+        });
+        
+        renderBoard();
+        updateNumberButtons();
+        scheduleSaveProgress();
+    }
+}
+
+/**
+ * 获取技巧说明
+ */
+function getTechniqueDescription(technique) {
+    const descriptions = {
+        'naked_single': '唯一候选数 - 格子只有一个候选数',
+        'hidden_single_row': '隐藏候选数 - 行',
+        'hidden_single_col': '隐藏候选数 - 列',
+        'hidden_single_box': '隐藏候选数 - 宫',
+        'naked_pair_row': '数对 - 行',
+        'naked_pair_col': '数对 - 列',
+        'hidden_pair_row': '隐藏数对 - 行',
+        'hidden_pair_col': '隐藏数对 - 列',
+        'naked_triplet_row': '三数法 - 行',
+        'naked_triplet_col': '三数法 - 列',
+        'box_line_row': '宫排除 - 行方向',
+        'box_line_col': '宫排除 - 列方向',
+        'block_exclusion_row': '区块排除 - 行',
+        'block_exclusion_col': '区块排除 - 列',
+        'xwing': 'X-Wing - 两行两列交叉',
+        'swordfish': '剑鱼 - 三行三列交叉'
+    };
+    return descriptions[technique] || technique;
+}
+
+/**
  * 渲染涂色模式的棋盘
  */
 function renderColorBoard() {
@@ -5950,6 +7158,11 @@ function placeNumber(num) {
             }
         });
     }
+    
+    // 清除提示高亮样式
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.classList.remove('hint-highlight', 'hint-affected');
+    });
 
     // 检查冲突（只检查确定值）
     checkConflicts();
@@ -7366,10 +8579,30 @@ function openModal(modalId) {
 }
 
 /**
-    * 关闭弹窗
+    * 关闭弹窗（隐藏方式，用于已有DOM的弹窗）
     */
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // 对于提示弹窗，使用删除方式
+        if (modalId === 'hintModal') {
+            // 先移除所有事件监听器
+            modal.onclick = null;
+            // 清除高亮
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('hint-highlight', 'hint-affected');
+            });
+            // 延迟删除，确保事件处理完成
+            setTimeout(() => {
+                if (modal.parentNode) {
+                    modal.remove();
+                }
+            }, 10);
+        } else {
+            // 其他弹窗使用隐藏方式
+            modal.style.display = 'none';
+        }
+    }
 }
 
 /**
