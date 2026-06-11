@@ -698,15 +698,33 @@
             .farm-header {
                 padding: 15px;
                 border-radius: 12px;
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
             }
 
             .farm-title {
                 font-size: 1.25em;
+                text-align: center;
+            }
+
+            .farm-header-right {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
             }
 
             .farm-score {
                 padding: 6px 12px;
                 font-size: 0.8em;
+            }
+
+            .stamina-container {
+                padding: 6px 10px;
+            }
+
+            .stamina-bar-container {
+                width: 50px;
             }
 
             .nav-tabs {
@@ -923,14 +941,16 @@
     
     <div class="farm-container">
         <div class="farm-header">
-            <div class="farm-title">🌾 数独农场</div>
-            <div class="farm-score">💰 积分: <span id="playerScore">0</span></div>
-            <div class="stamina-container">
-                <span class="stamina-icon">⚡</span>
-                <div class="stamina-bar-container">
-                    <div class="stamina-bar" id="staminaBar"></div>
+            <div class="farm-title">🌾数独农场</div>
+            <div class="farm-header-right">
+                <div class="farm-score">💰 积分: <span id="playerScore">0</span></div>
+                <div class="stamina-container">
+                    <span class="stamina-icon">⚡</span>
+                    <div class="stamina-bar-container">
+                        <div class="stamina-bar" id="staminaBar"></div>
+                    </div>
+                    <span class="stamina-text" id="staminaText">100/100</span>
                 </div>
-                <span class="stamina-text" id="staminaText">100/100</span>
             </div>
         </div>
 
