@@ -1203,13 +1203,22 @@
                     max: 100,
                     lastResetDate: new Date().toDateString()
                 };
-            } else {
-                // 每天重置体力
-                const today = new Date().toDateString();
-                if (playerData.stamina.lastResetDate !== today) {
-                    playerData.stamina.current = playerData.stamina.max;
-                    playerData.stamina.lastResetDate = today;
-                }
+            }
+            
+            // 更新最大体力（根据等级）
+            const maxStamina = getMaxStamina();
+            if (playerData.stamina.max !== maxStamina) {
+                // 如果最大体力增加了，当前体力也相应增加
+                const diff = maxStamina - playerData.stamina.max;
+                playerData.stamina.max = maxStamina;
+                playerData.stamina.current = Math.min(playerData.stamina.current + diff, maxStamina);
+            }
+            
+            // 每天重置体力
+            const today = new Date().toDateString();
+            if (playerData.stamina.lastResetDate !== today) {
+                playerData.stamina.current = playerData.stamina.max;
+                playerData.stamina.lastResetDate = today;
             }
             
             // 确保 inventory 字段存在

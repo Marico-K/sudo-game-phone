@@ -23,8 +23,11 @@
     <div class="modal" id="levelListModal" style="display: none;">
         <div class="modal-content level-list-content">
             <div class="modal-header">
-                <h2>🏆 等级列表</h2>
-                <button class="daily-reward-btn" onclick="claimDailyReward()">🎁 领取每日积分</button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <h2>🏆 等级列表</h2>
+                    <button class="daily-reward-btn" onclick="claimDailyReward()">🎁 领取每日积分</button>
+                </div>
+                <span class="close" onclick="closeModal('levelListModal')">&times;</span>
             </div>
             <div class="level-list-container" id="levelListContainer"></div>
         </div>
@@ -1044,10 +1047,18 @@
             playerData.lastDailyReward = today;
             Storage.savePlayerData(playerData);
             
-            // 更新显示
-            updateScoreDisplay();
+            // 更新积分显示
+            document.getElementById('availableScore').textContent = `💰 ${playerData.availableScore || 0}`;
             
-            customAlert(`🎁 领取成功！\n\n获得 ${reward} 积分（50 × L${level}）`, 'success');
+            // 更新领取按钮状态为已领取
+            const dailyRewardBtn = document.querySelector('.daily-reward-btn');
+            if (dailyRewardBtn) {
+                dailyRewardBtn.innerHTML = '✅ 今日已领取';
+                dailyRewardBtn.disabled = true;
+                dailyRewardBtn.classList.add('claimed');
+            }
+            
+            customAlert(`🎁 领取成功！\n\n获得 ${reward} 积分`, 'success');
         }
         
         // 关闭弹窗
