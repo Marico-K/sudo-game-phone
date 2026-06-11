@@ -98,6 +98,41 @@
             font-size: 0.9em;
         }
 
+        /* 体力条样式 */
+        .stamina-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .stamina-icon {
+            font-size: 1em;
+        }
+
+        .stamina-bar-container {
+            width: 60px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .stamina-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FF6B6B);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .stamina-text {
+            font-size: 0.85em;
+            min-width: 45px;
+            text-align: right;
+        }
+
         .nav-tabs {
             display: flex;
             gap: 10px;
@@ -183,6 +218,11 @@
         .farm-item.empty {
             border: 2px dashed #ddd;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
         }
 
         .farm-item.empty:hover {
@@ -534,102 +574,6 @@
             box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
         }
 
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .inventory-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-            position: relative;
-        }
-
-        .inventory-icon {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .inventory-name {
-            font-size: 0.75em;
-            color: #666;
-            margin-bottom: 3px;
-        }
-
-        .inventory-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff5722;
-            color: white;
-            font-size: 0.7em;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-
-        .exchange-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .exchange-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            background: #fff3e0;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .exchange-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .exchange-icon {
-            font-size: 28px;
-        }
-
-        .exchange-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .exchange-name {
-            font-weight: 500;
-            font-size: 0.9em;
-        }
-
-        .exchange-rate {
-            font-size: 0.8em;
-            color: #666;
-        }
-
-        .exchange-btn {
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            cursor: pointer;
-        }
-
-        .exchange-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .exchange-btn.disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
         .back-btn {
             position: fixed;
             bottom: 20px;
@@ -850,23 +794,6 @@
                 border-radius: 5px;
             }
 
-            .inventory-grid {
-                gap: 10px;
-            }
-
-            .inventory-item {
-                padding: 10px;
-                border-radius: 8px;
-            }
-
-            .inventory-icon {
-                font-size: 28px;
-            }
-
-            .inventory-name {
-                font-size: 0.7em;
-            }
-
             .exchange-item {
                 padding: 10px;
                 border-radius: 8px;
@@ -922,12 +849,6 @@
                 width: 16px;
                 height: 16px;
                 font-size: 0.6em;
-            }
-
-            .exchange-btn {
-                padding: 6px 12px;
-                font-size: 0.8em;
-                border-radius: 15px;
             }
 
             .back-btn {
@@ -1004,6 +925,13 @@
         <div class="farm-header">
             <div class="farm-title">🌾 数独农场</div>
             <div class="farm-score">💰 积分: <span id="playerScore">0</span></div>
+            <div class="stamina-container">
+                <span class="stamina-icon">⚡</span>
+                <div class="stamina-bar-container">
+                    <div class="stamina-bar" id="staminaBar"></div>
+                </div>
+                <span class="stamina-text" id="staminaText">100/100</span>
+            </div>
         </div>
 
         <div class="nav-tabs">
@@ -1090,14 +1018,8 @@
 
             <!-- 背包和兑换 -->
             <div class="inventory-section">
-                <div class="section-title">🎒 我的背包</div>
+                
                 <div class="inventory-grid" id="inventoryGrid">
-                </div>
-            </div>
-
-            <div class="exchange-section">
-                <div class="section-title">🔄 积分兑换</div>
-                <div id="exchangeList">
                 </div>
             </div>
         </div>
@@ -1233,7 +1155,7 @@
                 orchard: Array(orchardCount).fill(null),
                 chicken: null,
                 cow: null,
-                inventory: {}, // 库存
+                inventory: {}, // 库存（支持稀有度格式：{id: {count: N, rarity: 'common/rare/epic'}}）
                 fishInventory: {}, // 鱼库存
                 shallowSeaInventory: {}, // 浅海库存
                 deepSeaInventory: {}, // 深海库存
@@ -1253,6 +1175,22 @@
                     fishing: 0
                 }
             };
+            
+            // 初始化体力系统
+            if (!playerData.stamina) {
+                playerData.stamina = {
+                    current: 100,
+                    max: 100,
+                    lastResetDate: new Date().toDateString()
+                };
+            } else {
+                // 每天重置体力
+                const today = new Date().toDateString();
+                if (playerData.stamina.lastResetDate !== today) {
+                    playerData.stamina.current = playerData.stamina.max;
+                    playerData.stamina.lastResetDate = today;
+                }
+            }
             
             // 确保 inventory 字段存在
             if (!farmData.inventory) {
@@ -1291,6 +1229,127 @@
             }
             
             return farmData;
+        }
+
+        // ==================== 体力系统 ====================
+
+        // 获取当前体力
+        function getStamina() {
+            const playerData = Storage.getPlayerData();
+            return playerData.stamina?.current || 100;
+        }
+
+        // 获取最大体力
+        function getMaxStamina() {
+            const playerData = Storage.getPlayerData();
+            const level = playerData.level || 1;
+            // 基础体力100，每升1级增加20点
+            return 100 + (level - 1) * 20;
+        }
+
+        // 获取体力消耗（根据技能等级减少）
+        function getStaminaCost(skillType) {
+            const baseCost = 5;
+            const level = getSkillLevel(skillType);
+            const reduction = (level - 1) * 0.2;
+            return Math.max(1, baseCost - reduction);
+        }
+
+        // 消耗体力
+        function consumeStamina(skillType) {
+            const playerData = Storage.getPlayerData();
+            
+            // 确保体力数据存在
+            if (!playerData.stamina) {
+                playerData.stamina = {
+                    current: 100,
+                    max: 100,
+                    lastResetDate: new Date().toDateString()
+                };
+            }
+            
+            const cost = getStaminaCost(skillType);
+            
+            if (playerData.stamina.current >= cost) {
+                playerData.stamina.current -= cost;
+                Storage.savePlayerData(playerData);
+                updateStaminaDisplay();
+                return true;
+            }
+            return false;
+        }
+
+        // 恢复体力
+        function restoreStamina(amount) {
+            const playerData = Storage.getPlayerData();
+            
+            // 确保体力数据存在
+            if (!playerData.stamina) {
+                playerData.stamina = {
+                    current: 100,
+                    max: 100,
+                    lastResetDate: new Date().toDateString()
+                };
+            }
+            
+            playerData.stamina.current = Math.min(playerData.stamina.max, playerData.stamina.current + amount);
+            Storage.savePlayerData(playerData);
+            updateStaminaDisplay();
+        }
+
+        // 更新体力显示
+        function updateStaminaDisplay() {
+            const staminaBar = document.getElementById('staminaBar');
+            const staminaText = document.getElementById('staminaText');
+            if (staminaBar && staminaText) {
+                const current = getStamina();
+                const max = getMaxStamina();
+                const percent = (current / max) * 100;
+                staminaBar.style.width = `${percent}%`;
+                staminaText.textContent = `${Math.floor(current)}/${max}`;
+            }
+        }
+
+        // ==================== 稀有度系统 ====================
+
+        // 稀有度配置
+        const rarityConfig = {
+            common: { name: '普通', multiplier: 1, color: '#9E9E9E', bgColor: '#F5F5F5' },
+            rare: { name: '稀有', multiplier: 3, color: '#4CAF50', bgColor: '#E8F5E9' },
+            epic: { name: '罕见', multiplier: 10, color: '#9C27B0', bgColor: '#F3E5F5' }
+        };
+
+        // 获取随机稀有度
+        function getRandomRarity() {
+            const rand = Math.random() * 100;
+            if (rand < 70) return 'common';    // 70% 普通
+            if (rand < 90) return 'rare';      // 20% 稀有
+            return 'epic';                      // 10% 罕见
+        }
+
+        // 获取食物补充的体力值（考虑稀有度）
+        function getFoodStaminaValue(foodId, rarity) {
+            const foodConfig = {
+                carrot: 10,
+                tomato: 15,
+                lettuce: 8,
+                corn: 12,
+                potato: 10,
+                eggplant: 15,
+                apple: 12,
+                orange: 14,
+                grape: 13,
+                peach: 15,
+                egg: 8,
+                milk: 20
+            };
+            const baseValue = foodConfig[foodId] || 10;
+            const rarityMultiplier = {
+                common: 1,
+                rare: 3,
+                epic: 5
+            };
+            return baseValue * (rarityMultiplier[rarity] || 1);
         }
 
         // ==================== 技能系统 ====================
@@ -1404,9 +1463,11 @@
 
         // 保存农场数据
         function saveFarmData(farmData) {
-            const playerData = Storage.getPlayerData();
+            // 直接读取并更新 localStorage，避免缓存问题
+            const playerDataStr = localStorage.getItem('sudoku_player_data');
+            const playerData = playerDataStr ? JSON.parse(playerDataStr) : Storage.getPlayerData();
             playerData.farm = farmData;
-            Storage.savePlayerData(playerData);
+            localStorage.setItem('sudoku_player_data', JSON.stringify(playerData));
         }
 
         // 切换标签页
@@ -1730,22 +1791,47 @@
             const farmData = getFarmData();
             const combined = {};
             
-            // 合并池塘鱼获
+            // 合并池塘鱼获（支持稀有度格式）
             const pondFish = farmData.fishInventory || {};
-            for (const [fishId, count] of Object.entries(pondFish)) {
-                combined[fishId] = (combined[fishId] || 0) + count;
+            for (const [fishId, rarityData] of Object.entries(pondFish)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (!combined[fishId]) combined[fishId] = {};
+                        combined[fishId][rarity] = (combined[fishId][rarity] || 0) + count;
+                    }
+                } else {
+                    // 兼容旧格式
+                    if (!combined[fishId]) combined[fishId] = {};
+                    combined[fishId]['common'] = (combined[fishId]['common'] || 0) + rarityData;
+                }
             }
             
-            // 合并浅海鱼获
+            // 合并浅海鱼获（支持稀有度格式）
             const shallowFish = farmData.shallowSeaInventory || {};
-            for (const [fishId, count] of Object.entries(shallowFish)) {
-                combined[fishId] = (combined[fishId] || 0) + count;
+            for (const [fishId, rarityData] of Object.entries(shallowFish)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (!combined[fishId]) combined[fishId] = {};
+                        combined[fishId][rarity] = (combined[fishId][rarity] || 0) + count;
+                    }
+                } else {
+                    if (!combined[fishId]) combined[fishId] = {};
+                    combined[fishId]['common'] = (combined[fishId]['common'] || 0) + rarityData;
+                }
             }
             
-            // 合并深海鱼获
+            // 合并深海鱼获（支持稀有度格式）
             const deepFish = farmData.deepSeaInventory || {};
-            for (const [fishId, count] of Object.entries(deepFish)) {
-                combined[fishId] = (combined[fishId] || 0) + count;
+            for (const [fishId, rarityData] of Object.entries(deepFish)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (!combined[fishId]) combined[fishId] = {};
+                        combined[fishId][rarity] = (combined[fishId][rarity] || 0) + count;
+                    }
+                } else {
+                    if (!combined[fishId]) combined[fishId] = {};
+                    combined[fishId]['common'] = (combined[fishId]['common'] || 0) + rarityData;
+                }
             }
             
             return combined;
@@ -1767,7 +1853,7 @@
         }
 
         // 从合并库存中兑换鱼（自动从各个库存中扣除）
-        function exchangeFromCombinedInventory(fishId) {
+        function exchangeFromCombinedInventory(fishId, rarity = 'common') {
             const farmData = getFarmData();
             const pondFish = farmData.fishInventory || {};
             const shallowFish = farmData.shallowSeaInventory || {};
@@ -1777,22 +1863,39 @@
             const fish = getFishConfig(fishId);
             if (!fish) return null;
             
-            // 优先从池塘扣除，然后浅海，然后深海
-            if (pondFish[fishId] && pondFish[fishId] > 0) {
-                pondFish[fishId]--;
-                farmData.fishInventory = pondFish;
-            } else if (shallowFish[fishId] && shallowFish[fishId] > 0) {
-                shallowFish[fishId]--;
-                farmData.shallowSeaInventory = shallowFish;
-            } else if (deepFish[fishId] && deepFish[fishId] > 0) {
-                deepFish[fishId]--;
-                farmData.deepSeaInventory = deepFish;
-            } else {
-                return null; // 没有找到鱼
+            // 获取稀有度加成
+            const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
+            const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
+            
+            // 优先从池塘扣除，然后浅海，然后深海（支持稀有度格式）
+            const inventories = [pondFish, shallowFish, deepFish];
+            const invKeys = ['fishInventory', 'shallowSeaInventory', 'deepSeaInventory'];
+            let found = false;
+            
+            for (let i = 0; i < inventories.length; i++) {
+                const inv = inventories[i];
+                if (inv[fishId]) {
+                    if (typeof inv[fishId] === 'object' && inv[fishId][rarity] && inv[fishId][rarity] > 0) {
+                        inv[fishId][rarity]--;
+                        if (inv[fishId][rarity] <= 0) delete inv[fishId][rarity];
+                        if (Object.keys(inv[fishId]).length === 0) delete inv[fishId];
+                        farmData[invKeys[i]] = inv;
+                        found = true;
+                        break;
+                    } else if (typeof inv[fishId] === 'number' && inv[fishId] > 0) {
+                        // 兼容旧格式
+                        inv[fishId]--;
+                        farmData[invKeys[i]] = inv;
+                        found = true;
+                        break;
+                    }
+                }
             }
             
+            if (!found) return null;
+            
             saveFarmData(farmData);
-            return fish;
+            return { ...fish, exchangeScore: actualScore };
         }
 
         // 渲染鱼塘
@@ -1823,18 +1926,40 @@
             let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
             let hasFish = false;
             
-            for (const [fishId, count] of Object.entries(fishInventory)) {
-                if (count > 0) {
+            for (const [fishId, rarityData] of Object.entries(fishInventory)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (count > 0) {
+                            hasFish = true;
+                            const fish = getFishConfig(fishId);
+                            if (fish) {
+                                const rarityInfo = rarityConfig[rarity];
+                                const rarityMultiplier = rarityInfo?.multiplier || 1;
+                                const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
+                                inventoryHtml += `
+                                    <div class="fish-item" style="background: ${rarityInfo?.bgColor || '#f8f9fa'};" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${count}, '${rarity}')">
+                                        <span class="fish-icon">${fish.icon}</span>
+                                        <span class="fish-count">x${count}</span>
+                                        <span class="fish-name"></span>
+                                        <span class="fish-value">💰${actualScore}</span>
+                                        <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', '${rarity}')">兑换</button>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                } else if (rarityData > 0) {
+                    // 兼容旧格式
                     hasFish = true;
                     const fish = getFishConfig(fishId);
                     if (fish) {
                         inventoryHtml += `
-                            <div class="fish-item">
+                            <div class="fish-item" style="background: #F5F5F5;" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${rarityData}, 'common')">
                                 <span class="fish-icon">${fish.icon}</span>
-                                <span class="fish-name">${fish.name}</span>
-                                <span class="fish-count">x${count}</span>
+                                <span class="fish-count">x${rarityData}</span>
+                                <span class="fish-name"></span>
                                 <span class="fish-value">💰${fish.exchangeScore}</span>
-                                <button class="fish-exchange-btn" onclick="exchangeFish('${fishId}')">兑换</button>
+                                <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', 'common')">兑换</button>
                             </div>
                         `;
                     }
@@ -1853,6 +1978,12 @@
 
         // 钓鱼功能
         function fish() {
+            // 检查体力
+            if (!consumeStamina('fishing')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
+                return;
+            }
+
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             const baitCount = items.bait || 0;
@@ -1911,11 +2042,43 @@
             if (!farmData.fishInventory) farmData.fishInventory = {};
             
             if (caughtFish.exchangeScore > 0) {
-                farmData.fishInventory[caughtFish.id] = (farmData.fishInventory[caughtFish.id] || 0) + 1;
+                // 随机决定稀有度（同一种鱼可以有不同稀有度）
+                const rarityBonus = getFishingRarityBonus();
+                const rarityRandom = Math.random() * 100;
+                
+                // 基础稀有度概率
+                let commonProb = 70 - rarityBonus * 5;      // 普通：70%（技能越高概率越低）
+                let rareProb = 25 + rarityBonus * 3;        // 稀有：25%（技能越高概率越高）
+                let legendaryProb = 5 + rarityBonus * 2;    // 传说：5%（技能越高概率越高）
+                
+                // 确保概率在合理范围内
+                commonProb = Math.max(40, Math.min(85, commonProb));
+                rareProb = Math.max(10, Math.min(40, rareProb));
+                legendaryProb = Math.max(1, Math.min(20, legendaryProb));
+                
+                let finalRarity = 'common';
+                if (rarityRandom <= legendaryProb) {
+                    finalRarity = 'legendary';
+                } else if (rarityRandom <= legendaryProb + rareProb) {
+                    finalRarity = 'rare';
+                }
+                
+                // 使用稀有度格式存储鱼获
+                const fishRarity = finalRarity === 'legendary' ? 'epic' : (finalRarity === 'rare' ? 'rare' : 'common');
+                if (!farmData.fishInventory[caughtFish.id]) {
+                    farmData.fishInventory[caughtFish.id] = {};
+                }
+                if (!farmData.fishInventory[caughtFish.id][fishRarity]) {
+                    farmData.fishInventory[caughtFish.id][fishRarity] = 0;
+                }
+                farmData.fishInventory[caughtFish.id][fishRarity]++;
                 // 更新图鉴
                 if (!farmData.collection.includes(caughtFish.id)) {
                     farmData.collection.push(caughtFish.id);
                 }
+                
+                // 保存最终稀有度用于显示
+                caughtFish.finalRarity = finalRarity;
             }
             
             farmData.lastFishingTime = new Date().toDateString();
@@ -1924,18 +2087,18 @@
             saveFarmData(farmData);
             
             // 显示结果
-            let rarityText = '';
-            if (caughtFish.rarity === 'rare') rarityText = '✨ 稀有！';
-            if (caughtFish.rarity === 'legendary') rarityText = '🐉 传说！';
+            const displayRarity = caughtFish.finalRarity || caughtFish.rarity;
+            const rarityInfo = rarityConfig[displayRarity];
+            const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0', legendary: '#9C27B0' };
             
             let message = '';
             if (caughtFish.exchangeScore > 0) {
-                message = `\ud83c\udfa3 恭喜钓到了 ${caughtFish.icon} ${caughtFish.name}！${rarityText}\n\n价值 ${caughtFish.exchangeScore} 积分`;
+                message = `\ud83c\udfa3 恭喜钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${caughtFish.exchangeScore} 积分`;
             } else {
                 message = `😅 钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }
             
-            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning');
+            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning', null, { allowHtml: true });
             
             // 刷新界面
             renderFishpond();
@@ -1943,9 +2106,9 @@
         }
 
         // 兑换鱼为积分
-        function exchangeFish(fishId) {
+        function exchangeFish(fishId, rarity = 'common') {
             // 从合并库存中兑换鱼
-            const fish = exchangeFromCombinedInventory(fishId);
+            const fish = exchangeFromCombinedInventory(fishId, rarity);
             if (!fish) {
                 return;
             }
@@ -1959,7 +2122,7 @@
             Storage.saveScoreRecord({
                 type: 'fish_exchange',
                 name: fish.name,
-                description: `兑换${fish.name} x1`,
+                description: `兑换${rarityConfig[rarity]?.name || '普通'}${fish.name} x1`,
                 score: fish.exchangeScore
             });
             
@@ -1977,7 +2140,18 @@
             const fishInventory = getCombinedFishInventory();
             
             // 检查是否有鱼
-            const hasFish = Object.values(fishInventory).some(count => count > 0);
+            let hasFish = false;
+            for (const rarityData of Object.values(fishInventory)) {
+                if (typeof rarityData === 'object') {
+                    if (Object.values(rarityData).some(count => count > 0)) {
+                        hasFish = true;
+                        break;
+                    }
+                } else if (rarityData > 0) {
+                    hasFish = true;
+                    break;
+                }
+            }
             if (!hasFish) {
                 customAlert('没有可兑换的鱼！', 'warning');
                 return;
@@ -1987,12 +2161,25 @@
             let totalScore = 0;
             let exchangeList = [];
             
-            for (const [fishId, count] of Object.entries(fishInventory)) {
-                if (count > 0) {
+            for (const [fishId, rarityData] of Object.entries(fishInventory)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (count > 0) {
+                            const fish = getFishConfig(fishId);
+                            if (fish) {
+                                const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
+                                const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
+                                totalScore += actualScore * count;
+                                exchangeList.push(`${rarityConfig[rarity]?.name || '普通'}${fish.icon} ${fish.name} x${count}`);
+                            }
+                        }
+                    }
+                } else if (rarityData > 0) {
+                    // 兼容旧格式
                     const fish = getFishConfig(fishId);
                     if (fish) {
-                        totalScore += fish.exchangeScore * count;
-                        exchangeList.push(`${fish.icon} ${fish.name} x${count}`);
+                        totalScore += fish.exchangeScore * rarityData;
+                        exchangeList.push(`${fish.icon} ${fish.name} x${rarityData}`);
                     }
                 }
             }
@@ -2008,15 +2195,32 @@
             Storage.savePlayerData(playerData);
             
             // 保存积分记录（为每种鱼单独记录）
-            for (const [fishId, count] of Object.entries(fishInventory)) {
-                if (count > 0) {
+            for (const [fishId, rarityData] of Object.entries(fishInventory)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (count > 0) {
+                            const fish = getFishConfig(fishId);
+                            if (fish) {
+                                const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
+                                const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
+                                Storage.saveScoreRecord({
+                                    type: 'fish_exchange',
+                                    name: fish.name,
+                                    description: `兑换${rarityConfig[rarity]?.name || '普通'}${fish.name} x${count}`,
+                                    score: actualScore * count
+                                });
+                            }
+                        }
+                    }
+                } else if (rarityData > 0) {
+                    // 兼容旧格式
                     const fish = getFishConfig(fishId);
                     if (fish) {
                         Storage.saveScoreRecord({
                             type: 'fish_exchange',
                             name: fish.name,
-                            description: `兑换${fish.name} x${count}`,
-                            score: fish.exchangeScore * count
+                            description: `兑换${fish.name} x${rarityData}`,
+                            score: fish.exchangeScore * rarityData
                         });
                     }
                 }
@@ -2072,18 +2276,40 @@
             let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
             let hasFish = false;
             
-            for (const [fishId, count] of Object.entries(fishInventory)) {
-                if (count > 0) {
+            for (const [fishId, rarityData] of Object.entries(fishInventory)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, count] of Object.entries(rarityData)) {
+                        if (count > 0) {
+                            hasFish = true;
+                            const fish = getFishConfig(fishId);
+                            if (fish) {
+                                const rarityInfo = rarityConfig[rarity];
+                                const rarityMultiplier = rarityInfo?.multiplier || 1;
+                                const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
+                                inventoryHtml += `
+                                    <div class="fish-item" style="background: ${rarityInfo?.bgColor || '#f8f9fa'};" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${count}, '${rarity}')">
+                                        <span class="fish-icon">${fish.icon}</span>
+                                        <span class="fish-count">x${count}</span>
+                                        <span class="fish-name"></span>
+                                        <span class="fish-value">💰${actualScore}</span>
+                                        <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', '${rarity}')">兑换</button>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                } else if (rarityData > 0) {
+                    // 兼容旧格式
                     hasFish = true;
                     const fish = getFishConfig(fishId);
                     if (fish) {
                         inventoryHtml += `
-                            <div class="fish-item">
+                            <div class="fish-item" style="background: #F5F5F5;" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${rarityData}, 'common')">
                                 <span class="fish-icon">${fish.icon}</span>
-                                <span class="fish-name">${fish.name}</span>
-                                <span class="fish-count">x${count}</span>
+                                <span class="fish-count">x${rarityData}</span>
+                                <span class="fish-name"></span>
                                 <span class="fish-value">💰${fish.exchangeScore}</span>
-                                <button class="fish-exchange-btn" onclick="exchangeFish('${fishId}')">兑换</button>
+                                <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', 'common')">兑换</button>
                             </div>
                         `;
                     }
@@ -2102,6 +2328,12 @@
 
         // 海洋钓鱼功能
         function oceanFish(seaType) {
+            // 检查体力
+            if (!consumeStamina('fishing')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
+                return;
+            }
+
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             const baitCount = items.bait || 0;
@@ -2164,11 +2396,43 @@
             if (!farmData[inventoryKey]) farmData[inventoryKey] = {};
             
             if (caughtFish.exchangeScore > 0) {
-                farmData[inventoryKey][caughtFish.id] = (farmData[inventoryKey][caughtFish.id] || 0) + 1;
+                // 随机决定稀有度（同一种鱼可以有不同稀有度）
+                const rarityBonus = getFishingRarityBonus();
+                const rarityRandom = Math.random() * 100;
+                
+                // 基础稀有度概率
+                let commonProb = 70 - rarityBonus * 5;      // 普通：70%（技能越高概率越低）
+                let rareProb = 25 + rarityBonus * 3;        // 稀有：25%（技能越高概率越高）
+                let legendaryProb = 5 + rarityBonus * 2;    // 传说：5%（技能越高概率越高）
+                
+                // 确保概率在合理范围内
+                commonProb = Math.max(40, Math.min(85, commonProb));
+                rareProb = Math.max(10, Math.min(40, rareProb));
+                legendaryProb = Math.max(1, Math.min(20, legendaryProb));
+                
+                let finalRarity = 'common';
+                if (rarityRandom <= legendaryProb) {
+                    finalRarity = 'legendary';
+                } else if (rarityRandom <= legendaryProb + rareProb) {
+                    finalRarity = 'rare';
+                }
+                
+                // 使用稀有度格式存储鱼获
+                const fishRarity = finalRarity === 'legendary' ? 'epic' : (finalRarity === 'rare' ? 'rare' : 'common');
+                if (!farmData[inventoryKey][caughtFish.id]) {
+                    farmData[inventoryKey][caughtFish.id] = {};
+                }
+                if (!farmData[inventoryKey][caughtFish.id][fishRarity]) {
+                    farmData[inventoryKey][caughtFish.id][fishRarity] = 0;
+                }
+                farmData[inventoryKey][caughtFish.id][fishRarity]++;
                 // 更新图鉴
                 if (!farmData.collection.includes(caughtFish.id)) {
                     farmData.collection.push(caughtFish.id);
                 }
+                
+                // 保存最终稀有度用于显示
+                caughtFish.finalRarity = finalRarity;
             }
             
             farmData.lastFishingTime = new Date().toDateString();
@@ -2177,31 +2441,32 @@
             saveFarmData(farmData);
             
             // 显示结果
-            let rarityText = '';
-            if (caughtFish.rarity === 'rare') rarityText = '✨ 稀有！';
-            if (caughtFish.rarity === 'legendary') rarityText = '🐉 传说！';
+            const displayRarity = caughtFish.finalRarity || caughtFish.rarity;
+            const rarityInfo = rarityConfig[displayRarity];
+            const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0', legendary: '#9C27B0' };
             
             const seaName = seaType === 'shallow' ? '浅海' : '深海';
             let message = '';
             if (caughtFish.exchangeScore > 0) {
-                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}！${rarityText}\n\n价值 ${caughtFish.exchangeScore} 积分`;
+                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${caughtFish.exchangeScore} 积分`;
             } else {
                 message = `😅 在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }
             
-            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning');
+            customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning', null, { allowHtml: true });
             
             // 刷新界面
             renderOcean();
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
-        // 渲染背包
+        // 渲染背包（改成鱼获样式）
         function renderInventory() {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
             const grid = document.getElementById('inventoryGrid');
-            let html = '';
+            let html = '<div class="section-title-container"><div class="section-title">🎒 我的背包</div><button class="exchange-all-btn" onclick="exchangeAllItems()">💰 兑换全部</button></div><div class="fish-inventory">';
+            let hasItem = false;
 
             const items = [
                 { id: 'carrot', icon: '🥕', name: '胡萝卜' },
@@ -2219,81 +2484,57 @@
             ];
 
             items.forEach(item => {
-                const count = inventory[item.id] || 0;
-                if (count > 0) {
+                const itemData = inventory[item.id];
+                if (itemData && typeof itemData === 'object') {
+                    const rarities = ['common', 'rare', 'epic'];
+                    rarities.forEach(rarity => {
+                        const count = itemData[rarity] || 0;
+                        if (count > 0) {
+                            hasItem = true;
+                            const rarityInfo = rarityConfig[rarity];
+                            const itemScore = getItemExchangeScore(item.id);
+                            const rarityMultiplier = rarityInfo?.multiplier || 1;
+                            const actualScore = Math.floor(itemScore * rarityMultiplier);
+                            html += `
+                                <div class="fish-item" style="background: ${rarityInfo.bgColor};" onclick="showEatConfirm('${item.id}', '${rarity}', '${item.icon}', '${item.name}')">
+                                    <span class="fish-icon">${item.icon}</span>
+                                    <span class="fish-count">x${count}</span>
+                                    <span class="fish-name"></span>
+                                    <span class="fish-value">💰${actualScore}</span>
+                                    <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchange('${item.id}', '${rarity}')">兑换</button>
+                                </div>
+                            `;
+                        }
+                    });
+                } else if (itemData > 0) {
+                    hasItem = true;
+                    const itemScore = getItemExchangeScore(item.id);
                     html += `
-                        <div class="inventory-item">
-                            <div class="inventory-icon">${item.icon}</div>
-                            <div class="inventory-name">${item.name}</div>
-                            <div class="inventory-count">${count}</div>
+                        <div class="fish-item" style="background: #F5F5F5;" onclick="showEatConfirm('${item.id}', 'common', '${item.icon}', '${item.name}')">
+                            <span class="fish-icon">${item.icon}</span>
+                            <span class="fish-count">x${itemData}</span>
+                            <span class="fish-name"></span>
+                            <span class="fish-value">💰${itemScore}</span>
+                            <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchange('${item.id}', 'common')">兑换</button>
                         </div>
                     `;
                 }
             });
 
-            if (!html) {
-                html = '<div class="empty-hint"><div class="empty-hint-icon">🎒</div><p>背包是空的</p></div>';
+            if (!hasItem) {
+                html += '<div class="empty-fish">背包是空的</div>';
             }
 
+            html += '</div>';
             grid.innerHTML = html;
         }
 
-        // 渲染兑换列表
+        // 渲染兑换列表（已移除，保留空函数避免报错）
         function renderExchange() {
-            const farmData = getFarmData();
-            const inventory = farmData.inventory;
             const list = document.getElementById('exchangeList');
-            let html = '';
-
-            const exchangeItems = [
-                { id: 'carrot', icon: '🥕', name: '胡萝卜', rate: 100 },
-                { id: 'tomato', icon: '🍅', name: '西红柿', rate: 150 },
-                { id: 'lettuce', icon: '🥬', name: '生菜', rate: 80 },
-                { id: 'corn', icon: '🌽', name: '玉米', rate: 200 },
-                { id: 'potato', icon: '🥔', name: '土豆', rate: 100 },
-                { id: 'eggplant', icon: '🍆', name: '茄子', rate: 180 },
-                { id: 'apple', icon: '🍎', name: '苹果', rate: 300 },
-                { id: 'orange', icon: '🍊', name: '橙子', rate: 350 },
-                { id: 'grape', icon: '🍇', name: '葡萄', rate: 280 },
-                { id: 'peach', icon: '🍑', name: '桃子', rate: 320 },
-                { id: 'egg', icon: '🥚', name: '鸡蛋', rate: 80 },
-                { id: 'milk', icon: '🥛', name: '牛奶', rate: 120 },
-            ];
-
-            exchangeItems.forEach(item => {
-                const count = inventory[item.id] || 0;
-                
-                // 只有数量大于 0 才显示
-                if (count > 0) {
-                    html += `
-                        <div class="exchange-item">
-                            <div class="exchange-info">
-                                <div class="exchange-icon">${item.icon}</div>
-                                <div class="exchange-details">
-                                    <div class="exchange-name">${item.name} x${count}</div>
-                                    <div class="exchange-rate">兑换 ${item.rate} 积分</div>
-                                </div>
-                            </div>
-                            <button class="exchange-btn" onclick="exchange('${item.id}', ${item.rate})">
-                                兑换
-                            </button>
-                        </div>
-                    `;
-                }
-            });
-
-            // 如果没有任何物品可兑换
-            if (html === '') {
-                html = `
-                    <div class="empty-exchange" style="text-align: center; padding: 40px 20px; color: #999;">
-                        <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
-                        <div style="font-size: 16px; margin-bottom: 5px;">暂无可兑换物品</div>
-                        <div style="font-size: 14px; color: #bbb;">农场收获的物品将显示在这里</div>
-                    </div>
-                `;
+            if (list) {
+                list.innerHTML = '';
             }
-
-            list.innerHTML = html;
         }
 
         // 渲染图鉴
@@ -2714,6 +2955,12 @@
         
         // 浇水
         function water(area, index) {
+            // 检查体力
+            if (!consumeStamina('watering')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
+                return;
+            }
+
             const farmData = getFarmData();
             const today = new Date().toDateString();
 
@@ -2749,6 +2996,12 @@
 
         // 施肥
         function fertilize(area, index) {
+            // 检查体力
+            if (!consumeStamina('watering')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
+                return;
+            }
+
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             const fertilizerCount = items.fertilizer || 0;
@@ -2802,6 +3055,12 @@
 
         // 喂养动物
         function feed(animalType) {
+            // 检查体力
+            if (!consumeStamina('feeding')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
+                return;
+            }
+
             const farmData = getFarmData();
             const today = new Date().toDateString();
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
@@ -2874,8 +3133,18 @@
                 config = farmConfig.fruits.find(f => f.id === plant.type);
             }
 
-            // 添加到背包
-            farmData.inventory[plant.type] = (farmData.inventory[plant.type] || 0) + 1;
+            // 获取随机稀有度
+            const rarity = getRandomRarity();
+            const rarityInfo = rarityConfig[rarity];
+            
+            // 添加到背包（支持稀有度格式）
+            if (!farmData.inventory[plant.type]) {
+                farmData.inventory[plant.type] = {};
+            }
+            if (!farmData.inventory[plant.type][rarity]) {
+                farmData.inventory[plant.type][rarity] = 0;
+            }
+            farmData.inventory[plant.type][rarity]++;
 
             // 检查是否首次获得（解锁图鉴）
             const isFirstTime = !farmData.collection.includes(plant.type);
@@ -2893,10 +3162,11 @@
             
             refreshPage();
             
+            const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0' };
             if (isFirstTime) {
-                customAlert(`🎉 恭喜！首次获得${config.name}，已解锁图鉴！\n\n🌾 收获成功！获得 ${config.icon} ${config.name} x1`, 'success');
+                customAlert(`🎉 恭喜！首次获得${config.name}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.icon} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
             } else {
-                customAlert(`🌾 收获成功！获得 ${config.icon} ${config.name} x1`, 'success');
+                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.icon} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
             }
         }
 
@@ -2907,8 +3177,18 @@
             const config = farmConfig.animals[animalType];
             const today = new Date().toDateString();
 
-            // 添加到背包
-            farmData.inventory[config.product] = (farmData.inventory[config.product] || 0) + 1;
+            // 获取随机稀有度
+            const rarity = getRandomRarity();
+            const rarityInfo = rarityConfig[rarity];
+            
+            // 添加到背包（支持稀有度格式）
+            if (!farmData.inventory[config.product]) {
+                farmData.inventory[config.product] = {};
+            }
+            if (!farmData.inventory[config.product][rarity]) {
+                farmData.inventory[config.product][rarity] = 0;
+            }
+            farmData.inventory[config.product][rarity]++;
 
             // 检查是否首次获得（解锁图鉴）
             const isFirstTime = !farmData.collection.includes(config.product);
@@ -2925,30 +3205,50 @@
             
             refreshPage();
             
+            const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0' };
             if (isFirstTime) {
-                customAlert(`🎉 恭喜！首次获得${config.productName}，已解锁图鉴！\n\n🌾 收获成功！获得 ${config.productIcon} ${config.productName} x1`, 'success');
+                customAlert(`🎉 恭喜！首次获得${config.productName}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.productIcon} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
             } else {
-                customAlert(`🌾 收获成功！获得 ${config.productIcon} ${config.productName} x1`, 'success');
+                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.productIcon} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
             }
         }
 
-        // 兑换积分
-        function exchange(itemId, rate) {
+        // 兑换积分（支持稀有度）
+        function exchange(itemId, rarity) {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
 
-            if (!inventory[itemId] || inventory[itemId] <= 0) {
+            // 检查物品是否存在
+            if (!inventory[itemId] || !inventory[itemId][rarity] || inventory[itemId][rarity] <= 0) {
                 customAlert('物品不足！', 'warning');
                 return;
             }
 
             // 查找物品信息
-            const item = farmConfig.vegetables.find(v => v.id === itemId) ||
-                        farmConfig.fruits.find(f => f.id === itemId) ||
-                        farmConfig.animals.find(a => a.id === itemId);
+            let item = farmConfig.vegetables.find(v => v.id === itemId);
+            if (!item) item = farmConfig.fruits.find(f => f.id === itemId);
+            if (!item) {
+                const animal = farmConfig.animals.find(a => a.product === itemId);
+                if (animal) {
+                    item = { name: animal.productName, icon: animal.productIcon, exchangeScore: animal.exchangeScore };
+                }
+            }
             
+            // 获取稀有度加成
+            const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
+            
+            // 计算兑换积分
+            const baseRate = item?.exchangeScore || 10;
+            const rate = Math.floor(baseRate * rarityMultiplier);
+
             // 扣除物品
-            farmData.inventory[itemId]--;
+            farmData.inventory[itemId][rarity]--;
+            if (farmData.inventory[itemId][rarity] <= 0) {
+                delete farmData.inventory[itemId][rarity];
+            }
+            if (Object.keys(farmData.inventory[itemId]).length === 0) {
+                delete farmData.inventory[itemId];
+            }
             saveFarmData(farmData);
 
             // 添加积分
@@ -2961,13 +3261,313 @@
                 Storage.saveScoreRecord({
                     type: 'farm_exchange',
                     name: item.name,
-                    description: `兑换${item.name} x1`,
+                    description: `兑换${rarityConfig[rarity]?.name || '普通'}${item.name} x1`,
                     score: rate
                 });
             }
 
             refreshPage();
             customAlert(`兑换成功！获得 ${rate} 积分`, 'success');
+        }
+
+        // 获取物品的兑换积分
+        function getItemExchangeScore(itemId) {
+            // 查找蔬菜
+            let item = farmConfig.vegetables.find(v => v.id === itemId);
+            if (item) return item.exchangeScore;
+            
+            // 查找水果（使用 harvestIcon 匹配）
+            item = farmConfig.fruits.find(f => f.id === itemId);
+            if (item) return item.exchangeScore;
+            
+            // 查找动物产品
+            const animal = Object.values(farmConfig.animals).find(a => a.product === itemId);
+            if (animal) return animal.exchangeScore;
+            
+            // 默认值
+            return 10;
+        }
+
+        // 兑换全部物品
+        function exchangeAllItems() {
+            const farmData = getFarmData();
+            const inventory = farmData.inventory;
+            let totalScore = 0;
+            let count = 0;
+            
+            for (const [itemId, rarityData] of Object.entries(inventory)) {
+                if (typeof rarityData === 'object') {
+                    for (const [rarity, itemCount] of Object.entries(rarityData)) {
+                        if (itemCount > 0) {
+                            const itemScore = getItemExchangeScore(itemId);
+                            const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
+                            const actualScore = Math.floor(itemScore * rarityMultiplier);
+                            totalScore += actualScore * itemCount;
+                            count += itemCount;
+                            
+                            // 扣除物品
+                            delete farmData.inventory[itemId][rarity];
+                        }
+                    }
+                    // 清理空的物品对象
+                    if (Object.keys(farmData.inventory[itemId]).length === 0) {
+                        delete farmData.inventory[itemId];
+                    }
+                } else if (rarityData > 0) {
+                    // 旧格式
+                    const itemScore = getItemExchangeScore(itemId);
+                    totalScore += itemScore * rarityData;
+                    count += rarityData;
+                    delete farmData.inventory[itemId];
+                }
+            }
+            
+            if (count === 0) {
+                customAlert('背包是空的！', 'info');
+                return;
+            }
+            
+            saveFarmData(farmData);
+            
+            // 添加积分
+            const playerData = Storage.getPlayerData();
+            playerData.availableScore = (playerData.availableScore || 0) + totalScore;
+            Storage.savePlayerData(playerData);
+            
+            Storage.saveScoreRecord({
+                type: 'farm_exchange_all',
+                name: '批量兑换',
+                description: `兑换 ${count} 个物品`,
+                score: totalScore
+            });
+            
+            refreshPage();
+            customAlert(`💰 兑换成功！\n\n共兑换 ${count} 个物品\n获得 ${totalScore} 积分`, 'success');
+        }
+
+        // 显示食用确认弹窗
+        function showEatConfirm(itemId, rarity, icon, name) {
+            const currentStamina = getStamina();
+            const maxStamina = getMaxStamina();
+            
+            // 检查体力是否已满
+            if (currentStamina >= maxStamina) {
+                customAlert('体力已满，无需食用！', 'info');
+                return;
+            }
+            
+            const staminaValue = getFoodStaminaValue(itemId, rarity);
+            const rarityInfo = rarityConfig[rarity];
+            
+            customConfirm(`确定要食用 ${rarityInfo.name}${icon} ${name} 吗？\n\n可以恢复 ${staminaValue} 点体力`, function() {
+                eatFood(itemId, rarity);
+            });
+        }
+
+        // 食用食物恢复体力
+        function eatFood(itemId, rarity) {
+            const farmData = getFarmData();
+            const inventory = farmData.inventory;
+
+            // 检查物品是否存在（兼容新旧格式）
+            const itemData = inventory[itemId];
+            if (!itemData) {
+                customAlert('物品不足！', 'warning');
+                return;
+            }
+            
+            // 判断是新格式（对象）还是旧格式（数字）
+            const isNewFormat = typeof itemData === 'object';
+            
+            // 新格式：检查对应稀有度的数量
+            if (isNewFormat) {
+                if (!itemData[rarity] || itemData[rarity] <= 0) {
+                    customAlert('物品不足！', 'warning');
+                    return;
+                }
+            } else {
+                // 旧格式：只有普通稀有度，且 rarity 必须是 common
+                if (rarity !== 'common' || itemData <= 0) {
+                    customAlert('物品不足！', 'warning');
+                    return;
+                }
+            }
+
+            // 检查体力是否已满
+            const currentStamina = getStamina();
+            const maxStamina = getMaxStamina();
+            if (currentStamina >= maxStamina) {
+                customAlert('体力已满，无需食用！', 'info');
+                return;
+            }
+
+            // 获取恢复的体力值
+            const staminaValue = getFoodStaminaValue(itemId, rarity);
+            
+            // 扣除物品（兼容新旧格式）
+            if (isNewFormat) {
+                farmData.inventory[itemId][rarity]--;
+                if (farmData.inventory[itemId][rarity] <= 0) {
+                    delete farmData.inventory[itemId][rarity];
+                }
+                if (Object.keys(farmData.inventory[itemId]).length === 0) {
+                    delete farmData.inventory[itemId];
+                }
+            } else {
+                // 旧格式：直接减1
+                farmData.inventory[itemId]--;
+                if (farmData.inventory[itemId] <= 0) {
+                    delete farmData.inventory[itemId];
+                }
+            }
+            saveFarmData(farmData);
+
+            // 恢复体力
+            restoreStamina(staminaValue);
+
+            // 查找物品信息
+            let itemName = itemId;
+            let itemIcon = '🍽️';
+            const veg = farmConfig.vegetables.find(v => v.id === itemId);
+            if (veg) { itemName = veg.name; itemIcon = veg.icon; }
+            const fruit = farmConfig.fruits.find(f => f.id === itemId);
+            if (fruit) { itemName = fruit.name; itemIcon = fruit.icon; }
+            const animal = farmConfig.animals.find(a => a.product === itemId);
+            if (animal) { itemName = animal.productName; itemIcon = animal.productIcon; }
+
+            refreshPage();
+            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力\n\n${rarityConfig[rarity]?.name || '普通'}${itemIcon} ${itemName}`, 'success');
+        }
+
+        // 显示鱼获食用确认弹窗
+        function showFishEatConfirm(fishId, icon, name, count, rarity = 'common') {
+            const currentStamina = getStamina();
+            const maxStamina = getMaxStamina();
+            
+            // 检查体力是否已满
+            if (currentStamina >= maxStamina) {
+                customAlert('体力已满，无需食用！', 'info');
+                return;
+            }
+            
+            // 获取鱼获配置
+            let fishConfig = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            
+            if (!fishConfig) {
+                customAlert('未知的鱼获！', 'warning');
+                return;
+            }
+            
+            // 计算体力恢复值（根据鱼的价值计算，稀有度加成）
+            let baseValue = Math.ceil(fishConfig.exchangeScore / 2);
+            baseValue = Math.max(5, Math.min(500, baseValue));
+            const rarityMultiplier = { common: 1, rare: 2, epic: 3 };
+            const staminaValue = Math.ceil(baseValue * (rarityMultiplier[rarity] || 1));
+            
+            const rarityInfo = rarityConfig[rarity];
+            
+            customConfirm(`确定要食用 ${rarityInfo.name}${icon} ${name} 吗？\n\n可以恢复 ${staminaValue} 点体力\n\n库存: ${count}`, function() {
+                eatFish(fishId, rarity);
+            });
+        }
+
+        // 食用鱼获恢复体力
+        function eatFish(fishId, rarity) {
+            const farmData = getFarmData();
+            
+            // 检查体力是否已满
+            const currentStamina = getStamina();
+            const maxStamina = getMaxStamina();
+            if (currentStamina >= maxStamina) {
+                customAlert('体力已满，无需食用！', 'info');
+                return;
+            }
+
+            // 获取鱼获配置
+            let fishConfig = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            
+            if (!fishConfig) {
+                customAlert('未知的鱼获！', 'warning');
+                return;
+            }
+            
+            // 获取鱼获库存
+            const fishInventory = getCombinedFishInventory();
+            
+            // 检查鱼获是否存在（兼容新旧格式）
+            const fishData = fishInventory[fishId];
+            if (!fishData) {
+                customAlert('鱼获不足！', 'warning');
+                return;
+            }
+            
+            const isNewFormat = typeof fishData === 'object';
+            if (isNewFormat) {
+                if (!fishData[rarity] || fishData[rarity] <= 0) {
+                    customAlert('鱼获不足！', 'warning');
+                    return;
+                }
+            } else {
+                // 旧格式：只有普通稀有度
+                if (rarity !== 'common' || fishData <= 0) {
+                    customAlert('鱼获不足！', 'warning');
+                    return;
+                }
+            }
+            
+            // 计算恢复的体力值（根据鱼的价值计算，稀有度加成）
+            // 基础体力 = 鱼的兑换积分 / 2，最低5点，最高50点
+            let baseValue = Math.ceil(fishConfig.exchangeScore / 2);
+            baseValue = Math.max(5, Math.min(100, baseValue));
+            
+            // 稀有度倍数
+            const rarityMultiplier = { common: 1, rare: 2, epic: 3 };
+            const staminaValue = Math.ceil(baseValue * (rarityMultiplier[rarity] || 1));
+            
+            // 扣除鱼获（兼容新旧格式）
+            const inventories = ['fishInventory', 'shallowSeaInventory', 'deepSeaInventory'];
+            let found = false;
+            for (const invKey of inventories) {
+                if (farmData[invKey] && farmData[invKey][fishId]) {
+                    const invData = farmData[invKey][fishId];
+                    if (typeof invData === 'object' && invData[rarity] && invData[rarity] > 0) {
+                        // 新格式
+                        farmData[invKey][fishId][rarity]--;
+                        if (farmData[invKey][fishId][rarity] <= 0) {
+                            delete farmData[invKey][fishId][rarity];
+                        }
+                        if (Object.keys(farmData[invKey][fishId]).length === 0) {
+                            delete farmData[invKey][fishId];
+                        }
+                        found = true;
+                        break;
+                    } else if (typeof invData === 'number' && invData > 0 && rarity === 'common') {
+                        // 旧格式
+                        farmData[invKey][fishId]--;
+                        if (farmData[invKey][fishId] <= 0) {
+                            delete farmData[invKey][fishId];
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!found) {
+                customAlert('鱼获不足！', 'warning');
+                return;
+            }
+            
+            saveFarmData(farmData);
+            restoreStamina(staminaValue);
+            
+            refreshPage();
+            const rarityInfo = rarityConfig[rarity];
+            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力\n\n${rarityInfo.name}${fishConfig.icon} ${fishConfig.name}`, 'success');
         }
 
         // 刷新页面
@@ -3030,6 +3630,9 @@
                     oceanNav.style.display = 'none';
                 }
             }
+            
+            // 更新体力显示
+            updateStaminaDisplay();
             
             refreshPage();
         });

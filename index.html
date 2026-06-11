@@ -24,7 +24,7 @@
         <div class="modal-content level-list-content">
             <div class="modal-header">
                 <h2>🏆 等级列表</h2>
-                <span class="close" onclick="closeModal('levelListModal')">&times;</span>
+                <button class="daily-reward-btn" onclick="claimDailyReward()">🎁 领取每日积分</button>
             </div>
             <div class="level-list-container" id="levelListContainer"></div>
         </div>
@@ -965,6 +965,10 @@
             const playerData = Storage.getPlayerData();
             const container = document.getElementById('levelListContainer');
             
+            // 检查今天是否已经领取过
+            const today = new Date().toDateString();
+            const hasClaimedToday = playerData.lastDailyReward === today;
+            
             let html = '';
             for (let i = 0; i < levelConfig.length; i++) {
                 const level = levelConfig[i];
@@ -980,6 +984,10 @@
                     scoreText = `${level.minScore} 分以上（满级）`;
                 }
                 
+                // 计算该等级的奖励
+                const dailyReward = level.level * 50;
+                const maxStamina = 100 + (level.level - 1) * 20;
+                
                 html += `
                     <div class="level-list-item ${isCurrent ? 'current' : ''} ${isUnlocked ? 'unlocked' : 'locked'}">
                         <div class="level-item-info">
@@ -988,13 +996,58 @@
                         </div>
                         <div class="level-item-score">
                             <strong>${scoreText}</strong>
+                            <div class="level-rewards">
+                                <span class="reward-item"> ${dailyReward} 积分/天</span>
+                                <span class="reward-item"> 体力上限 ${maxStamina}</span>
+                            </div>
                         </div>
                     </div>
                 `;
             }
             
             container.innerHTML = html;
+            
+            // 更新按钮状态
+            const rewardBtn = document.querySelector('.daily-reward-btn');
+            if (rewardBtn) {
+                if (hasClaimedToday) {
+                    rewardBtn.disabled = true;
+                    rewardBtn.textContent = '✅ 今日已领取';
+                    rewardBtn.classList.add('claimed');
+                } else {
+                    rewardBtn.disabled = false;
+                    rewardBtn.textContent = '🎁 领取每日积分';
+                    rewardBtn.classList.remove('claimed');
+                }
+            }
+            
             document.getElementById('levelListModal').style.display = 'block';
+        }
+        
+        // 领取每日积分
+        function claimDailyReward() {
+            const playerData = Storage.getPlayerData();
+            const today = new Date().toDateString();
+            
+            // 检查今天是否已经领取过
+            if (playerData.lastDailyReward === today) {
+                customAlert('您今天已经领取过每日积分了！', 'info');
+                return;
+            }
+            
+            // 计算奖励：50 * 当前等级
+            const level = playerData.level || 1;
+            const reward = level * 50;
+            
+            // 添加积分
+            playerData.availableScore = (playerData.availableScore || 0) + reward;
+            playerData.lastDailyReward = today;
+            Storage.savePlayerData(playerData);
+            
+            // 更新显示
+            updateScoreDisplay();
+            
+            customAlert(`🎁 领取成功！\n\n获得 ${reward} 积分（50 × L${level}）`, 'success');
         }
         
         // 关闭弹窗

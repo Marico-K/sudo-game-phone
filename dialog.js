@@ -8,7 +8,7 @@
  */
 
 // 自定义提示弹窗（替代 alert）
-function customAlert(message, type = 'info', callback = null) {
+function customAlert(message, type = 'info', callback = null, options = {}) {
     const typeConfig = {
         info:    { icon: 'ℹ️', color: '#2196F3', title: '提示' },
         success: { icon: '✅', color: '#4CAF50', title: '成功' },
@@ -17,10 +17,11 @@ function customAlert(message, type = 'info', callback = null) {
         question:{ icon: '❓', color: '#9C27B0', title: '提示' }
     };
     const config = typeConfig[type] || typeConfig.info;
+    const { allowHtml = false } = options;
 
     // 处理多行消息
     const messageHtml = String(message).split('\n').map(line => {
-        return `<div class="dialog-message-line">${escapeHtml(line)}</div>`;
+        return `<div class="dialog-message-line">${allowHtml ? line : escapeHtml(line)}</div>`;
     }).join('');
 
     const overlay = document.createElement('div');

@@ -427,12 +427,43 @@ header p {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .level-list-content .modal-header h2 {
     margin: 0;
     font-size: 1.2em;
     color: #333;
+}
+
+.daily-reward-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.daily-reward-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.daily-reward-btn.claimed {
+    background: linear-gradient(135deg, #9E9E9E, #757575);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.daily-reward-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .level-list-container {
@@ -483,7 +514,31 @@ header p {
 
 .level-item-score {
     font-size: 0.9em;
-    color: #666;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.level-rewards {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85em;
+    color: #888;
+}
+
+.level-list-item.current .level-rewards {
+    color: rgba(255,255,255,0.9);
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.reward-item:last-child::before {
+    content: '💪';
 }
 
 .level-item-score strong {
