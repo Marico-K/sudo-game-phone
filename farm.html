@@ -1939,8 +1939,8 @@
                                 inventoryHtml += `
                                     <div class="fish-item" style="background: ${rarityInfo?.bgColor || '#f8f9fa'};" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${count}, '${rarity}')">
                                         <span class="fish-icon">${fish.icon}</span>
+                                        <span class="fish-name">${fish.name}</span>
                                         <span class="fish-count">x${count}</span>
-                                        <span class="fish-name"></span>
                                         <span class="fish-value">💰${actualScore}</span>
                                         <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', '${rarity}')">兑换</button>
                                     </div>
@@ -1956,8 +1956,8 @@
                         inventoryHtml += `
                             <div class="fish-item" style="background: #F5F5F5;" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${rarityData}, 'common')">
                                 <span class="fish-icon">${fish.icon}</span>
+                                <span class="fish-name">${fish.name}</span>
                                 <span class="fish-count">x${rarityData}</span>
-                                <span class="fish-name"></span>
                                 <span class="fish-value">💰${fish.exchangeScore}</span>
                                 <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', 'common')">兑换</button>
                             </div>
@@ -2289,8 +2289,8 @@
                                 inventoryHtml += `
                                     <div class="fish-item" style="background: ${rarityInfo?.bgColor || '#f8f9fa'};" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${count}, '${rarity}')">
                                         <span class="fish-icon">${fish.icon}</span>
+                                        <span class="fish-name">${fish.name}</span>
                                         <span class="fish-count">x${count}</span>
-                                        <span class="fish-name"></span>
                                         <span class="fish-value">💰${actualScore}</span>
                                         <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', '${rarity}')">兑换</button>
                                     </div>
@@ -2306,8 +2306,8 @@
                         inventoryHtml += `
                             <div class="fish-item" style="background: #F5F5F5;" onclick="showFishEatConfirm('${fishId}', '${fish.icon}', '${fish.name}', ${rarityData}, 'common')">
                                 <span class="fish-icon">${fish.icon}</span>
+                                <span class="fish-name">${fish.name}</span>
                                 <span class="fish-count">x${rarityData}</span>
-                                <span class="fish-name"></span>
                                 <span class="fish-value">💰${fish.exchangeScore}</span>
                                 <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchangeFish('${fishId}', 'common')">兑换</button>
                             </div>
@@ -2498,8 +2498,8 @@
                             html += `
                                 <div class="fish-item" style="background: ${rarityInfo.bgColor};" onclick="showEatConfirm('${item.id}', '${rarity}', '${item.icon}', '${item.name}')">
                                     <span class="fish-icon">${item.icon}</span>
+                                    <span class="fish-name">${item.name}</span>
                                     <span class="fish-count">x${count}</span>
-                                    <span class="fish-name"></span>
                                     <span class="fish-value">💰${actualScore}</span>
                                     <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchange('${item.id}', '${rarity}')">兑换</button>
                                 </div>
@@ -2512,8 +2512,8 @@
                     html += `
                         <div class="fish-item" style="background: #F5F5F5;" onclick="showEatConfirm('${item.id}', 'common', '${item.icon}', '${item.name}')">
                             <span class="fish-icon">${item.icon}</span>
+                            <span class="fish-name">${item.name}</span>
                             <span class="fish-count">x${itemData}</span>
-                            <span class="fish-name"></span>
                             <span class="fish-value">💰${itemScore}</span>
                             <button class="fish-exchange-btn" onclick="event.stopPropagation(); exchange('${item.id}', 'common')">兑换</button>
                         </div>
