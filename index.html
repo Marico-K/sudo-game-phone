@@ -1047,6 +1047,14 @@
             playerData.lastDailyReward = today;
             Storage.savePlayerData(playerData);
             
+            // 保存积分记录
+            Storage.saveScoreRecord({
+                type: 'daily_reward',
+                name: '每日等级积分奖励',
+                description: `领取每日积分（等级 L${level}）`,
+                score: reward
+            });
+            
             // 更新积分显示
             document.getElementById('availableScore').textContent = `💰 ${playerData.availableScore || 0}`;
             
