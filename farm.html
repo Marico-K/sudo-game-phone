@@ -1219,6 +1219,8 @@
             if (playerData.stamina.lastResetDate !== today) {
                 playerData.stamina.current = playerData.stamina.max;
                 playerData.stamina.lastResetDate = today;
+                // 保存体力重置
+                Storage.savePlayerData(playerData);
             }
             
             // 确保 inventory 字段存在

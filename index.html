@@ -105,9 +105,9 @@
                     </div>
                 </div>
                 <!-- 测试按钮：增加 1000 积分 -->
-                <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
+                <!-- <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
                      +1000 积分
-                </button>
+                </button> -->
                 <div class="shop-items-grid" id="shopItemsGrid">
                 </div>
             </div>
@@ -1413,7 +1413,55 @@
                             <span class="gameType-desc">相同数不相邻</span>
                         </span>
                     </button>
+                    <button class="gameType-btn" onclick="showCustomPuzzleInput()">
+                        <span class="gameType-icon">✏️</span>
+                        <span class="gameType-text">
+                            <span class="gameType-name">自定义题目</span>
+                            <span class="gameType-desc">录入题目开始答题</span>
+                        </span>
+                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义题目录入弹窗 -->
+    <div id="CustomPuzzleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>自定义题目录入</h2>
+                <span class="close" onclick="closeCustomPuzzleModal()">&times;</span>
+            </div>
+            <div class="help-content">
+                <!-- 宫格大小选择 -->
+                <div style="margin-bottom: 15px; display: flex; gap: 10px; justify-content: center;">
+                    <button class="home-btn small-btn" onclick="setCustomBoardSize(4)" id="size4Btn">4×4</button>
+                    <button class="home-btn small-btn" onclick="setCustomBoardSize(6)" id="size6Btn">6×6</button>
+                    <button class="home-btn small-btn active" onclick="setCustomBoardSize(9)" id="size9Btn">9×9</button>
+                </div>
+                
+                <p style="margin-bottom: 15px; color: #666; text-align: center;">请在下方<span id="boardSizeText">9×9</span>的格子中输入题目。<br>已填入的数字为题目提示，将无法修改。</p>
+                <div id="customPuzzleBoard" class="custom-puzzle-board"></div>
+                
+                <!-- 数字键盘 -->
+                <div id="customNumberKeypad" class="custom-number-keypad">
+                    <button class="num-btn" onclick="inputCustomNumber(1)">1</button>
+                    <button class="num-btn" onclick="inputCustomNumber(2)">2</button>
+                    <button class="num-btn" onclick="inputCustomNumber(3)">3</button>
+                    <button class="num-btn" onclick="inputCustomNumber(4)">4</button>
+                    <button class="num-btn" onclick="inputCustomNumber(5)" id="num5Btn">5</button>
+                    <button class="num-btn" onclick="inputCustomNumber(6)" id="num6Btn">6</button>
+                    <button class="num-btn" onclick="inputCustomNumber(7)" id="num7Btn">7</button>
+                    <button class="num-btn" onclick="inputCustomNumber(8)" id="num8Btn">8</button>
+                    <button class="num-btn" onclick="inputCustomNumber(9)" id="num9Btn">9</button>
+                    <button class="num-btn delete-btn" onclick="inputCustomNumber(0)">×</button>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    <button class="home-btn" onclick="clearCustomPuzzle()">🗑️ 清空</button>
+                    <button class="home-btn" onclick="confirmCustomPuzzle()">✓ 确认题目</button>
+                </div>
+                <p id="customPuzzleStatus" style="margin-top: 15px; text-align: center; color: #888;"></p>
             </div>
         </div>
     </div>

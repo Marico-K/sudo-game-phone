@@ -4439,13 +4439,49 @@ function analyzeBoardForHint() {
         return swordfishResult;
     }
     
-    // 11. 检查Y-Wing技巧（XY-Wing）
+    // 11. 检查水母技巧（Jellyfish）
+    const jellyfishResult = findJellyfish(size);
+    if (jellyfishResult) {
+        return jellyfishResult;
+    }
+    
+    // 12. 检查四数法（Naked Quad）
+    const quadResult = findNakedQuad(size, gameTypeStr, irregularBoxes);
+    if (quadResult) {
+        return quadResult;
+    }
+    
+    // 13. 检查隐藏四数法（Hidden Quad）
+    const hiddenQuadResult = findHiddenQuad(size, gameTypeStr, irregularBoxes);
+    if (hiddenQuadResult) {
+        return hiddenQuadResult;
+    }
+    
+    // 14. 检查Y-Wing技巧（XY-Wing）
     const ywingResult = findYWing(size, gameTypeStr, irregularBoxes);
     if (ywingResult) {
         return ywingResult;
     }
     
-    // 12. 检查矩形排除法（Unique Rectangle）
+    // 15. 检查空矩形技巧（Empty Rectangle）
+    const emptyRectResult = findEmptyRectangle(size);
+    if (emptyRectResult) {
+        return emptyRectResult;
+    }
+    
+    // 16. 检查简单链技巧（Simple Chain）
+    const chainResult = findSimpleChain(size);
+    if (chainResult) {
+        return chainResult;
+    }
+    
+    // 17. 检查ALS技巧（Almost Locked Set）
+    const alsResult = findALS(size);
+    if (alsResult) {
+        return alsResult;
+    }
+    
+    // 18. 检查矩形排除法（Unique Rectangle）
     const urResult = findUniqueRectangle(size, gameTypeStr, irregularBoxes);
     if (urResult) {
         return urResult;
@@ -5705,7 +5741,7 @@ function findYWing(size, gameTypeStr, irregularBoxes) {
  * 查找唯一矩形排除法（Unique Rectangle Type 1）
  * 四个格子形成矩形，其中三个格子有相同的双值候选数，可以排除第四个格子中的这些候选数
  */
-function findUniqueRectangle(size) {
+function findUniqueRectangle(size, gameTypeStr, irregularBoxes) {
     // 查找所有双值格，按候选数分组
     const pairsByKey = {};
     for (let row = 0; row < size; row++) {
@@ -5812,6 +5848,750 @@ function findUniqueRectangle(size) {
     return null;
 }
 
+/**
+ * 查找水母技巧（Jellyfish）
+ * 某个数字在四行中只出现在相同的四列，可以排除这四列其他行的该数字
+ */
+function findJellyfish(size) {
+    for (let num = 1; num <= size; num++) {
+        const rowColMap = {};
+        
+        for (let row = 0; row < size; row++) {
+            const cols = [];
+            for (let col = 0; col < size; col++) {
+                const index = row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if (originalPuzzle[index] === String(num) || currentBoard[index] === num) {
+                        cols.length = 0;
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    cols.push(col);
+                }
+            }
+            if (cols.length >= 2 && cols.length <= 4) {
+                rowColMap[row] = cols;
+            }
+        }
+        
+        const rows = Object.keys(rowColMap).map(Number);
+        // 找出所有可能的四行组合
+        for (let i = 0; i < rows.length; i++) {
+            for (let j = i + 1; j < rows.length; j++) {
+                for (let k = j + 1; k < rows.length; k++) {
+                    for (let l = k + 1; l < rows.length; l++) {
+                        const row1 = rows[i];
+                        const row2 = rows[j];
+                        const row3 = rows[k];
+                        const row4 = rows[l];
+                        
+                        const allCols = new Set([
+                            ...rowColMap[row1],
+                            ...rowColMap[row2],
+                            ...rowColMap[row3],
+                            ...rowColMap[row4]
+                        ]);
+                        
+                        if (allCols.size === 4) {
+                            const cols = Array.from(allCols);
+                            const affectedCells = [];
+                            
+                            for (const col of cols) {
+                                for (let row = 0; row < size; row++) {
+                                    if (row !== row1 && row !== row2 && row !== row3 && row !== row4) {
+                                        const index = row * size + col;
+                                        if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                            const cellValue = currentBoard[index];
+                                            if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                                affectedCells.push({ row, col });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (affectedCells.length > 0) {
+                                const highlightCells = [];
+                                [row1, row2, row3, row4].forEach(r => {
+                                    cols.forEach(c => {
+                                        if (rowColMap[r].includes(c)) {
+                                            highlightCells.push({ row: r, col: c });
+                                        }
+                                    });
+                                });
+                                
+                                return {
+                                    technique: 'jellyfish',
+                                    name: '水母技巧（Jellyfish）',
+                                    description: '某个数字在四行中只出现在相同的四列，形成水母结构，可以排除这四列其他行的该数字。',
+                                    detail: `数字 ${num} 在第${row1 + 1}、${row2 + 1}、${row3 + 1}、${row4 + 1}行中只出现在第${cols.map(c => c + 1).join('、')}列，形成水母结构。因此可以从这四列的其他行中排除数字 ${num}。`,
+                                    location: { row: row1, col: cols[0] },
+                                    number: num,
+                                    highlightCells: highlightCells,
+                                    affectedCells: affectedCells
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找四数法（Naked Quad）
+ * 四个格子共有四个候选数，可以排除这四个格子中其他候选数
+ */
+function findNakedQuad(size, gameTypeStr, irregularBoxes) {
+    const checkGroup = (cells) => {
+        const allNums = new Set();
+        const cellList = [];
+        
+        for (const { row, col } of cells) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length >= 2 && cellValue.length <= 4) {
+                cellValue.forEach(n => allNums.add(n));
+                cellList.push({ row, col, nums: cellValue });
+            }
+        }
+        
+        if (cellList.length === 4 && allNums.size === 4) {
+            const affectedCells = [];
+            for (const cell of cellList) {
+                const index = cell.row * size + cell.col;
+                const cellValue = currentBoard[index];
+                const extraNums = cellValue.filter(n => !allNums.has(n));
+                if (extraNums.length > 0) {
+                    affectedCells.push({ row: cell.row, col: cell.col });
+                }
+            }
+            
+            if (affectedCells.length > 0) {
+                const nums = Array.from(allNums).sort();
+                return {
+                    technique: 'naked_quad',
+                    name: '四数法（Naked Quad）',
+                    description: '四个格子共有四个候选数，可以从这四个格子中排除其他候选数。',
+                    detail: `在这些格子中，候选数 ${nums.join('、')} 只出现在这四个格子中，可以从这些格子中排除其他数字。`,
+                    location: { row: cellList[0].row, col: cellList[0].col },
+                    number: nums,
+                    highlightCells: cellList.map(c => ({ row: c.row, col: c.col })),
+                    affectedCells: affectedCells
+                };
+            }
+        }
+        return null;
+    };
+    
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        const cells = [];
+        for (let col = 0; col < size; col++) {
+            cells.push({ row, col });
+        }
+        const result = checkGroup(cells);
+        if (result) return result;
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        const cells = [];
+        for (let row = 0; row < size; row++) {
+            cells.push({ row, col });
+        }
+        const result = checkGroup(cells);
+        if (result) return result;
+    }
+    
+    // 检查每个宫
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+        for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+            const cells = [];
+            for (let r = boxRow * boxRows; r < boxRow * boxRows + boxRows; r++) {
+                for (let c = boxCol * boxCols; c < boxCol * boxCols + boxCols; c++) {
+                    cells.push({ row: r, col: c });
+                }
+            }
+            const result = checkGroup(cells);
+            if (result) return result;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找隐藏四数法（Hidden Quad）
+ * 四个候选数只出现在四个格子中，可以排除这四个格子中其他候选数
+ */
+function findHiddenQuad(size, gameTypeStr, irregularBoxes) {
+    const checkGroup = (cells) => {
+        const numCellMap = {};
+        
+        for (let num = 1; num <= size; num++) {
+            numCellMap[num] = [];
+        }
+        
+        for (const { row, col } of cells) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue)) {
+                cellValue.forEach(n => {
+                    numCellMap[n].push({ row, col });
+                });
+            }
+        }
+        
+        const numsWithFewCells = [];
+        for (let num = 1; num <= size; num++) {
+            if (numCellMap[num].length > 0 && numCellMap[num].length <= 4) {
+                numsWithFewCells.push({ num, cells: numCellMap[num] });
+            }
+        }
+        
+        // 找四个数字，它们的候选格正好是相同的四个格子
+        for (let i = 0; i < numsWithFewCells.length; i++) {
+            for (let j = i + 1; j < numsWithFewCells.length; j++) {
+                for (let k = j + 1; k < numsWithFewCells.length; k++) {
+                    for (let l = k + 1; l < numsWithFewCells.length; l++) {
+                        const num1 = numsWithFewCells[i];
+                        const num2 = numsWithFewCells[j];
+                        const num3 = numsWithFewCells[k];
+                        const num4 = numsWithFewCells[l];
+                        
+                        const allCells = new Set();
+                        num1.cells.forEach(c => allCells.add(`${c.row},${c.col}`));
+                        num2.cells.forEach(c => allCells.add(`${c.row},${c.col}`));
+                        num3.cells.forEach(c => allCells.add(`${c.row},${c.col}`));
+                        num4.cells.forEach(c => allCells.add(`${c.row},${c.col}`));
+                        
+                        if (allCells.size === 4) {
+                            const cellList = Array.from(allCells).map(key => {
+                                const [r, c] = key.split(',').map(Number);
+                                return { row: r, col: c };
+                            });
+                            
+                            const affectedCells = [];
+                            const nums = [num1.num, num2.num, num3.num, num4.num].sort();
+                            
+                            for (const cell of cellList) {
+                                const index = cell.row * size + cell.col;
+                                const cellValue = currentBoard[index];
+                                const extraNums = cellValue.filter(n => !nums.includes(n));
+                                if (extraNums.length > 0) {
+                                    affectedCells.push(cell);
+                                }
+                            }
+                            
+                            if (affectedCells.length > 0) {
+                                return {
+                                    technique: 'hidden_quad',
+                                    name: '隐藏四数法（Hidden Quad）',
+                                    description: '四个候选数只出现在四个格子中，可以从这四个格子中排除其他候选数。',
+                                    detail: `数字 ${nums.join('、')} 只出现在这四个格子中，可以从这些格子中排除其他数字。`,
+                                    location: { row: cellList[0].row, col: cellList[0].col },
+                                    number: nums,
+                                    highlightCells: cellList,
+                                    affectedCells: affectedCells
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+    };
+    
+    // 检查每行
+    for (let row = 0; row < size; row++) {
+        const cells = [];
+        for (let col = 0; col < size; col++) {
+            cells.push({ row, col });
+        }
+        const result = checkGroup(cells);
+        if (result) return result;
+    }
+    
+    // 检查每列
+    for (let col = 0; col < size; col++) {
+        const cells = [];
+        for (let row = 0; row < size; row++) {
+            cells.push({ row, col });
+        }
+        const result = checkGroup(cells);
+        if (result) return result;
+    }
+    
+    // 检查每个宫
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+        for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+            const cells = [];
+            for (let r = boxRow * boxRows; r < boxRow * boxRows + boxRows; r++) {
+                for (let c = boxCol * boxCols; c < boxCol * boxCols + boxCols; c++) {
+                    cells.push({ row: r, col: c });
+                }
+            }
+            const result = checkGroup(cells);
+            if (result) return result;
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找空矩形技巧（Empty Rectangle）
+ */
+function findEmptyRectangle(size) {
+    const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+    const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+    
+    for (let num = 1; num <= size; num++) {
+        for (let boxRow = 0; boxRow < boxRows; boxRow++) {
+            for (let boxCol = 0; boxCol < boxCols; boxCol++) {
+                const boxRowStart = boxRow * boxRows;
+                const boxColStart = boxCol * boxCols;
+                
+                const candidatesInBox = [];
+                for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const index = r * size + c;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            if (originalPuzzle[index] === String(num) || currentBoard[index] === num) {
+                                candidatesInBox.length = 0;
+                                r = boxRowStart + boxRows;
+                                c = boxColStart + boxCols;
+                                continue;
+                            }
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            candidatesInBox.push({ row: r, col: c });
+                        }
+                    }
+                }
+                
+                if (candidatesInBox.length === 0) continue;
+                
+                // 检查是否形成空矩形
+                const rows = new Set(candidatesInBox.map(c => c.row));
+                const cols = new Set(candidatesInBox.map(c => c.col));
+                
+                // 如果候选格没有占据整个宫的所有行或所有列，则可能形成空矩形
+                if (rows.size < boxRows || cols.size < boxCols) {
+                    const emptyRows = [];
+                    const emptyCols = [];
+                    
+                    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                        if (!rows.has(r)) emptyRows.push(r);
+                    }
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        if (!cols.has(c)) emptyCols.push(c);
+                    }
+                    
+                    // 找到空矩形的角
+                    for (const emptyRow of emptyRows) {
+                        for (const emptyCol of emptyCols) {
+                            const cornerCell = { row: emptyRow, col: emptyCol };
+                            
+                            // 检查该角所在的行和列是否有该数字的其他候选
+                            const rowCandidates = [];
+                            const colCandidates = [];
+                            
+                            for (let c = 0; c < size; c++) {
+                                if (c >= boxColStart && c < boxColStart + boxCols) continue;
+                                const index = emptyRow * size + c;
+                                if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                    const cellValue = currentBoard[index];
+                                    if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                        rowCandidates.push({ row: emptyRow, col: c });
+                                    }
+                                }
+                            }
+                            
+                            for (let r = 0; r < size; r++) {
+                                if (r >= boxRowStart && r < boxRowStart + boxRows) continue;
+                                const index = r * size + emptyCol;
+                                if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                    const cellValue = currentBoard[index];
+                                    if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                        colCandidates.push({ row: r, col: emptyCol });
+                                    }
+                                }
+                            }
+                            
+                            if (rowCandidates.length > 0 && colCandidates.length > 0) {
+                                const affectedCells = [];
+                                const intersectionCells = [];
+                                
+                                for (const rc of rowCandidates) {
+                                    for (const cc of colCandidates) {
+                                        if (rc.row === cc.row && rc.col === cc.col) {
+                                            intersectionCells.push(rc);
+                                        }
+                                    }
+                                }
+                                
+                                for (const cell of intersectionCells) {
+                                    const index = cell.row * size + cell.col;
+                                    if (originalPuzzle[index] === '0' && typeof currentBoard[index] !== 'number') {
+                                        const cellValue = currentBoard[index];
+                                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                            affectedCells.push(cell);
+                                        }
+                                    }
+                                }
+                                
+                                if (affectedCells.length > 0) {
+                                    return {
+                                        technique: 'empty_rectangle',
+                                        name: '空矩形技巧（Empty Rectangle）',
+                                        description: '某个数字在宫中形成空矩形结构，可以排除矩形角所在行列交点处的该数字。',
+                                        detail: `数字 ${num} 在第${boxRow + 1}个宫中形成空矩形，空角在第${emptyRow + 1}行第${emptyCol + 1}列。可以从该行和该列其他候选的交点中排除数字 ${num}。`,
+                                        location: cornerCell,
+                                        number: num,
+                                        highlightCells: [...candidatesInBox, cornerCell],
+                                        affectedCells: affectedCells
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找简单链技巧（Simple Chain）
+ */
+function findSimpleChain(size) {
+    // 收集所有候选格
+    const candidateCells = [];
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length >= 2) {
+                candidateCells.push({ row, col, nums: cellValue });
+            }
+        }
+    }
+    
+    // 尝试找简单的强链-弱链-强链结构
+    for (const startCell of candidateCells) {
+        for (const num1 of startCell.nums) {
+            // 找同行、同列、同宫中只有两个候选格包含该数字的情况（强链）
+            const strongLinks = [];
+            const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+            const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+            
+            // 检查行
+            let rowCount = 0;
+            let otherCell = null;
+            for (let col = 0; col < size; col++) {
+                if (col === startCell.col) continue;
+                const index = startCell.row * size + col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num1)) {
+                    rowCount++;
+                    otherCell = { row: startCell.row, col };
+                }
+            }
+            if (rowCount === 1 && otherCell) {
+                strongLinks.push({ cell: otherCell, type: 'row' });
+            }
+            
+            // 检查列
+            let colCount = 0;
+            otherCell = null;
+            for (let row = 0; row < size; row++) {
+                if (row === startCell.row) continue;
+                const index = row * size + startCell.col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num1)) {
+                    colCount++;
+                    otherCell = { row, col: startCell.col };
+                }
+            }
+            if (colCount === 1 && otherCell) {
+                strongLinks.push({ cell: otherCell, type: 'col' });
+            }
+            
+            // 检查宫
+            let boxCount = 0;
+            otherCell = null;
+            const boxRow = Math.floor(startCell.row / boxRows);
+            const boxCol = Math.floor(startCell.col / boxCols);
+            for (let r = boxRow * boxRows; r < boxRow * boxRows + boxRows; r++) {
+                for (let c = boxCol * boxCols; c < boxCol * boxCols + boxCols; c++) {
+                    if (r === startCell.row && c === startCell.col) continue;
+                    const index = r * size + c;
+                    if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                    const cellValue = currentBoard[index];
+                    if (Array.isArray(cellValue) && cellValue.includes(num1)) {
+                        boxCount++;
+                        otherCell = { row: r, col: c };
+                    }
+                }
+            }
+            if (boxCount === 1 && otherCell) {
+                strongLinks.push({ cell: otherCell, type: 'box' });
+            }
+            
+            // 对于每个强链的另一端，查找是否可以形成链
+            for (const link of strongLinks) {
+                const linkIndex = link.cell.row * size + link.cell.col;
+                const linkCellValue = currentBoard[linkIndex];
+                if (!Array.isArray(linkCellValue)) continue;
+                
+                // 找第二个数字（不同于num1）
+                for (const num2 of linkCellValue) {
+                    if (num2 === num1) continue;
+                    
+                    // 从link.cell出发，查找num2的强链
+                    const secondLinks = [];
+                    
+                    // 检查行
+                    let count = 0;
+                    let targetCell = null;
+                    for (let col = 0; col < size; col++) {
+                        if (col === link.cell.col) continue;
+                        const index = link.cell.row * size + col;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num2)) {
+                            count++;
+                            targetCell = { row: link.cell.row, col };
+                        }
+                    }
+                    if (count === 1 && targetCell) {
+                        secondLinks.push({ cell: targetCell, type: 'row' });
+                    }
+                    
+                    // 检查列
+                    count = 0;
+                    targetCell = null;
+                    for (let row = 0; row < size; row++) {
+                        if (row === link.cell.row) continue;
+                        const index = row * size + link.cell.col;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num2)) {
+                            count++;
+                            targetCell = { row, col: link.cell.col };
+                        }
+                    }
+                    if (count === 1 && targetCell) {
+                        secondLinks.push({ cell: targetCell, type: 'col' });
+                    }
+                    
+                    // 检查宫
+                    count = 0;
+                    targetCell = null;
+                    const tBoxRow = Math.floor(link.cell.row / boxRows);
+                    const tBoxCol = Math.floor(link.cell.col / boxCols);
+                    for (let r = tBoxRow * boxRows; r < tBoxRow * boxRows + boxRows; r++) {
+                        for (let c = tBoxCol * boxCols; c < tBoxCol * boxCols + boxCols; c++) {
+                            if (r === link.cell.row && c === link.cell.col) continue;
+                            const index = r * size + c;
+                            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+                            const cellValue = currentBoard[index];
+                            if (Array.isArray(cellValue) && cellValue.includes(num2)) {
+                                count++;
+                                targetCell = { row: r, col: c };
+                            }
+                        }
+                    }
+                    if (count === 1 && targetCell) {
+                        secondLinks.push({ cell: targetCell, type: 'box' });
+                    }
+                    
+                    // 检查是否找到有效链
+                    for (const secondLink of secondLinks) {
+                        // 检查startCell和secondLink.cell是否可以看到对方（同行、同列或同宫）
+                        const sameRow = startCell.row === secondLink.cell.row;
+                        const sameCol = startCell.col === secondLink.cell.col;
+                        const sameBox = 
+                            Math.floor(startCell.row / boxRows) === Math.floor(secondLink.cell.row / boxRows) &&
+                            Math.floor(startCell.col / boxCols) === Math.floor(secondLink.cell.col / boxCols);
+                        
+                        if (sameRow || sameCol || sameBox) {
+                            // 检查secondLink.cell是否包含num1
+                            const targetIndex = secondLink.cell.row * size + secondLink.cell.col;
+                            const targetValue = currentBoard[targetIndex];
+                            if (Array.isArray(targetValue) && targetValue.includes(num1)) {
+                                return {
+                                    technique: 'simple_chain',
+                                    name: '简单链技巧（Chain）',
+                                    description: '通过强链-弱链-强链的交替，可以排除某些候选数。',
+                                    detail: `找到链结构：(${startCell.row + 1},${startCell.col + 1})-${num1}-(${link.cell.row + 1},${link.cell.col + 1})-${num2}-(${secondLink.cell.row + 1},${secondLink.cell.col + 1})。根据链的逻辑，可以从(${secondLink.cell.row + 1},${secondLink.cell.col + 1})中排除数字 ${num1}。`,
+                                    location: startCell,
+                                    number: num1,
+                                    highlightCells: [
+                                        { row: startCell.row, col: startCell.col },
+                                        { row: link.cell.row, col: link.cell.col },
+                                        { row: secondLink.cell.row, col: secondLink.cell.col }
+                                    ],
+                                    affectedCells: [{ row: secondLink.cell.row, col: secondLink.cell.col }]
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * 查找ALS技巧（Almost Locked Set）
+ */
+function findALS(size) {
+    // 收集所有ALS（Almost Locked Set）- 大小为n且有n+1个候选数的单元格集合
+    const alsList = [];
+    
+    // 在每行中找ALS
+    for (let row = 0; row < size; row++) {
+        const cells = [];
+        for (let col = 0; col < size; col++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue)) {
+                cells.push({ row, col, nums: cellValue });
+            }
+        }
+        
+        // 找大小为2-4的ALS
+        for (let i = 0; i < cells.length; i++) {
+            for (let j = i + 1; j < cells.length; j++) {
+                const als = [cells[i], cells[j]];
+                const allNums = new Set([...cells[i].nums, ...cells[j].nums]);
+                if (allNums.size === als.length + 1) {
+                    alsList.push({ cells: als.map(c => ({ row: c.row, col: c.col })), nums: Array.from(allNums) });
+                }
+                
+                for (let k = j + 1; k < cells.length; k++) {
+                    const als3 = [...als, cells[k]];
+                    const allNums3 = new Set([...allNums, ...cells[k].nums]);
+                    if (allNums3.size === als3.length + 1) {
+                        alsList.push({ cells: als3.map(c => ({ row: c.row, col: c.col })), nums: Array.from(allNums3) });
+                    }
+                }
+            }
+        }
+    }
+    
+    // 在每列中找ALS
+    for (let col = 0; col < size; col++) {
+        const cells = [];
+        for (let row = 0; row < size; row++) {
+            const index = row * size + col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') continue;
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue)) {
+                cells.push({ row, col, nums: cellValue });
+            }
+        }
+        
+        for (let i = 0; i < cells.length; i++) {
+            for (let j = i + 1; j < cells.length; j++) {
+                const als = [cells[i], cells[j]];
+                const allNums = new Set([...cells[i].nums, ...cells[j].nums]);
+                if (allNums.size === als.length + 1) {
+                    alsList.push({ cells: als.map(c => ({ row: c.row, col: c.col })), nums: Array.from(allNums) });
+                }
+            }
+        }
+    }
+    
+    // 检查ALS之间的关系
+    for (let i = 0; i < alsList.length; i++) {
+        for (let j = i + 1; j < alsList.length; j++) {
+            const als1 = alsList[i];
+            const als2 = alsList[j];
+            
+            // 找两个ALS共享的数字
+            const commonNums = als1.nums.filter(n => als2.nums.includes(n));
+            
+            if (commonNums.length > 0) {
+                // 检查是否有数字只出现在一个ALS中
+                const diffNums = als1.nums.filter(n => !als2.nums.includes(n));
+                
+                if (diffNums.length > 0) {
+                    // 检查这两个ALS是否可以看到对方的某些单元格
+                    const affectedCells = [];
+                    
+                    for (const num of diffNums) {
+                        for (const cell of als2.cells) {
+                            const index = cell.row * size + cell.col;
+                            const cellValue = currentBoard[index];
+                            if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                                // 检查该单元格是否与als1中的任何单元格在同一行、列或宫
+                                let canSee = false;
+                                for (const als1Cell of als1.cells) {
+                                    if (als1Cell.row === cell.row || 
+                                        als1Cell.col === cell.col ||
+                                        (Math.floor(als1Cell.row / 3) === Math.floor(cell.row / 3) &&
+                                         Math.floor(als1Cell.col / 3) === Math.floor(cell.col / 3))) {
+                                        canSee = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if (!canSee) {
+                                    affectedCells.push(cell);
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (affectedCells.length > 0) {
+                        return {
+                            technique: 'als',
+                            name: 'ALS技巧（Almost Locked Set）',
+                            description: '两个Almost Locked Set之间存在强关系，可以排除某些候选数。',
+                            detail: `找到两个ALS：ALS1包含数字 ${als1.nums.join('、')}，ALS2包含数字 ${als2.nums.join('、')}。它们共享数字 ${commonNums.join('、')}，可以从ALS2中排除ALS1独有的数字 ${diffNums.join('、')}。`,
+                            location: als1.cells[0],
+                            number: diffNums,
+                            highlightCells: [...als1.cells, ...als2.cells],
+                            affectedCells: affectedCells
+                        };
+                    }
+                }
+            }
+        }
+    }
+    
+    return null;
+}
 /**
  * 查找宫排除法（Box Line Reduction）
  */
@@ -6417,6 +7197,557 @@ function showRecords() {
     location.href = "records.html";
 }
 
+// 当前自定义题目棋盘大小（4、6、9）
+let customBoardSize = 9;
+
+/**
+ * 显示自定义题目录入界面
+ */
+function showCustomPuzzleInput() {
+    closeGameTypeModal();
+    document.getElementById('CustomPuzzleModal').style.display = 'flex';
+    // 默认选择9×9
+    customBoardSize = 9;
+    updateBoardSizeUI();
+    renderCustomPuzzleBoard();
+    document.getElementById('customPuzzleStatus').textContent = '';
+}
+
+/**
+ * 设置自定义题目棋盘大小
+ */
+function setCustomBoardSize(size) {
+    customBoardSize = size;
+    updateBoardSizeUI();
+    renderCustomPuzzleBoard();
+}
+
+/**
+ * 更新棋盘大小选择UI
+ */
+function updateBoardSizeUI() {
+    // 更新按钮状态
+    document.querySelectorAll('.small-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`size${customBoardSize}Btn`).classList.add('active');
+    
+    // 更新提示文字
+    document.getElementById('boardSizeText').textContent = `${customBoardSize}×${customBoardSize}`;
+    
+    // 更新数字键盘显示
+    const num5Btn = document.getElementById('num5Btn');
+    const num6Btn = document.getElementById('num6Btn');
+    const num7Btn = document.getElementById('num7Btn');
+    const num8Btn = document.getElementById('num8Btn');
+    const num9Btn = document.getElementById('num9Btn');
+    
+    if (customBoardSize === 4) {
+        num5Btn.style.display = 'none';
+        num6Btn.style.display = 'none';
+        num7Btn.style.display = 'none';
+        num8Btn.style.display = 'none';
+        num9Btn.style.display = 'none';
+    } else if (customBoardSize === 6) {
+        num5Btn.style.display = 'block';
+        num6Btn.style.display = 'block';
+        num7Btn.style.display = 'none';
+        num8Btn.style.display = 'none';
+        num9Btn.style.display = 'none';
+    } else {
+        num5Btn.style.display = 'block';
+        num6Btn.style.display = 'block';
+        num7Btn.style.display = 'block';
+        num8Btn.style.display = 'block';
+        num9Btn.style.display = 'block';
+    }
+}
+
+/**
+ * 关闭自定义题目录入弹窗
+ */
+function closeCustomPuzzleModal() {
+    document.getElementById('CustomPuzzleModal').style.display = 'none';
+    // 移除键盘事件监听
+    document.removeEventListener('keydown', handleCustomPuzzleKeydown);
+}
+
+/**
+ * 渲染自定义题目录入棋盘
+ */
+function renderCustomPuzzleBoard() {
+    const board = document.getElementById('customPuzzleBoard');
+    board.innerHTML = '';
+    
+    // 动态设置grid列数
+    board.style.gridTemplateColumns = `repeat(${customBoardSize}, 1fr)`;
+    
+    // 根据棋盘大小设置宫格大小
+    // 4×4: 2×2宫格
+    // 6×6: 3×2宫格（每行3格，每列2格）
+    // 9×9: 3×3宫格
+    let boxCols, boxRows;
+    if (customBoardSize === 4) {
+        boxCols = 2;
+        boxRows = 2;
+    } else if (customBoardSize === 6) {
+        boxCols = 3;
+        boxRows = 2;
+    } else {
+        boxCols = 3;
+        boxRows = 3;
+    }
+    
+    for (let row = 0; row < customBoardSize; row++) {
+        for (let col = 0; col < customBoardSize; col++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+            
+            // 添加宫格边框样式
+            // 右边框：当前列是宫格的最后一列且不是整个棋盘的最后一列
+            if ((col + 1) % boxCols === 0 && col !== customBoardSize - 1) {
+                cell.classList.add('border-right-bold');
+            }
+            // 下边框：当前行是宫格的最后一行且不是整个棋盘的最后一行
+            if ((row + 1) % boxRows === 0 && row !== customBoardSize - 1) {
+                cell.classList.add('border-bottom-bold');
+            }
+            
+            // 点击单元格时选中它
+            cell.addEventListener('click', () => {
+                // 清除之前选中的单元格
+                const selectedCells = board.querySelectorAll('.cell.selected');
+                selectedCells.forEach(c => c.classList.remove('selected'));
+                
+                // 选中当前单元格
+                cell.classList.add('selected');
+            });
+            
+            board.appendChild(cell);
+        }
+    }
+    
+    // 添加键盘事件监听
+    document.addEventListener('keydown', handleCustomPuzzleKeydown);
+}
+
+/**
+ * 处理自定义题目录入时的键盘事件
+ */
+function handleCustomPuzzleKeydown(e) {
+    const key = e.key;
+    
+    // 数字键 1-9（根据棋盘大小限制）
+    const maxNum = customBoardSize;
+    if (key >= '1' && key <= String(maxNum)) {
+        inputCustomNumber(parseInt(key));
+        e.preventDefault();
+    }
+    // 删除键
+    else if (key === 'Backspace' || key === 'Delete' || key === '0') {
+        inputCustomNumber(0);
+        e.preventDefault();
+    }
+    // 方向键移动选中位置
+    else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        moveSelectedCell(e.key);
+        e.preventDefault();
+    }
+}
+
+/**
+ * 移动选中的单元格
+ */
+function moveSelectedCell(direction) {
+    const board = document.getElementById('customPuzzleBoard');
+    const selectedCell = board.querySelector('.cell.selected');
+    
+    if (!selectedCell) return;
+    
+    const row = parseInt(selectedCell.dataset.row);
+    const col = parseInt(selectedCell.dataset.col);
+    
+    let newRow = row;
+    let newCol = col;
+    const maxIndex = customBoardSize - 1;
+    
+    switch (direction) {
+        case 'ArrowUp':
+            newRow = Math.max(0, row - 1);
+            break;
+        case 'ArrowDown':
+            newRow = Math.min(maxIndex, row + 1);
+            break;
+        case 'ArrowLeft':
+            newCol = Math.max(0, col - 1);
+            break;
+        case 'ArrowRight':
+            newCol = Math.min(maxIndex, col + 1);
+            break;
+    }
+    
+    // 清除当前选中
+    selectedCell.classList.remove('selected');
+    
+    // 选中新位置
+    const newCell = board.querySelector(`.cell[data-row="${newRow}"][data-col="${newCol}"]`);
+    if (newCell) {
+        newCell.classList.add('selected');
+    }
+}
+
+/**
+ * 从数字键盘输入数字到自定义题目
+ */
+function inputCustomNumber(num) {
+    const board = document.getElementById('customPuzzleBoard');
+    const selectedCell = board.querySelector('.cell.selected');
+    
+    if (!selectedCell) {
+        // 如果没有选中的单元格，默认选中第一个空单元格
+        const emptyCell = board.querySelector('.cell:not(.has-value)');
+        if (emptyCell) {
+            emptyCell.classList.add('selected');
+            selectedCell = emptyCell;
+        } else {
+            return;
+        }
+    }
+    
+    if (num === 0) {
+        // 清除数字
+        selectedCell.innerHTML = '';
+        selectedCell.classList.remove('has-value');
+    } else {
+        // 填入数字
+        selectedCell.innerHTML = num;
+        selectedCell.classList.add('has-value');
+        // 不自动跳转，保持当前选中状态
+    }
+}
+
+/**
+ * 清空自定义题目
+ */
+function clearCustomPuzzle() {
+    const board = document.getElementById('customPuzzleBoard');
+    const cells = board.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('has-value');
+    });
+    document.getElementById('customPuzzleStatus').textContent = '';
+}
+
+/**
+ * 确认自定义题目
+ */
+function confirmCustomPuzzle() {
+    const board = document.getElementById('customPuzzleBoard');
+    const cells = board.querySelectorAll('.cell');
+    const puzzle = [];
+    
+    // 根据棋盘大小收集题目
+    const size = customBoardSize;
+    for (let row = 0; row < size; row++) {
+        puzzle[row] = [];
+        for (let col = 0; col < size; col++) {
+            const cell = cells[row * size + col];
+            const value = cell.classList.contains('has-value') ? parseInt(cell.textContent) : 0;
+            puzzle[row][col] = value;
+        }
+    }
+    
+    // 检查是否有足够的提示数字
+    let hintCount = 0;
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            if (puzzle[row][col] !== 0) hintCount++;
+        }
+    }
+    
+    // 根据棋盘大小设置最小提示数要求
+    const minHints = size === 4 ? 4 : (size === 6 ? 8 : 17);
+    
+    if (hintCount < minHints) {
+        document.getElementById('customPuzzleStatus').textContent = `提示：题目至少需要${minHints}个提示数字`;
+        document.getElementById('customPuzzleStatus').style.color = '#e74c3c';
+        return;
+    }
+    
+    // 显示正在验证
+    document.getElementById('customPuzzleStatus').textContent = '正在验证题目...';
+    document.getElementById('customPuzzleStatus').style.color = '#666';
+    
+    // 使用setTimeout让UI有时间更新
+    setTimeout(() => {
+        // 验证题目是否有解（传递副本，避免solveSudoku修改原始数组）
+        const solution = solveSudoku(puzzle.map(row => [...row]), true);
+        
+        if (!solution) {
+            document.getElementById('customPuzzleStatus').textContent = '错误：该题目无解，请检查输入是否正确';
+            document.getElementById('customPuzzleStatus').style.color = '#e74c3c';
+            return;
+        }
+        
+        // 验证是否有唯一解（传递副本，避免修改原始数组）
+        const solutionCount = countSolutions(puzzle.map(row => [...row]));
+        
+        // 评估难度
+        const difficulty = evaluateDifficulty(puzzle);
+        const difficultyName = getDifficultyName(difficulty);
+        
+        if (solutionCount === 0) {
+            document.getElementById('customPuzzleStatus').textContent = '错误：该题目无解，请检查输入是否正确';
+            document.getElementById('customPuzzleStatus').style.color = '#e74c3c';
+            return;
+        } else if (solutionCount > 1) {
+            document.getElementById('customPuzzleStatus').textContent = `提示：该题目有多解（${solutionCount}种解法），评估难度：${difficultyName}`;
+            document.getElementById('customPuzzleStatus').style.color = '#f39c12';
+            // 仍然允许用户开始答题
+        } else {
+            document.getElementById('customPuzzleStatus').textContent = `✓ 验证通过！该题目有唯一解，评估难度：${difficultyName}`;
+            document.getElementById('customPuzzleStatus').style.color = '#27ae60';
+        }
+        
+        // 延迟后开始游戏
+        setTimeout(() => {
+            // 启动自定义题目游戏
+            startCustomPuzzleGame(puzzle, solution, size, difficulty);
+        }, 1500);
+    }, 100);
+}
+
+/**
+ * 评估自定义题目的难度
+ * @param {number[][]} puzzle 题目二维数组
+ * @returns {string} 难度等级（EASY/MEDIUM/HARD）
+ */
+function evaluateDifficulty(puzzle) {
+    const size = puzzle.length;
+    let totalCells = size * size;
+    let filledCells = 0;
+    
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            if (puzzle[row][col] !== 0) {
+                filledCells++;
+            }
+        }
+    }
+    
+    const emptyCells = totalCells - filledCells;
+    const filledPercentage = (filledCells / totalCells) * 100;
+    
+    // 根据棋盘大小和空白格数量评估难度
+    if (size === 4) {
+        // 4×4：总格子16个
+        if (emptyCells <= 6) return 'EASY';      // 简单：10+个提示
+        if (emptyCells <= 10) return 'MEDIUM';    // 中等：6-9个提示
+        return 'HARD';                            // 困难：5个以下提示
+    } else if (size === 6) {
+        // 6×6：总格子36个
+        if (emptyCells <= 14) return 'EASY';     // 简单：22+个提示
+        if (emptyCells <= 22) return 'MEDIUM';   // 中等：14-21个提示
+        return 'HARD';                            // 困难：13个以下提示
+    } else {
+        // 9×9：总格子81个
+        if (emptyCells <= 40) return 'EASY';     // 简单：41+个提示
+        if (emptyCells <= 50) return 'MEDIUM';   // 中等：31-40个提示
+        return 'HARD';                            // 困难：30个以下提示
+    }
+}
+
+/**
+ * 获取难度中文名称
+ * @param {string} difficulty 难度等级
+ * @returns {string} 中文名称
+ */
+function getDifficultyName(difficulty) {
+    const names = {
+        'EASY': '简单',
+        'MEDIUM': '中等',
+        'HARD': '高级'
+    };
+    return names[difficulty] || difficulty;
+}
+
+/**
+ * 暴力破解数独（返回第一个解）
+ * @param {number[][]} puzzle 题目二维数组
+ * @param {boolean} findOne 是否只找一个解
+ * @returns {number[][]|null} 解或null
+ */
+function solveSudoku(puzzle, findOne = true) {
+    const board = puzzle.map(row => [...row]);
+    const size = board.length;
+    
+    // 根据棋盘大小确定宫格大小
+    let boxCols, boxRows;
+    if (size === 4) {
+        boxCols = 2;
+        boxRows = 2;
+    } else if (size === 6) {
+        boxCols = 3;
+        boxRows = 2;
+    } else {
+        boxCols = 3;
+        boxRows = 3;
+    }
+    
+    function isValid(board, row, col, num) {
+        // 检查行
+        for (let c = 0; c < size; c++) {
+            if (board[row][c] === num) return false;
+        }
+        
+        // 检查列
+        for (let r = 0; r < size; r++) {
+            if (board[r][col] === num) return false;
+        }
+        
+        // 检查宫格
+        const boxRow = Math.floor(row / boxRows) * boxRows;
+        const boxCol = Math.floor(col / boxCols) * boxCols;
+        for (let r = boxRow; r < boxRow + boxRows; r++) {
+            for (let c = boxCol; c < boxCol + boxCols; c++) {
+                if (board[r][c] === num) return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    function solve(board) {
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                if (board[row][col] === 0) {
+                    for (let num = 1; num <= size; num++) {
+                        if (isValid(board, row, col, num)) {
+                            board[row][col] = num;
+                            if (solve(board)) {
+                                if (findOne) return true;
+                            }
+                            board[row][col] = 0;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    if (solve(board)) {
+        return board;
+    }
+    return null;
+}
+
+/**
+ * 统计数独解的数量（最多统计到2个解）
+ * @param {number[][]} puzzle 题目二维数组
+ * @returns {number} 解的数量
+ */
+function countSolutions(puzzle) {
+    const board = puzzle.map(row => [...row]);
+    const size = board.length;
+    let solutionCount = 0;
+    
+    // 根据棋盘大小确定宫格大小
+    let boxCols, boxRows;
+    if (size === 4) {
+        boxCols = 2;
+        boxRows = 2;
+    } else if (size === 6) {
+        boxCols = 3;
+        boxRows = 2;
+    } else {
+        boxCols = 3;
+        boxRows = 3;
+    }
+    
+    function isValid(board, row, col, num) {
+        // 检查行
+        for (let c = 0; c < size; c++) {
+            if (board[row][c] === num) return false;
+        }
+        
+        // 检查列
+        for (let r = 0; r < size; r++) {
+            if (board[r][col] === num) return false;
+        }
+        
+        // 检查宫格
+        const boxRow = Math.floor(row / boxRows) * boxRows;
+        const boxCol = Math.floor(col / boxCols) * boxCols;
+        for (let r = boxRow; r < boxRow + boxRows; r++) {
+            for (let c = boxCol; c < boxCol + boxCols; c++) {
+                if (board[r][c] === num) return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    function solve(board) {
+        if (solutionCount >= 2) return; // 找到2个解就停止
+        
+        for (let row = 0; row < size; row++) {
+            for (let col = 0; col < size; col++) {
+                if (board[row][col] === 0) {
+                    for (let num = 1; num <= size; num++) {
+                        if (isValid(board, row, col, num)) {
+                            board[row][col] = num;
+                            solve(board);
+                            board[row][col] = 0;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
+        solutionCount++;
+    }
+    
+    solve(board);
+    return solutionCount;
+}
+
+/**
+ * 启动自定义题目游戏
+ * @param {number[][]} puzzle 题目二维数组
+ * @param {number[][]} solution 解的二维数组
+ * @param {number} size 棋盘大小
+ * @param {string} difficulty 评估的难度等级
+ */
+function startCustomPuzzleGame(puzzle, solution, size = 9, difficulty = 'MEDIUM') {
+    // 放弃之前未完成的游戏
+    const record = getLatestInProgressGame();
+    if (record) {
+        record.isAbandoned = true;
+        record.isCompleted = true;
+        Storage.saveRecord(record);
+    }
+    
+    // 将二维数组转换为字符串
+    const puzzleStr = puzzle.map(row => row.join('')).join('');
+    const solutionStr = solution.map(row => row.join('')).join('');
+    
+    // 保存到localStorage
+    localStorage.setItem('customPuzzle', puzzleStr);
+    localStorage.setItem('customSolution', solutionStr);
+    localStorage.setItem('customBoardSize', size.toString());
+    localStorage.setItem('customDifficulty', difficulty);
+    localStorage.setItem('currentGameType', 'CUSTOM');
+    localStorage.setItem('currentDifficultyType', difficulty);
+    localStorage.removeItem('continuePuzzleId');
+    
+    // 关闭弹窗并跳转到游戏页面
+    closeCustomPuzzleModal();
+    location.href = 'game.html';
+}
+
 /**
  * 开始游戏（跳转到 game.html）
  */
@@ -6500,6 +7831,10 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
             boardSize = 9;
             emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 45;
             gameTypeStr = 'SANDWICH';
+        } else if (gameType === 'CUSTOM') {
+            boardSize = 9;
+            emptyCount = 0; // 自定义题目不需要空位数
+            gameTypeStr = 'CUSTOM';
         } else if (gameType === 'KILLER_4x4') {
             boardSize = 4;
             emptyCount = getEmptyCountByGameType(gameType, difficultyType) || 16;
@@ -6610,6 +7945,41 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
             puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, emptyCount);
             const sandwichClues = sudokuGenerator.sandwichClues;
             console.log(`✅ 三明治数独题目生成完成，耗时: ${Date.now() - startTime}ms`);
+        } else if (gameTypeStr === 'CUSTOM') {
+            // 自定义题目：从localStorage加载
+            const customBoardSize = parseInt(localStorage.getItem('customBoardSize')) || 9;
+            boardSize = customBoardSize;
+            const customPuzzle = localStorage.getItem('customPuzzle');
+            const customSolution = localStorage.getItem('customSolution');
+            if (customPuzzle && customSolution) {
+                puzzleStr = customPuzzle;
+                solutionStr = customSolution;
+                // 清空localStorage中的自定义题目
+                localStorage.removeItem('customPuzzle');
+                localStorage.removeItem('customSolution');
+                localStorage.removeItem('customBoardSize');
+                // 解析为二维数组（用于创建puzzleBoard）
+                puzzleBoard = [];
+                for (let i = 0; i < boardSize; i++) {
+                    puzzleBoard[i] = [];
+                    for (let j = 0; j < boardSize; j++) {
+                        puzzleBoard[i][j] = parseInt(puzzleStr[i * boardSize + j]);
+                    }
+                }
+                // 解析完整解
+                fullBoard = [];
+                for (let i = 0; i < boardSize; i++) {
+                    fullBoard[i] = [];
+                    for (let j = 0; j < boardSize; j++) {
+                        fullBoard[i][j] = parseInt(solutionStr[i * boardSize + j]);
+                    }
+                }
+            } else {
+                // 如果没有自定义题目，回退到标准数独
+                boardSize = 9;
+                fullBoard = sudokuGenerator.generateFullBoard();
+                puzzleBoard = sudokuGenerator.createPuzzle(fullBoard, 35);
+            }
         } else {
             // 标准数独
             fullBoard = sudokuGenerator.generateFullBoard();
@@ -6750,6 +8120,9 @@ function getEmptyCountByGameType(gameType, difficultyType = "EASY") {
             EASY: 32,
             MEDIUM: 40,
             HARD: 56
+        },
+        CUSTOM: {
+            CUSTOM: 0
         }
     };
     return emptyCounts[gameType][difficultyType] || 10;
@@ -6780,7 +8153,8 @@ function getGameTypeName(gameType) {
         STAR: '星号数独',
         BLACK_WHITE_DOT: '黑白点数独',
         SKYSCRAPER: '摩天楼数独',
-        UNTOUCHABLE: '无缘数独'
+        UNTOUCHABLE: '无缘数独',
+        CUSTOM: '自定义题目'
     };
     return names[gameType] || gameType;
 }
@@ -6794,7 +8168,8 @@ function getDifficultyTypeName(difficultyType) {
     const names = {
         EASY: '简单',
         MEDIUM: '中等',
-        HARD: '高级'
+        HARD: '高级',
+        CUSTOM: '自定义'
     };
     return names[difficultyType] || "未知";
 }
@@ -6878,6 +8253,7 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
             currentBoard: puzzleStr,
             elapsedTime: 0,
             gameTypeStr: currentPuzzle.gameTypeStr || 'STANDARD',
+            boardSize: currentPuzzle.size || 9,
             oddEvenMarks: currentPuzzle.oddEvenMarks || null,
             cages: currentPuzzle.cages || null,
             irregularBoxes: currentPuzzle.irregularBoxes || null,
@@ -6888,6 +8264,7 @@ function saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr) {
     } else {
         record.originalPuzzle = puzzleStr;
         record.solution = solutionStr;
+        record.boardSize = currentPuzzle.size || 9;
         record.irregularBoxes = currentPuzzle.irregularBoxes || null;
         record.sandwichClues = currentPuzzle.sandwichClues || null;
         record.blackWhiteDotHints = currentPuzzle.blackWhiteDotHints || null;
@@ -7665,6 +9042,41 @@ function updateAllCandidateCells() {
             updateCellDisplay(idx);
         }
     }
+    
+    // 自动检测游戏是否完成
+    autoCheckCompletion();
+}
+
+/**
+ * 自动检测游戏是否完成
+ */
+function autoCheckCompletion() {
+    const size = currentPuzzle.size || 9;
+    const totalCells = size * size;
+    
+    // 检查是否所有格子都填了确定值
+    let allFilled = true;
+    for (let idx = 0; idx < totalCells; idx++) {
+        const value = currentBoard[idx];
+        if (Array.isArray(value) || (typeof value === 'number' && value === 0)) {
+            allFilled = false;
+            break;
+        }
+    }
+    
+    // 如果所有格子都填满了，自动检查答案
+    if (allFilled) {
+        // 检查是否有冲突
+        const hasConflict = document.querySelector('.cell.conflict');
+        if (!hasConflict) {
+            // 验证答案
+            const userSolution = currentBoard.join('');
+            if (userSolution === currentPuzzle.solution) {
+                // 答案正确，触发完成逻辑
+                checkSolution();
+            }
+        }
+    }
 }
 
 /**
@@ -8221,6 +9633,14 @@ function checkSolution() {
             playWinCelebration();
         }
         
+        // 自定义题目模式下隐藏"再来一题"按钮
+        const winButtons = document.querySelectorAll('.win-buttons .modal-btn');
+        for (const btn of winButtons) {
+            if (btn.textContent.includes('再来一题') && currentGameType === 'CUSTOM') {
+                btn.style.display = 'none';
+            }
+        }
+        
         // 显示胜利弹窗，隐藏数字输入和游戏控制
         document.getElementById('winModal').style.display = 'block';
         document.getElementById('numberKeyPad').style.display = 'none';
@@ -8289,6 +9709,12 @@ function resetGameControls() {
     
     // 检查道具权限，显示相应的按钮
     updateGameControlButtons();
+    
+    // 自定义题目模式下隐藏"新题目"按钮
+    const newPuzzleBtn = document.querySelector('.control-btn[onclick="newPuzzle()"]');
+    if (newPuzzleBtn && currentGameType === 'CUSTOM') {
+        newPuzzleBtn.style.display = 'none';
+    }
 }
 
 /**
@@ -9095,12 +10521,24 @@ function continuePuzzle(puzzleId, gameType) {
     * 恢复游戏状态
     */
 function restoreGameState(record) {
-    // 根据难度确定棋盘尺寸
+    // 根据难度确定棋盘尺寸（优先从record中读取）
     let boardSize = 9;
-    if (record.gameType === 'MINI_4x4' || record.gameType === 'KILLER_4x4') {
+    
+    // 优先使用record中保存的棋盘大小
+    if (record.boardSize) {
+        boardSize = record.boardSize;
+    } else if (record.gameType === 'MINI_4x4' || record.gameType === 'KILLER_4x4') {
         boardSize = 4;
     } else if (record.gameType === 'MINI_6x6' || record.gameType === 'KILLER_6x6') {
         boardSize = 6;
+    } else if (record.gameType === 'CUSTOM') {
+        // 自定义题目：尝试根据题目长度判断棋盘大小
+        const puzzle = record.originalPuzzle || record.currentBoard;
+        if (puzzle) {
+            const puzzleLen = puzzle.replace(/[^0-9]/g, '').length;
+            if (puzzleLen === 16) boardSize = 4;
+            else if (puzzleLen === 36) boardSize = 6;
+        }
     }
 
     // 根据难度确定游戏类型
