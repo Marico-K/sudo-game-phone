@@ -88,29 +88,9 @@ function fillAllCandidates() {
         return;
     }
     
-    const size = currentPuzzle.size || 9;
-    // 遍历所有格子
-    for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
-            const index = row * size + col;
-
-            // 如果是固定数字，跳过
-            if (originalPuzzle[index] !== '0') continue;
-
-            // 获取当前格子的确定值（如果有）
-            const currentValue = currentBoard[index];
-
-            // 如果已经有确定值，跳过
-            if (typeof currentValue === 'number' && currentValue !== 0) continue;
-
-            // 计算该格子的候选数字
-            const candidates = getCandidates(row, col);
-
-            // 设置候选数字
-            currentBoard[index] = candidates;
-        }
-    }
-
+    // 使用统一的候选数计算逻辑
+    recalculateCandidates();
+    
     // 更新显示
     renderBoard();
 
@@ -207,6 +187,30 @@ function getCandidates(row, col) {
             }
         }
     }
+    
+    // 获取对角线已使用的数字（对角线数独规则）
+    if (gameTypeStr === 'DIAGONAL') {
+        // 主对角线 (从左上到右下)
+        if (row === col) {
+            for (let i = 0; i < size; i++) {
+                if (i === col) continue;
+                const val = currentBoard[i * size + i];
+                if (typeof val === 'number' && val !== 0) {
+                    usedNumbers.add(val);
+                }
+            }
+        }
+        // 副对角线 (从右上到左下)
+        if (row + col === size - 1) {
+            for (let i = 0; i < size; i++) {
+                if (i === row) continue;
+                const val = currentBoard[i * size + (size - 1 - i)];
+                if (typeof val === 'number' && val !== 0) {
+                    usedNumbers.add(val);
+                }
+            }
+        }
+    }
 
     // 返回未使用的数字作为候选
     const candidates = [];
@@ -254,6 +258,36 @@ function getCols(row, col) {
 }
 
 /**
+ * 获取对角线上除当前格子外的所有格子索引（对角线数独规则）
+ * @param {number} row - 当前行号
+ * @param {number} col - 当前列号
+ * @returns {number[]} - 对角线上其他格子的索引数组
+ */
+function getDiagonals(row, col) {
+    const size = currentPuzzle.size || 9;
+    const excludeIndex = row * size + col;
+    const indices = [];
+
+    // 主对角线 (从左上到右下)
+    if (row === col) {
+        for (let i = 0; i < size; i++) {
+            const idx = i * size + i;
+            if (idx !== excludeIndex) indices.push(idx);
+        }
+    }
+
+    // 副对角线 (从右上到左下)
+    if (row + col === size - 1) {
+        for (let i = 0; i < size; i++) {
+            const idx = i * size + (size - 1 - i);
+            if (idx !== excludeIndex) indices.push(idx);
+        }
+    }
+
+    return indices;
+}
+
+/**
  * 获取同宫（3x3区域）中除当前格子外的所有格子索引
  * @param {number} row - 当前行号
  * @param {number} col - 当前列号
@@ -292,6 +326,40 @@ function getBoxes(row, col) {
         }
     }
     return indices;
+}
+
+/**
+ * 获取某个格子所在宫的所有格子（兼容标准数独和锯齿数独）
+ * @param {number} row - 行号
+ * @param {number} col - 列号
+ * @param {number} size - 棋盘大小
+ * @param {string} gameTypeStr - 游戏类型
+ * @param {Array} irregularBoxes - 不规则宫格数据（锯齿数独）
+ * @returns {Array} - 宫中所有格子 {row, col}
+ */
+function getBoxCells(row, col, size, gameTypeStr, irregularBoxes) {
+    if (gameTypeStr === 'IRREGULAR' && irregularBoxes) {
+        // 锯齿数独：遍历不规则宫格
+        for (const box of irregularBoxes) {
+            if (box.some(cell => cell[0] === row && cell[1] === col)) {
+                return box.map(cell => ({ row: cell[0], col: cell[1] }));
+            }
+        }
+    } else {
+        // 标准数独：计算规则宫格
+        const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
+        const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
+        const boxRowStart = Math.floor(row / boxRows) * boxRows;
+        const boxColStart = Math.floor(col / boxCols) * boxCols;
+        const cells = [];
+        for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+            for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                cells.push({ row: r, col: c });
+            }
+        }
+        return cells;
+    }
+    return [];
 }
 
 // ==================== 数独生成器类 ====================
@@ -4324,37 +4392,37 @@ function analyzeBoardForHint() {
     }
     
     // 3. 检查数对法（Naked Pair）
-    const nakedPairResult = findNakedPair(size);
+    const nakedPairResult = findNakedPair(size, gameTypeStr, irregularBoxes);
     if (nakedPairResult) {
         return nakedPairResult;
     }
     
     // 4. 检查隐藏数对法（Hidden Pair）
-    const hiddenPairResult = findHiddenPair(size);
+    const hiddenPairResult = findHiddenPair(size, gameTypeStr, irregularBoxes);
     if (hiddenPairResult) {
         return hiddenPairResult;
     }
     
     // 5. 检查三数法（Naked Triplet）
-    const tripletResult = findNakedTriplet(size);
+    const tripletResult = findNakedTriplet(size, gameTypeStr, irregularBoxes);
     if (tripletResult) {
         return tripletResult;
     }
     
     // 6. 检查隐藏三数法（Hidden Triplet）
-    const hiddenTripletResult = findHiddenTriplet(size);
+    const hiddenTripletResult = findHiddenTriplet(size, gameTypeStr, irregularBoxes);
     if (hiddenTripletResult) {
         return hiddenTripletResult;
     }
     
     // 7. 检查宫排除法（Box Line Reduction）
-    const boxLineResult = findBoxLineReduction(size);
+    const boxLineResult = findBoxLineReduction(size, gameTypeStr, irregularBoxes);
     if (boxLineResult) {
         return boxLineResult;
     }
     
     // 7. 检查区块排除法
-    const blockResult = findBlockExclusion(size);
+    const blockResult = findBlockExclusion(size, gameTypeStr, irregularBoxes);
     if (blockResult) {
         return blockResult;
     }
@@ -4372,13 +4440,13 @@ function analyzeBoardForHint() {
     }
     
     // 11. 检查Y-Wing技巧（XY-Wing）
-    const ywingResult = findYWing(size);
+    const ywingResult = findYWing(size, gameTypeStr, irregularBoxes);
     if (ywingResult) {
         return ywingResult;
     }
     
     // 12. 检查矩形排除法（Unique Rectangle）
-    const urResult = findUniqueRectangle(size);
+    const urResult = findUniqueRectangle(size, gameTypeStr, irregularBoxes);
     if (urResult) {
         return urResult;
     }
@@ -4577,6 +4645,86 @@ function findHiddenSingle(size, gameTypeStr, irregularBoxes) {
         }
     }
     
+    // 检查主对角线（对角线数独规则）
+    if (gameTypeStr === 'DIAGONAL') {
+        for (let num = 1; num <= size; num++) {
+            let possibleCells = [];
+            for (let i = 0; i < size; i++) {
+                const index = i * size + i;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                        possibleCells = [];
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    possibleCells.push({ row: i, col: i });
+                }
+            }
+            if (possibleCells.length === 1) {
+                const { row, col } = possibleCells[0];
+                // 受影响的是对角线上其他格子
+                const affectedCells = [];
+                for (let i = 0; i < size; i++) {
+                    if (i !== row) {
+                        affectedCells.push({ row: i, col: i });
+                    }
+                }
+                return {
+                    technique: 'hidden_single_diagonal1',
+                    name: '隐藏候选数法（主对角线）',
+                    description: '某个数字在主对角线中只有一个可能的填入位置。',
+                    detail: `数字 ${num} 在主对角线中只能填入第${row + 1}行第${col + 1}列的格子。`,
+                    location: { row, col },
+                    number: num,
+                    highlightCells: [{ row, col }],
+                    affectedCells: affectedCells
+                };
+            }
+        }
+        
+        // 检查副对角线
+        for (let num = 1; num <= size; num++) {
+            let possibleCells = [];
+            for (let i = 0; i < size; i++) {
+                const index = i * size + (size - 1 - i);
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    if ((originalPuzzle[index] === String(num) || currentBoard[index] === num)) {
+                        possibleCells = [];
+                        break;
+                    }
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                    possibleCells.push({ row: i, col: size - 1 - i });
+                }
+            }
+            if (possibleCells.length === 1) {
+                const { row, col } = possibleCells[0];
+                // 受影响的是对角线上其他格子
+                const affectedCells = [];
+                for (let i = 0; i < size; i++) {
+                    if (i !== row) {
+                        affectedCells.push({ row: i, col: size - 1 - i });
+                    }
+                }
+                return {
+                    technique: 'hidden_single_diagonal2',
+                    name: '隐藏候选数法（副对角线）',
+                    description: '某个数字在副对角线中只有一个可能的填入位置。',
+                    detail: `数字 ${num} 在副对角线中只能填入第${row + 1}行第${col + 1}列的格子。`,
+                    location: { row, col },
+                    number: num,
+                    highlightCells: [{ row, col }],
+                    affectedCells: affectedCells
+                };
+            }
+        }
+    }
+    
     return null;
 }
 
@@ -4584,7 +4732,7 @@ function findHiddenSingle(size, gameTypeStr, irregularBoxes) {
  * 查找数对（Naked Pair）
  * 两个格子共享相同的两个候选数
  */
-function findNakedPair(size) {
+function findNakedPair(size, gameTypeStr, irregularBoxes) {
     // 检查每行
     for (let row = 0; row < size; row++) {
         const pairs = {};
@@ -4681,6 +4829,65 @@ function findNakedPair(size) {
         }
     }
     
+    // 检查每个宫（兼容标准数独和锯齿数独）
+    const processedBoxes = new Set();
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            const boxKey = `${row}-${col}`;
+            if (processedBoxes.has(boxKey)) continue;
+            
+            const boxCells = getBoxCells(row, col, size, gameTypeStr, irregularBoxes);
+            // 标记宫中所有格子为已处理
+            boxCells.forEach(cell => processedBoxes.add(`${cell.row}-${cell.col}`));
+            
+            const pairs = {};
+            for (const cell of boxCells) {
+                const index = cell.row * size + cell.col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue) && cellValue.length === 2) {
+                    const key = cellValue.sort().join(',');
+                    if (!pairs[key]) {
+                        pairs[key] = [];
+                    }
+                    pairs[key].push({ row: cell.row, col: cell.col });
+                }
+            }
+            
+            for (const [key, cells] of Object.entries(pairs)) {
+                if (cells.length === 2) {
+                    const nums = key.split(',').map(Number);
+                    // 计算受影响的格子（该宫其他格子）
+                    const affectedCells = boxCells.filter(c => !(c.row === cells[0].row && c.col === cells[0].col) && !(c.row === cells[1].row && c.col === cells[1].col));
+                    
+                    // 检查是否有可以排除的候选数
+                    const hasExcludableCells = affectedCells.some(cell => {
+                        const idx = cell.row * size + cell.col;
+                        return Array.isArray(currentBoard[idx]) && nums.some(n => currentBoard[idx].includes(n));
+                    });
+                    
+                    // 如果没有可以排除的候选数，跳过这个数对
+                    if (!hasExcludableCells) {
+                        continue;
+                    }
+                    
+                    return {
+                        technique: 'naked_pair_box',
+                        name: '数对法（宫）',
+                        description: '同一个宫中的两个格子，它们的候选数完全相同（只有两个），这两个数字只能填入这两个格子。',
+                        detail: `在宫中，第${cells[0].row + 1}行第${cells[0].col + 1}列和第${cells[1].row + 1}行第${cells[1].col + 1}列的格子都只有候选数 ${nums.join('和')}，因此这两个数字必然填入这两个格子，可以从该宫其他格子中排除这两个候选数。`,
+                        location: cells[0],
+                        number: nums,
+                        highlightCells: cells,
+                        affectedCells: affectedCells
+                    };
+                }
+            }
+        }
+    }
+    
     return null;
 }
 
@@ -4688,7 +4895,7 @@ function findNakedPair(size) {
  * 查找隐藏数对法（Hidden Pair）
  * 两个数字只出现在两个格子中，可以排除这两个格子中的其他候选数
  */
-function findHiddenPair(size) {
+function findHiddenPair(size, gameTypeStr, irregularBoxes) {
     // 检查每行
     for (let row = 0; row < size; row++) {
         const numPositions = {};
@@ -4790,6 +4997,70 @@ function findHiddenPair(size) {
                             highlightCells: cells,
                             affectedCells: cells
                         };
+                    }
+                }
+            }
+        }
+    }
+    
+    // 检查每个宫（兼容标准数独和锯齿数独）
+    const processedBoxes = new Set();
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            const boxKey = `${row}-${col}`;
+            if (processedBoxes.has(boxKey)) continue;
+            
+            const boxCells = getBoxCells(row, col, size, gameTypeStr, irregularBoxes);
+            // 标记宫中所有格子为已处理
+            boxCells.forEach(cell => processedBoxes.add(`${cell.row}-${cell.col}`));
+            
+            const numPositions = {};
+            for (const cell of boxCells) {
+                const index = cell.row * size + cell.col;
+                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                    continue;
+                }
+                const cellValue = currentBoard[index];
+                if (Array.isArray(cellValue)) {
+                    cellValue.forEach(num => {
+                        if (!numPositions[num]) {
+                            numPositions[num] = [];
+                        }
+                        numPositions[num].push(JSON.stringify(cell));
+                    });
+                }
+            }
+            
+            const numsWithTwoPositions = Object.entries(numPositions).filter(([num, positions]) => positions.length === 2);
+            if (numsWithTwoPositions.length >= 2) {
+                for (let i = 0; i < numsWithTwoPositions.length; i++) {
+                    for (let j = i + 1; j < numsWithTwoPositions.length; j++) {
+                        const [num1, positions1] = numsWithTwoPositions[i];
+                        const [num2, positions2] = numsWithTwoPositions[j];
+                        if (positions1.sort().join(',') === positions2.sort().join(',')) {
+                            const cell1 = JSON.parse(positions1[0]);
+                            const cell2 = JSON.parse(positions1[1]);
+                            const cells = [cell1, cell2];
+                            const nums = [parseInt(num1), parseInt(num2)];
+                            
+                            const canExclude = cells.some(cell => {
+                                const idx = cell.row * size + cell.col;
+                                return Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 2;
+                            });
+                            
+                            if (!canExclude) continue;
+                            
+                            return {
+                                technique: 'hidden_pair_box',
+                                name: '隐藏数对法（宫）',
+                                description: '两个数字在某个宫中只出现在相同的两个格子中，可以排除这两个格子中的其他候选数。',
+                                detail: `数字 ${nums[0]} 和 ${nums[1]} 在宫中只出现在第${cell1.row + 1}行第${cell1.col + 1}列和第${cell2.row + 1}行第${cell2.col + 1}列，因此这两个格子只能填入这两个数字，可以排除其他候选数。`,
+                                location: cells[0],
+                                number: nums,
+                                highlightCells: cells,
+                                affectedCells: cells
+                            };
+                        }
                     }
                 }
             }
@@ -5236,7 +5507,7 @@ function findHiddenTriplet(size) {
  * 查找Y-Wing技巧（XY-Wing）
  * 一个双值格（XY）与两个单值格（XZ和YZ）形成翅膀结构，可以排除XZ和YZ共同影响区域的Z
  */
-function findYWing(size) {
+function findYWing(size, gameTypeStr, irregularBoxes) {
     // 收集所有双值格
     const biValueCells = [];
     for (let row = 0; row < size; row++) {
@@ -5295,25 +5566,20 @@ function findYWing(size) {
             }
         }
         
-        // 检查同宫
-        const boxRows = size === 4 ? 2 : (size === 6 ? 2 : 3);
-        const boxCols = size === 4 ? 2 : (size === 6 ? 3 : 3);
-        const boxRowStart = Math.floor(xyCell.row / boxRows) * boxRows;
-        const boxColStart = Math.floor(xyCell.col / boxCols) * boxCols;
-        for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
-            for (let c = boxColStart; c < boxColStart + boxCols; c++) {
-                if (r === xyCell.row && c === xyCell.col) continue;
-                const index = r * size + c;
-                if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
-                    continue;
-                }
-                const cellValue = currentBoard[index];
-                if (Array.isArray(cellValue) && cellValue.length === 2) {
-                    if (cellValue.includes(x) && !cellValue.includes(y)) {
-                        xzCells.push({ row: r, col: c, nums: cellValue });
-                    } else if (cellValue.includes(y) && !cellValue.includes(x)) {
-                        yzCells.push({ row: r, col: c, nums: cellValue });
-                    }
+        // 检查同宫（兼容标准数独和锯齿数独）
+        const xyBoxCells = getBoxCells(xyCell.row, xyCell.col, size, gameTypeStr, irregularBoxes);
+        for (const cell of xyBoxCells) {
+            if (cell.row === xyCell.row && cell.col === xyCell.col) continue;
+            const index = cell.row * size + cell.col;
+            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                continue;
+            }
+            const cellValue = currentBoard[index];
+            if (Array.isArray(cellValue) && cellValue.length === 2) {
+                if (cellValue.includes(x) && !cellValue.includes(y)) {
+                    xzCells.push({ row: cell.row, col: cell.col, nums: cellValue });
+                } else if (cellValue.includes(y) && !cellValue.includes(x)) {
+                    yzCells.push({ row: cell.row, col: cell.col, nums: cellValue });
                 }
             }
         }
@@ -5360,27 +5626,28 @@ function findYWing(size) {
                     }
                 }
                 
-                // 同宫检查
-                const xzBoxRowStart = Math.floor(xzCell.row / boxRows) * boxRows;
-                const xzBoxColStart = Math.floor(xzCell.col / boxCols) * boxCols;
-                const yzBoxRowStart = Math.floor(yzCell.row / boxRows) * boxRows;
-                const yzBoxColStart = Math.floor(yzCell.col / boxCols) * boxCols;
+                // 同宫检查（兼容标准数独和锯齿数独）
+                const xzBoxCells = getBoxCells(xzCell.row, xzCell.col, size, gameTypeStr, irregularBoxes);
+                const yzBoxCells = getBoxCells(yzCell.row, yzCell.col, size, gameTypeStr, irregularBoxes);
+                
+                // 判断XZ和YZ是否在同一个宫（比较两个宫的第一个格子）
+                const xzBoxKey = xzBoxCells.length > 0 ? `${xzBoxCells[0].row}-${xzBoxCells[0].col}` : '';
+                const yzBoxKey = yzBoxCells.length > 0 ? `${yzBoxCells[0].row}-${yzBoxCells[0].col}` : '';
                 
                 // 如果XZ和YZ在同一个宫
-                if (xzBoxRowStart === yzBoxRowStart && xzBoxColStart === yzBoxColStart) {
-                    for (let r = xzBoxRowStart; r < xzBoxRowStart + boxRows; r++) {
-                        for (let c = xzBoxColStart; c < xzBoxColStart + boxCols; c++) {
-                            if ((r === xzCell.row && c === xzCell.col) || 
-                                (r === yzCell.row && c === yzCell.col)) continue;
-                            const index = r * size + c;
-                            if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
-                                continue;
-                            }
-                            const cellValue = currentBoard[index];
-                            if (Array.isArray(cellValue) && cellValue.includes(z)) {
-                                if (!affectedCells.some(cell => cell.row === r && cell.col === c)) {
-                                    affectedCells.push({ row: r, col: c });
-                                }
+                if (xzBoxKey === yzBoxKey && xzBoxKey !== '') {
+                    for (const cell of xzBoxCells) {
+                        const { row, col } = cell;
+                        if ((row === xzCell.row && col === xzCell.col) || 
+                            (row === yzCell.row && col === yzCell.col)) continue;
+                        const index = row * size + col;
+                        if (originalPuzzle[index] !== '0' || typeof currentBoard[index] === 'number') {
+                            continue;
+                        }
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(z)) {
+                            if (!affectedCells.some(c => c.row === row && c.col === col)) {
+                                affectedCells.push({ row, col });
                             }
                         }
                     }
@@ -5848,6 +6115,9 @@ function highlightHintCells(hint) {
  * 显示浮动提示面板（不遮挡棋盘）
  */
 function showHintPanel(hint) {
+    // 保存当前提示到全局变量，供快捷键使用
+    window.currentHint = hint;
+    
     // 先移除之前的提示面板
     const existingPanel = document.getElementById('hintPanel');
     if (existingPanel) {
@@ -5887,8 +6157,13 @@ function showHintPanel(hint) {
         const isExclusionTechnique = hint.technique.startsWith('block_exclusion') || 
                                      hint.technique.startsWith('naked_pair') ||
                                      hint.technique.startsWith('hidden_pair') ||
-                                     hint.technique.startsWith('x_wing') ||
-                                     hint.technique.startsWith('swordfish');
+                                     hint.technique.startsWith('naked_triplet') ||
+                                     hint.technique.startsWith('hidden_triplet') ||
+                                     hint.technique.startsWith('xwing') ||
+                                     hint.technique.startsWith('swordfish') ||
+                                     hint.technique.startsWith('y_wing') ||
+                                     hint.technique.startsWith('unique_rectangle') ||
+                                     hint.technique.startsWith('box_line');
         
         if (Array.isArray(hint.number)) {
             numberInfo.textContent = `涉及数字: ${hint.number.join(',')}`;
@@ -5904,8 +6179,13 @@ function showHintPanel(hint) {
     const isExclusionTechnique = hint.technique.startsWith('block_exclusion') || 
                                  hint.technique.startsWith('naked_pair') ||
                                  hint.technique.startsWith('hidden_pair') ||
-                                 hint.technique.startsWith('x_wing') ||
-                                 hint.technique.startsWith('swordfish');
+                                 hint.technique.startsWith('naked_triplet') ||
+                                 hint.technique.startsWith('hidden_triplet') ||
+                                 hint.technique.startsWith('xwing') ||
+                                 hint.technique.startsWith('swordfish') ||
+                                 hint.technique.startsWith('y_wing') ||
+                                 hint.technique.startsWith('unique_rectangle') ||
+                                 hint.technique.startsWith('box_line');
     
     if (isExclusionTechnique && hint.affectedCells && hint.affectedCells.length > 0) {
         // 排除类技巧显示受影响的位置
@@ -5939,7 +6219,7 @@ function showHintPanel(hint) {
     
     const applyBtn = document.createElement('button');
     applyBtn.className = 'hint-panel-btn hint-panel-apply';
-    applyBtn.innerHTML = '📝 应用提示';
+    applyBtn.innerHTML = '📝 应用提示 (Enter)';
     applyBtn.onclick = () => {
         applyHint(hint);
         closeHintPanel();
@@ -5965,6 +6245,8 @@ function closeHintPanel() {
     if (panel) {
         panel.remove();
     }
+    // 清除全局提示变量
+    delete window.currentHint;
     // 清除高亮
     document.querySelectorAll('.cell').forEach(cell => {
         cell.classList.remove('hint-highlight', 'hint-affected');
@@ -6875,8 +7157,8 @@ function renderBlackWhiteDots(board) {
                     const currentCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col}"]`);
                     if (currentCell) {
                         const currentRect = currentCell.getBoundingClientRect();
-                        left = currentRect.right + (targetRect.left - currentRect.right) / 2;
-                        top = currentRect.top + currentRect.height / 2;
+                        left = currentRect.right + (targetRect.left - currentRect.right) / 2 - 3;
+                        top = currentRect.top + currentRect.height / 2 - 3;
                     }
                 }
             } else {
@@ -6887,8 +7169,8 @@ function renderBlackWhiteDots(board) {
                     const currentCell = board.querySelector(`[data-row="${dot.row}"][data-col="${dot.col}"]`);
                     if (currentCell) {
                         const currentRect = currentCell.getBoundingClientRect();
-                        left = currentRect.left + currentRect.width / 2;
-                        top = currentRect.bottom + (targetRect.top - currentRect.bottom) / 2;
+                        left = currentRect.left + currentRect.width / 2 - 3;
+                        top = currentRect.bottom + (targetRect.top - currentRect.bottom) / 2 - 3;
                     }
                 }
             }
@@ -7638,7 +7920,11 @@ function placeNumber(num) {
             currentBoard[index] = num;
 
             // 删除同行、同列、同宫中的重复候选数字
-            const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+            let affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+            // 如果是对角线数独，还需要删除对角线上的候选数
+            if (currentPuzzle.gameTypeStr === 'DIAGONAL') {
+                affectedIndices = [...affectedIndices, ...getDiagonals(row, col)];
+            }
             affectedIndices.forEach(idx => {
                 if (Array.isArray(currentBoard[idx])) {
                     const candidateIdx = currentBoard[idx].indexOf(num);
@@ -7680,7 +7966,11 @@ function placeNumber(num) {
 
         // 草稿模式下，候选数字变化会影响同行、列、宫的唯一效果
         // 需要更新这些位置的显示
-        const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+        let affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+        // 如果是对角线数独，还需要更新对角线上的格子
+        if (currentPuzzle.gameTypeStr === 'DIAGONAL') {
+            affectedIndices = [...affectedIndices, ...getDiagonals(row, col)];
+        }
         affectedIndices.forEach(idx => {
             if (Array.isArray(currentBoard[idx]) && currentBoard[idx].length > 0) {
                 updateCellDisplay(idx);
@@ -9189,6 +9479,18 @@ document.addEventListener('keydown', function (event) {
     else if (event.key === 'h' || event.key === 'H') {
         showHint();
     }
+    // Enter键应用提示（当提示面板显示时）
+    else if (event.key === 'Enter') {
+        const hintPanel = document.getElementById('hintPanel');
+        if (hintPanel) {
+            event.preventDefault();
+            const hint = window.currentHint;
+            if (hint) {
+                applyHint(hint);
+                closeHintPanel();
+            }
+        }
+    }
     // 方向键移动
     else if (selectedCell && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
         event.preventDefault();
@@ -9206,11 +9508,12 @@ document.addEventListener('keydown', function (event) {
         const newIndex = row * size + col;
         selectCell(row, col, cells[newIndex]);
     }
-    // ESC关闭弹窗
+    // ESC关闭弹窗和提示面板
     else if (event.key === 'Escape') {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.style.display = 'none';
         });
+        closeHintPanel();
     }
 });
 

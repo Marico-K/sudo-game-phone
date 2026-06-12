@@ -2662,6 +2662,18 @@ header p {
         transform: none;
         padding: 14px 16px;
         border-radius: 12px;
+        animation: panelSlideUpMobile 0.3s ease-out;
+    }
+    
+    @keyframes panelSlideUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .hint-panel-title {
