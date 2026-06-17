@@ -14,6 +14,8 @@ let puzzleIdCounter = 0;           // 题目ID计数器
 let cellsCache = null;             // 单元格DOM缓存
 let iconMode = 'numbers';          // 图标模式: 'numbers', 'weather', 'animals'
 let inputMode = 'exact';           // 输入模式: 'exact'（确定模式）, 'candidate'（草稿模式）
+let lives = 3;                     // 剩余爱心数量
+let undoStack = [];                // 撤销栈，记录操作历史
 
 // 图标映射表
 const iconMaps = {
@@ -65,6 +67,7 @@ function updateIconToggleButton() {
  */
 function toggleInputMode() {
     inputMode = inputMode === 'exact' ? 'candidate' : 'exact';
+    // 兼容旧按钮
     const btn = document.getElementById('modeToggleBtn');
     if (btn) {
         if (inputMode === 'candidate') {
@@ -74,6 +77,41 @@ function toggleInputMode() {
             btn.textContent = '✏️ 确定模式';
             btn.classList.remove('candidate-mode');
         }
+    }
+    // 更新新的笔记按钮状态
+    const noteBtn = document.getElementById('noteBtn');
+    if (noteBtn) {
+        if (inputMode === 'candidate') {
+            noteBtn.classList.add('active');
+        } else {
+            noteBtn.classList.remove('active');
+        }
+    }
+}
+
+/**
+ * 更新提示按钮角标
+ */
+function updateHintBadge(count) {
+    const badge = document.getElementById('hintBadge');
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * 更新积分显示
+ */
+function updateCoinDisplay() {
+    const coinEl = document.getElementById('coinValue');
+    if (coinEl) {
+        const playerData = Storage.getPlayerData();
+        coinEl.textContent = playerData.totalScore || 0;
     }
 }
 
@@ -5628,6 +5666,17 @@ function findYWing(size, gameTypeStr, irregularBoxes) {
             for (const yzCell of yzCells) {
                 if (yzCell.nums.find(n => n !== y) !== z) continue;
                 
+                // 检查XZ和YZ是否互相能看到（同行、同列、同宫），如果能看到则Y-Wing无效
+                const xzYzSameRow = xzCell.row === yzCell.row;
+                const xzYzSameCol = xzCell.col === yzCell.col;
+                const xzBoxCells = getBoxCells(xzCell.row, xzCell.col, size, gameTypeStr, irregularBoxes);
+                const yzBoxCells = getBoxCells(yzCell.row, yzCell.col, size, gameTypeStr, irregularBoxes);
+                const xzBoxKey = xzBoxCells.length > 0 ? `${xzBoxCells[0].row}-${xzBoxCells[0].col}` : '';
+                const yzBoxKey = yzBoxCells.length > 0 ? `${yzBoxCells[0].row}-${yzBoxCells[0].col}` : '';
+                const xzYzSameBox = xzBoxKey === yzBoxKey && xzBoxKey !== '';
+                
+                if (xzYzSameRow || xzYzSameCol || xzYzSameBox) continue;
+                
                 // 找到Y-Wing！计算可以排除z的格子
                 const affectedCells = [];
                 
@@ -5661,14 +5710,6 @@ function findYWing(size, gameTypeStr, irregularBoxes) {
                         }
                     }
                 }
-                
-                // 同宫检查（兼容标准数独和锯齿数独）
-                const xzBoxCells = getBoxCells(xzCell.row, xzCell.col, size, gameTypeStr, irregularBoxes);
-                const yzBoxCells = getBoxCells(yzCell.row, yzCell.col, size, gameTypeStr, irregularBoxes);
-                
-                // 判断XZ和YZ是否在同一个宫（比较两个宫的第一个格子）
-                const xzBoxKey = xzBoxCells.length > 0 ? `${xzBoxCells[0].row}-${xzBoxCells[0].col}` : '';
-                const yzBoxKey = yzBoxCells.length > 0 ? `${yzBoxCells[0].row}-${yzBoxCells[0].col}` : '';
                 
                 // 如果XZ和YZ在同一个宫
                 if (xzBoxKey === yzBoxKey && xzBoxKey !== '') {
@@ -6369,6 +6410,9 @@ function findSimpleChain(size) {
                 const linkCellValue = currentBoard[linkIndex];
                 if (!Array.isArray(linkCellValue)) continue;
                 
+                // 只有当link.cell只有两个候选数时，才能确定它等于num2（排除num1后）
+                if (linkCellValue.length !== 2) continue;
+                
                 // 找第二个数字（不同于num1）
                 for (const num2 of linkCellValue) {
                     if (num2 === num1) continue;
@@ -6433,6 +6477,15 @@ function findSimpleChain(size) {
                     
                     // 检查是否找到有效链
                     for (const secondLink of secondLinks) {
+                        // 确保三个格子都不同
+                        if (secondLink.cell.row === startCell.row && secondLink.cell.col === startCell.col) continue;
+                        if (secondLink.cell.row === link.cell.row && secondLink.cell.col === link.cell.col) continue;
+                        
+                        // 只有当secondLink.cell只有两个候选数时，才能确定它不等于num2（排除后等于num1）
+                        const secondLinkIndex = secondLink.cell.row * size + secondLink.cell.col;
+                        const secondLinkValue = currentBoard[secondLinkIndex];
+                        if (!Array.isArray(secondLinkValue) || secondLinkValue.length !== 2) continue;
+                        
                         // 检查startCell和secondLink.cell是否可以看到对方（同行、同列或同宫）
                         const sameRow = startCell.row === secondLink.cell.row;
                         const sameCol = startCell.col === secondLink.cell.col;
@@ -6447,9 +6500,9 @@ function findSimpleChain(size) {
                             if (Array.isArray(targetValue) && targetValue.includes(num1)) {
                                 return {
                                     technique: 'simple_chain',
-                                    name: '简单链技巧（Chain）',
-                                    description: '通过强链-弱链-强链的交替，可以排除某些候选数。',
-                                    detail: `找到链结构：(${startCell.row + 1},${startCell.col + 1})-${num1}-(${link.cell.row + 1},${link.cell.col + 1})-${num2}-(${secondLink.cell.row + 1},${secondLink.cell.col + 1})。根据链的逻辑，可以从(${secondLink.cell.row + 1},${secondLink.cell.col + 1})中排除数字 ${num1}。`,
+                                    name: '链式推理',
+                                    description: '像侦探一样追踪数字的可能位置，通过逻辑链条推导，排除不可能的候选数。',
+                                    detail: `观察到数字 ${num1} 在第${startCell.row + 1}行第${startCell.col + 1}列和第${link.cell.row + 1}行第${link.cell.col + 1}列形成强链，再连接到第${secondLink.cell.row + 1}行第${secondLink.cell.col + 1}列。通过链式推理，可以确定第${secondLink.cell.row + 1}行第${secondLink.cell.col + 1}列不可能是数字 ${num1}，可以安全排除。`,
                                     location: startCell,
                                     number: num1,
                                     highlightCells: [
@@ -6701,6 +6754,14 @@ function findBlockExclusion(size) {
                 // 如果某个数字在宫中只出现在某一行，可以排除该行其他宫的该数字
                 if (rowPositions.size === 1) {
                     const row = Array.from(rowPositions)[0];
+                    const reasonCells = [];
+                    for (let c = boxColStart; c < boxColStart + boxCols; c++) {
+                        const index = row * size + c;
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            reasonCells.push({ row, col: c });
+                        }
+                    }
                     const affectedCells = [];
                     for (let c = 0; c < size; c++) {
                         const boxOfCol = Math.floor(c / boxCols);
@@ -6723,7 +6784,7 @@ function findBlockExclusion(size) {
                             detail: `数字 ${num} 在第${boxNum}宫内只能出现在第${row + 1}行，因此可以从第${row + 1}行的其他宫格中排除数字 ${num}。`,
                             location: { row, col: Array.from(colPositions)[0] },
                             number: num,
-                            highlightCells: affectedCells,
+                            highlightCells: reasonCells,
                             affectedCells: affectedCells
                         };
                     }
@@ -6732,6 +6793,14 @@ function findBlockExclusion(size) {
                 // 如果某个数字在宫中只出现在某一列，可以排除该列其他宫的该数字
                 if (colPositions.size === 1) {
                     const col = Array.from(colPositions)[0];
+                    const reasonCells = [];
+                    for (let r = boxRowStart; r < boxRowStart + boxRows; r++) {
+                        const index = r * size + col;
+                        const cellValue = currentBoard[index];
+                        if (Array.isArray(cellValue) && cellValue.includes(num)) {
+                            reasonCells.push({ row: r, col });
+                        }
+                    }
                     const affectedCells = [];
                     for (let r = 0; r < size; r++) {
                         const boxOfRow = Math.floor(r / boxRows);
@@ -6754,7 +6823,7 @@ function findBlockExclusion(size) {
                             detail: `数字 ${num} 在第${boxNum}宫内只能出现在第${col + 1}列，因此可以从第${col + 1}列的其他宫格中排除数字 ${num}。`,
                             location: { row: Array.from(rowPositions)[0], col },
                             number: num,
-                            highlightCells: affectedCells,
+                            highlightCells: reasonCells,
                             affectedCells: affectedCells
                         };
                     }
@@ -6868,8 +6937,12 @@ function showHint() {
 function highlightHintCells(hint) {
     // 清除之前的高亮
     document.querySelectorAll('.cell').forEach(cell => {
-        cell.classList.remove('hint-highlight', 'hint-affected');
+        cell.classList.remove('hint-highlight', 'hint-affected', 'hint-related', 'hint-same-num', 'hint-related-fixed', 'hint-same-num-fixed');
     });
+    
+    // 获取主提示位置
+    const mainCell = hint.highlightCells && hint.highlightCells.length > 0 ? hint.highlightCells[0] : null;
+    const hintNumber = hint.number;
     
     // 高亮主格子
     hint.highlightCells.forEach(cell => {
@@ -6886,13 +6959,66 @@ function highlightHintCells(hint) {
             element.classList.add('hint-affected');
         }
     });
+    
+    // 如果有主提示位置，高亮同行、同列、同宫的所有格子
+    if (mainCell) {
+        const size = currentPuzzle.size || 9;
+        const boxSize = size === 9 ? 3 : 2;
+        
+        for (let i = 0; i < size; i++) {
+            // 同行
+            const rowElement = document.querySelector(`[data-row="${mainCell.row}"][data-col="${i}"]`);
+            if (rowElement) {
+                rowElement.classList.add('hint-related');
+                if (rowElement.classList.contains('fixed')) {
+                    rowElement.classList.add('hint-related-fixed');
+                }
+            }
+            // 同列
+            const colElement = document.querySelector(`[data-row="${i}"][data-col="${mainCell.col}"]`);
+            if (colElement) {
+                colElement.classList.add('hint-related');
+                if (colElement.classList.contains('fixed')) {
+                    colElement.classList.add('hint-related-fixed');
+                }
+            }
+        }
+        
+        // 同宫
+        const boxRowStart = Math.floor(mainCell.row / boxSize) * boxSize;
+        const boxColStart = Math.floor(mainCell.col / boxSize) * boxSize;
+        for (let r = boxRowStart; r < boxRowStart + boxSize; r++) {
+            for (let c = boxColStart; c < boxColStart + boxSize; c++) {
+                const boxElement = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                if (boxElement) {
+                    boxElement.classList.add('hint-related');
+                    if (boxElement.classList.contains('fixed')) {
+                        boxElement.classList.add('hint-related-fixed');
+                    }
+                }
+            }
+        }
+    }
+    
+    // 高亮与提示数字相同的数字
+    if (hintNumber && typeof hintNumber === 'number') {
+        document.querySelectorAll('.cell').forEach(cell => {
+            const value = cell.textContent.trim();
+            if (value === hintNumber.toString()) {
+                cell.classList.add('hint-same-num');
+                if (cell.classList.contains('fixed')) {
+                    cell.classList.add('hint-same-num-fixed');
+                }
+            }
+        });
+    }
 }
 
 /**
  * 显示提示弹窗
  */
 /**
- * 显示浮动提示面板（不遮挡棋盘）
+ * 显示浮动提示面板（多步讲解）
  */
 function showHintPanel(hint) {
     // 保存当前提示到全局变量，供快捷键使用
@@ -6904,117 +7030,311 @@ function showHintPanel(hint) {
         existingPanel.remove();
     }
     
+    // 添加全局蒙版
+    let overlay = document.getElementById('hintOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'hintOverlay';
+        overlay.className = 'hint-overlay';
+        document.body.appendChild(overlay);
+    }
+    
+    // 添加提示模式类到游戏页面
+    const gamePage = document.getElementById('gamePage');
+    if (gamePage) {
+        gamePage.classList.add('hint-mode');
+    }
+    
     const panel = document.createElement('div');
     panel.id = 'hintPanel';
     panel.className = 'hint-panel';
     
-    // 技巧名称
-    const title = document.createElement('div');
-    title.className = 'hint-panel-title';
-    title.innerHTML = `💡 ${hint.name}`;
-    panel.appendChild(title);
+    // 准备步骤数据
+    const steps = generateHintSteps(hint);
+    let currentStep = 0;
     
-    // 技巧描述
-    const desc = document.createElement('div');
-    desc.className = 'hint-panel-desc';
-    desc.textContent = hint.description;
-    panel.appendChild(desc);
+    // 内容区域
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'hint-panel-content';
+    contentDiv.id = 'hintPanelContent';
+    panel.appendChild(contentDiv);
     
-    // 详细说明
-    const detail = document.createElement('div');
-    detail.className = 'hint-panel-detail';
-    detail.innerHTML = `<strong>详细说明：</strong>${hint.detail}`;
-    panel.appendChild(detail);
+    // 导航区域
+    const navDiv = document.createElement('div');
+    navDiv.className = 'hint-panel-nav';
     
-    // 关键信息
-    const infoRow = document.createElement('div');
-    infoRow.className = 'hint-panel-info';
+    // 上一步按钮
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'hint-panel-nav-btn';
+    prevBtn.innerHTML = '◀';
+    prevBtn.onclick = () => goToStep(currentStep - 1);
+    navDiv.appendChild(prevBtn);
     
-    if (hint.number) {
-        const numberInfo = document.createElement('span');
-        numberInfo.className = 'hint-panel-tag hint-panel-number';
-        // 判断是否为排除类技巧
-        const isExclusionTechnique = hint.technique.startsWith('block_exclusion') || 
-                                     hint.technique.startsWith('naked_pair') ||
-                                     hint.technique.startsWith('hidden_pair') ||
-                                     hint.technique.startsWith('naked_triplet') ||
-                                     hint.technique.startsWith('hidden_triplet') ||
-                                     hint.technique.startsWith('xwing') ||
-                                     hint.technique.startsWith('swordfish') ||
-                                     hint.technique.startsWith('y_wing') ||
-                                     hint.technique.startsWith('unique_rectangle') ||
-                                     hint.technique.startsWith('box_line');
-        
-        if (Array.isArray(hint.number)) {
-            numberInfo.textContent = `涉及数字: ${hint.number.join(',')}`;
-        } else if (isExclusionTechnique) {
-            numberInfo.textContent = `排除数字: ${hint.number}`;
-        } else {
-            numberInfo.textContent = `填入数字: ${hint.number}`;
-        }
-        infoRow.appendChild(numberInfo);
+    // 进度点
+    const dotsDiv = document.createElement('div');
+    dotsDiv.className = 'hint-panel-dots';
+    dotsDiv.id = 'hintPanelDots';
+    for (let i = 0; i < steps.length; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'hint-panel-dot';
+        if (i === 0) dot.classList.add('active');
+        dotsDiv.appendChild(dot);
     }
+    navDiv.appendChild(dotsDiv);
     
-    // 判断是否为排除类技巧
-    const isExclusionTechnique = hint.technique.startsWith('block_exclusion') || 
-                                 hint.technique.startsWith('naked_pair') ||
-                                 hint.technique.startsWith('hidden_pair') ||
-                                 hint.technique.startsWith('naked_triplet') ||
-                                 hint.technique.startsWith('hidden_triplet') ||
-                                 hint.technique.startsWith('xwing') ||
-                                 hint.technique.startsWith('swordfish') ||
-                                 hint.technique.startsWith('y_wing') ||
-                                 hint.technique.startsWith('unique_rectangle') ||
-                                 hint.technique.startsWith('box_line');
-    
-    if (isExclusionTechnique && hint.affectedCells && hint.affectedCells.length > 0) {
-        // 排除类技巧显示受影响的位置
-        const locationInfo = document.createElement('span');
-        locationInfo.className = 'hint-panel-tag hint-panel-location';
-        if (hint.affectedCells.length === 1) {
-            locationInfo.textContent = `排除位置: 第${hint.affectedCells[0].row + 1}行, 第${hint.affectedCells[0].col + 1}列`;
+    // 下一步/应用按钮
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'hint-panel-nav-btn';
+    nextBtn.innerHTML = '▶';
+    nextBtn.onclick = () => {
+        if (currentStep < steps.length - 1) {
+            goToStep(currentStep + 1);
         } else {
-            const locations = hint.affectedCells.map(cell => `第${cell.row + 1}行, 第${cell.col + 1}列`).join('；');
-            locationInfo.textContent = `排除位置: ${locations}`;
+            applyHint(hint);
+            closeHintPanel();
         }
-        infoRow.appendChild(locationInfo);
-    } else if (hint.highlightCells && hint.highlightCells.length > 0) {
-        // 填入类技巧显示填入位置
-        const locationInfo = document.createElement('span');
-        locationInfo.className = 'hint-panel-tag hint-panel-location';
-        if (hint.highlightCells.length === 1) {
-            locationInfo.textContent = `位置: 第${hint.highlightCells[0].row + 1}行, 第${hint.highlightCells[0].col + 1}列`;
-        } else {
-            const locations = hint.highlightCells.map(cell => `第${cell.row + 1}行, 第${cell.col + 1}列`).join('；');
-            locationInfo.textContent = `位置: ${locations}`;
-        }
-        infoRow.appendChild(locationInfo);
-    }
-    
-    panel.appendChild(infoRow);
-    
-    // 操作按钮
-    const actions = document.createElement('div');
-    actions.className = 'hint-panel-actions';
-    
-    const applyBtn = document.createElement('button');
-    applyBtn.className = 'hint-panel-btn hint-panel-apply';
-    applyBtn.innerHTML = '📝 应用提示 (Enter)';
-    applyBtn.onclick = () => {
-        applyHint(hint);
-        closeHintPanel();
     };
-    actions.appendChild(applyBtn);
+    navDiv.appendChild(nextBtn);
     
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'hint-panel-btn hint-panel-close';
-    closeBtn.innerHTML = '✕ 关闭提示';
-    closeBtn.onclick = closeHintPanel;
-    actions.appendChild(closeBtn);
-    
-    panel.appendChild(actions);
-    
+    panel.appendChild(navDiv);
     document.body.appendChild(panel);
+    
+    // 渲染步骤
+    function renderStep(stepIndex) {
+        const step = steps[stepIndex];
+        contentDiv.innerHTML = '';
+        
+        const title = document.createElement('div');
+        title.className = 'hint-panel-title';
+        title.textContent = step.title;
+        contentDiv.appendChild(title);
+        
+        if (step.desc) {
+            const desc = document.createElement('div');
+            desc.className = 'hint-panel-desc';
+            desc.textContent = step.desc;
+            contentDiv.appendChild(desc);
+        }
+        
+        if (step.reason) {
+            const reason = document.createElement('div');
+            reason.className = 'hint-panel-reason';
+            reason.innerHTML = step.reason;
+            contentDiv.appendChild(reason);
+        }
+        
+        // 更新进度点
+        const dots = dotsDiv.querySelectorAll('.hint-panel-dot');
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === stepIndex);
+        });
+        
+        // 更新按钮状态
+        prevBtn.disabled = stepIndex === 0;
+        if (stepIndex === steps.length - 1) {
+            nextBtn.innerHTML = '✓';
+            nextBtn.className = 'hint-panel-apply';
+        } else {
+            nextBtn.innerHTML = '▶';
+            nextBtn.className = 'hint-panel-nav-btn';
+        }
+        
+        // 根据步骤动态更新棋盘高亮
+        updateHintHighlight(stepIndex);
+    }
+    
+    // 根据步骤更新棋盘高亮
+    function updateHintHighlight(stepIndex) {
+        // 清除之前的高亮
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.classList.remove('hint-highlight', 'hint-affected', 'hint-related', 'hint-same-num', 'hint-related-fixed', 'hint-same-num-fixed');
+        });
+        
+        const isExclusion = hint.technique.startsWith('block_exclusion') || 
+                            hint.technique.startsWith('naked_pair') ||
+                            hint.technique.startsWith('hidden_pair') ||
+                            hint.technique.startsWith('naked_triplet') ||
+                            hint.technique.startsWith('hidden_triplet') ||
+                            hint.technique.startsWith('xwing') ||
+                            hint.technique.startsWith('swordfish') ||
+                            hint.technique.startsWith('y_wing') ||
+                            hint.technique.startsWith('unique_rectangle') ||
+                            hint.technique.startsWith('box_line');
+        
+        if (stepIndex === 0) {
+            // 步骤1：显示原因格子（highlightCells）+ 相关的行/列/宫
+            highlightReasonCells(hint);
+        } else if (stepIndex === 1) {
+            // 步骤2：显示受影响的格子（被排除的格子）
+            if (isExclusion && hint.affectedCells && hint.affectedCells.length > 0) {
+                hint.affectedCells.forEach(cell => {
+                    const element = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+                    if (element) {
+                        element.classList.add('hint-affected');
+                    }
+                });
+                // 同时显示原因格子作为参考
+                if (hint.highlightCells) {
+                    hint.highlightCells.forEach(cell => {
+                        const element = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+                        if (element) {
+                            element.classList.add('hint-highlight');
+                        }
+                    });
+                }
+            } else {
+                // 非排除类提示，显示所有相关格子
+                highlightReasonCells(hint);
+            }
+        } else {
+            // 步骤3：显示所有相关格子
+            highlightReasonCells(hint);
+        }
+    }
+    
+    // 高亮原因格子及相关的行/列/宫
+    function highlightReasonCells(hint) {
+        // 高亮原因格子（highlightCells）
+        if (hint.highlightCells) {
+            hint.highlightCells.forEach(cell => {
+                const element = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+                if (element) {
+                    element.classList.add('hint-highlight');
+                }
+            });
+        }
+        
+        // 高亮与提示数字相同的数字
+        const hintNumber = hint.number;
+        if (hintNumber && typeof hintNumber === 'number') {
+            document.querySelectorAll('.cell').forEach(cell => {
+                const value = cell.textContent.trim();
+                if (value === hintNumber.toString()) {
+                    cell.classList.add('hint-same-num');
+                    if (cell.classList.contains('fixed')) {
+                        cell.classList.add('hint-same-num-fixed');
+                    }
+                }
+            });
+        }
+        
+        // 如果有主提示位置，高亮同行、同列、同宫的所有格子
+        const mainCell = hint.highlightCells && hint.highlightCells.length > 0 ? hint.highlightCells[0] : null;
+        if (mainCell) {
+            const size = currentPuzzle.size || 9;
+            const boxSize = size === 9 ? 3 : 2;
+            
+            for (let i = 0; i < size; i++) {
+                // 同行
+                const rowElement = document.querySelector(`[data-row="${mainCell.row}"][data-col="${i}"]`);
+                if (rowElement) {
+                    rowElement.classList.add('hint-related');
+                    if (rowElement.classList.contains('fixed')) {
+                        rowElement.classList.add('hint-related-fixed');
+                    }
+                }
+                // 同列
+                const colElement = document.querySelector(`[data-row="${i}"][data-col="${mainCell.col}"]`);
+                if (colElement) {
+                    colElement.classList.add('hint-related');
+                    if (colElement.classList.contains('fixed')) {
+                        colElement.classList.add('hint-related-fixed');
+                    }
+                }
+            }
+            
+            // 同宫
+            const boxRowStart = Math.floor(mainCell.row / boxSize) * boxSize;
+            const boxColStart = Math.floor(mainCell.col / boxSize) * boxSize;
+            for (let r = boxRowStart; r < boxRowStart + boxSize; r++) {
+                for (let c = boxColStart; c < boxColStart + boxSize; c++) {
+                    const boxElement = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                    if (boxElement) {
+                        boxElement.classList.add('hint-related');
+                        if (boxElement.classList.contains('fixed')) {
+                            boxElement.classList.add('hint-related-fixed');
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    function goToStep(stepIndex) {
+        if (stepIndex < 0 || stepIndex >= steps.length) return;
+        currentStep = stepIndex;
+        renderStep(currentStep);
+    }
+    
+    // 初始化显示第一步
+    renderStep(0);
+}
+
+/**
+ * 生成提示步骤数据
+ */
+function generateHintSteps(hint) {
+    const steps = [];
+    const isExclusion = hint.technique.startsWith('block_exclusion') || 
+                        hint.technique.startsWith('naked_pair') ||
+                        hint.technique.startsWith('hidden_pair') ||
+                        hint.technique.startsWith('naked_triplet') ||
+                        hint.technique.startsWith('hidden_triplet') ||
+                        hint.technique.startsWith('xwing') ||
+                        hint.technique.startsWith('swordfish') ||
+                        hint.technique.startsWith('y_wing') ||
+                        hint.technique.startsWith('unique_rectangle') ||
+                        hint.technique.startsWith('box_line');
+    
+    const location = hint.highlightCells && hint.highlightCells.length > 0
+        ? `第${hint.highlightCells[0].row + 1}行第${hint.highlightCells[0].col + 1}列`
+        : hint.location
+            ? `第${hint.location.row + 1}行第${hint.location.col + 1}列`
+            : '';
+    
+    // 步骤1：介绍技巧原理
+    steps.push({
+        title: `技巧: ${hint.name}`,
+        desc: `位置: ${location}`,
+        reason: `原理: ${hint.description}`
+    });
+    
+    // 步骤2：填入数字/排除数字和原因
+    if (isExclusion) {
+        const num = Array.isArray(hint.number) ? hint.number.join(',') : hint.number;
+        const affectedLoc = hint.affectedCells && hint.affectedCells.length > 0
+            ? hint.affectedCells.map(c => `第${c.row + 1}行第${c.col + 1}列`).join('、')
+            : '';
+        steps.push({
+            title: `排除数字: ${num}`,
+            desc: `影响位置: ${affectedLoc}`,
+            reason: `原因: ${hint.detail}`
+        });
+    } else {
+        const num = Array.isArray(hint.number) ? hint.number.join(',') : hint.number;
+        steps.push({
+            title: `填入数字: ${num}`,
+            desc: `位置: ${location}`,
+            reason: `原因: ${hint.detail}`
+        });
+    }
+    
+    // 步骤3：确认
+    if (isExclusion) {
+        steps.push({
+            title: '确认排除',
+            desc: '',
+            reason: '点击✓应用此提示'
+        });
+    } else {
+        steps.push({
+            title: '确认填入',
+            desc: '',
+            reason: '点击✓应用此提示'
+        });
+    }
+    
+    return steps;
 }
 
 /**
@@ -7025,11 +7345,24 @@ function closeHintPanel() {
     if (panel) {
         panel.remove();
     }
+    
+    // 移除全局蒙版
+    const overlay = document.getElementById('hintOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+    
+    // 移除提示模式类
+    const gamePage = document.getElementById('gamePage');
+    if (gamePage) {
+        gamePage.classList.remove('hint-mode');
+    }
+    
     // 清除全局提示变量
     delete window.currentHint;
     // 清除高亮
     document.querySelectorAll('.cell').forEach(cell => {
-        cell.classList.remove('hint-highlight', 'hint-affected');
+        cell.classList.remove('hint-highlight', 'hint-affected', 'hint-related', 'hint-same-num', 'hint-related-fixed', 'hint-same-num-fixed');
     });
 }
 
@@ -7062,8 +7395,8 @@ function applyHint(hint) {
     } else {
         const num = Array.isArray(hint.number) ? hint.number : [hint.number];
         
-        // 隐藏数对/三数法：保留数对数字，移除其他候选数
-        if (hint.technique.startsWith('hidden_pair') || hint.technique.startsWith('hidden_triplet')) {
+        // 隐藏数对/三数/四数法：保留数对数字，移除其他候选数
+        if (hint.technique.startsWith('hidden_pair') || hint.technique.startsWith('hidden_triplet') || hint.technique.startsWith('hidden_quad')) {
             hint.affectedCells.forEach(cell => {
                 const index = cell.row * size + cell.col;
                 if (Array.isArray(currentBoard[index])) {
@@ -8014,7 +8347,10 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
         currentBoard = puzzleStr.split('').map(c => c === '0' ? [] : parseInt(c));
 
         // 更新显示
-        document.getElementById('puzzleNumber').textContent = `题目 #${puzzleId}`;
+        const puzzleNumber = document.getElementById('puzzleNumber');
+        if (puzzleNumber) {
+            puzzleNumber.textContent = `题目 #${puzzleId}`;
+        }
 
         // 保存原始题目到记录
         saveOriginalPuzzle(puzzleId, puzzleStr, solutionStr);
@@ -8027,10 +8363,158 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
         
         // 更新游戏控制按钮显示（根据道具权限）
         updateGameControlButtons();
+        
+        // 更新积分显示
+        updateCoinDisplay();
 
         // 启动计时器
         startTimer();
+
+        // 初始化爱心数量
+        lives = 3;
+        updateLivesDisplay();
+        
+        // 清空撤销栈
+        undoStack = [];
     }, 50);
+}
+
+/**
+ * 更新爱心显示
+ */
+function updateLivesDisplay() {
+    const livesDisplay = document.getElementById('livesDisplayTop');
+    if (!livesDisplay) return;
+    
+    let hearts = '';
+    for (let i = 0; i < 3; i++) {
+        hearts += `<span class="life-heart-top ${i < lives ? '' : 'lost'}">${i < lives ? '❤️' : '🖤'}</span>`;
+    }
+    livesDisplay.innerHTML = hearts;
+}
+
+/**
+ * 清除选中单元格的数字
+ */
+function clearSelectedCell() {
+    if (selectedCell) {
+        // 选中单元格的索引
+        const index = selectedCell.index;
+        // 如果是固定数字，不能清除
+        if (originalPuzzle[index] !== '0') {
+            customAlert('这是固定数字，不能清除', 'warning');
+            return;
+        }
+        selectNumber(0);
+    } else {
+        customAlert('请先选择一个单元格', 'warning');
+    }
+}
+
+/**
+ * 撤销上一步操作
+ */
+function undoLastAction() {
+    if (undoStack.length === 0) {
+        customAlert('没有可以撤销的操作', 'info');
+        return;
+    }
+    
+    // 取出最近的操作记录
+    const lastAction = undoStack.pop();
+    
+    // 恢复棋盘状态
+    currentBoard = lastAction.previousBoard.map(cell => 
+        Array.isArray(cell) ? [...cell] : cell
+    );
+    
+    // 恢复输入模式
+    inputMode = lastAction.previousInputMode;
+    
+    // 重新渲染整个棋盘
+    renderBoard();
+    
+    // 更新数字按钮状态
+    updateNumberButtons();
+    
+    // 保持选中状态
+    if (selectedCell) {
+        const cells = initCellsCache();
+        if (cells[selectedCell.index]) {
+            cells[selectedCell.index].classList.add('selected');
+        }
+    }
+    
+    // 保存进度
+    scheduleSaveProgress();
+}
+
+/**
+ * 扣除一颗心
+ */
+function loseLife() {
+    if (lives <= 0) return;
+    
+    lives--;
+    updateLivesDisplay();
+    
+    const board = document.getElementById('sudokuBoard');
+    if (board) {
+        board.classList.remove('shake');
+        void board.offsetWidth;
+        board.classList.add('shake');
+        
+        setTimeout(() => {
+            board.classList.remove('shake');
+        }, 500);
+    }
+    
+    if (lives <= 0) {
+        gameOver();
+    }
+}
+
+/**
+ * 游戏失败处理
+ */
+function gameOver() {
+    // 停止计时器
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    
+    // 将游戏记录标记为失败状态
+    const record = Storage.getRecord(currentPuzzle.id);
+    if (record) {
+        record.isFailed = true;
+        record.isCompleted = true;
+        record.completedTime = Date.now();
+        Storage.saveRecord(record);
+    }
+    
+    // 清除继续游戏的记录ID
+    localStorage.removeItem("continuePuzzleId");
+    
+    // 显示失败弹窗
+    const loseModal = document.getElementById('loseModal');
+    if (loseModal) {
+        loseModal.style.display = 'block';
+    }
+    
+    // 隐藏游戏控制
+    const numberKeyPad = document.getElementById('numberKeyPad');
+    if (numberKeyPad) {
+        numberKeyPad.style.display = 'none';
+    }
+    const gameControls = document.getElementById('gameControls');
+    if (gameControls) {
+        gameControls.style.display = 'none';
+    }
+    const modeToggleBtn = document.getElementById('modeToggleBtn');
+    if (modeToggleBtn) {
+        modeToggleBtn.style.display = 'none';
+    }
 }
 
 /**
@@ -8182,18 +8666,36 @@ function loadUserRecord() {
     if (record) {
         attemptCount = record.attemptCount || 0;
         bestTime = record.bestTime;
-        document.getElementById('attemptInfo').textContent = attemptCount > 0 ? `已重置 ${attemptCount} 次` : '未重置';
+        const attemptInfo = document.getElementById('attemptInfo');
+        if (attemptInfo) {
+            attemptInfo.textContent = attemptCount > 0 ? `已重置 ${attemptCount} 次` : '未重置';
+        }
         if (bestTime) {
-            document.getElementById('bestTimeInfo').style.display = 'block';
-            document.getElementById('bestTime').textContent = formatTime(bestTime);
+            const bestTimeInfo = document.getElementById('bestTimeInfo');
+            if (bestTimeInfo) {
+                bestTimeInfo.style.display = 'block';
+            }
+            const bestTimeEl = document.getElementById('bestTime');
+            if (bestTimeEl) {
+                bestTimeEl.textContent = formatTime(bestTime);
+            }
         } else {
-            document.getElementById('bestTimeInfo').style.display = 'none';
+            const bestTimeInfo = document.getElementById('bestTimeInfo');
+            if (bestTimeInfo) {
+                bestTimeInfo.style.display = 'none';
+            }
         }
     } else {
         attemptCount = 0;
         bestTime = null;
-        document.getElementById('attemptInfo').textContent = '未重置';
-        document.getElementById('bestTimeInfo').style.display = 'none';
+        const attemptInfo = document.getElementById('attemptInfo');
+        if (attemptInfo) {
+            attemptInfo.textContent = '未重置';
+        }
+        const bestTimeInfo = document.getElementById('bestTimeInfo');
+        if (bestTimeInfo) {
+            bestTimeInfo.style.display = 'none';
+        }
     }
 
     // 保存尝试记录
@@ -8230,6 +8732,7 @@ function saveGameProgress() {
         // 将棋盘状态转换为JSON字符串保存（支持数组类型的候选数字）
         record.currentBoard = JSON.stringify(currentBoard);
         record.elapsedTime = seconds;
+        record.lives = lives;
         Storage.saveRecord(record);
     }
 }
@@ -8469,6 +8972,10 @@ function renderBoard() {
                     cell.classList.add('fixed');
                 } else {
                     cell.classList.add('user-input');
+                    const correctAnswer = parseInt(currentPuzzle.solution[index]);
+                    if (value !== correctAnswer) {
+                        cell.classList.add('error');
+                    }
                 }
             } else if (Array.isArray(value) && value.length > 0) {
                 // 候选值
@@ -9001,7 +9508,7 @@ function updateCellDisplay(index) {
 
     // 清除之前的内容
     cell.innerHTML = '';
-    cell.classList.remove('fixed', 'user-input', 'conflict');
+    cell.classList.remove('fixed', 'user-input', 'conflict', 'error');
 
     if (typeof value === 'number') {
         const valueEl = document.createElement('span');
@@ -9016,6 +9523,10 @@ function updateCellDisplay(index) {
             cell.classList.add('fixed');
         } else {
             cell.classList.add('user-input');
+            const correctAnswer = parseInt(currentPuzzle.solution[index]);
+            if (value !== correctAnswer) {
+                cell.classList.add('error');
+            }
         }
     } else if (Array.isArray(value) && value.length > 0) {
         cell.appendChild(createCandidatesElement(value, row, col));
@@ -9183,25 +9694,31 @@ function generateNumberKeypad() {
 
     const size = currentPuzzle.size || 9;
 
-    // 根据尺寸决定列数
-    const cols = size <= 4 ? 4 : 5;
-    keypad.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
-    // 生成数字按钮
-    for (let num = 1; num <= size; num++) {
+    // 创建第一行（1-5）
+    const row1 = document.createElement('div');
+    row1.className = 'number-keypad-row';
+    for (let num = 1; num <= 5; num++) {
         const btn = document.createElement('button');
         btn.className = 'num-btn';
         btn.onclick = () => selectNumber(num);
-        btn.innerHTML = `<span class="num-icon">${getIcon(num)}</span><span class="num-remaining">${size}</span>`;
-        keypad.appendChild(btn);
+        btn.innerHTML = `<span class="num-value">${num}</span><span class="num-remaining">${size}</span>`;
+        row1.appendChild(btn);
     }
+    keypad.appendChild(row1);
 
-    // 添加清除按钮
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'num-btn num-btn-clear';
-    clearBtn.onclick = () => selectNumber(0);
-    clearBtn.textContent = '✕';
-    keypad.appendChild(clearBtn);
+    // 创建第二行（6-9）
+    if (size >= 6) {
+        const row2 = document.createElement('div');
+        row2.className = 'number-keypad-row';
+        for (let num = 6; num <= size; num++) {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn';
+            btn.onclick = () => selectNumber(num);
+            btn.innerHTML = `<span class="num-value">${num}</span><span class="num-remaining">${size}</span>`;
+            row2.appendChild(btn);
+        }
+        keypad.appendChild(row2);
+    }
 }
 
 /**
@@ -9235,11 +9752,11 @@ function updateNumberButtons() {
         if (!btn) continue;
 
         const remainingEl = btn.querySelector('.num-remaining');
-        const iconEl = btn.querySelector('.num-icon');
+        const valueEl = btn.querySelector('.num-value');
 
-        // 更新图标显示
-        if (iconEl) {
-            iconEl.textContent = getIcon(num);
+        // 更新数字显示
+        if (valueEl) {
+            valueEl.textContent = num;
         }
 
         if (remainingEl) {
@@ -9271,7 +9788,8 @@ function updateNumberButtons() {
     */
 function selectNumber(num) {
     // 清除所有按钮的激活状态
-    document.querySelectorAll('.num-btn').forEach(btn => btn.classList.remove('active'));
+    const numButtons = document.querySelectorAll('.num-btn');
+    numButtons.forEach(btn => btn.classList.remove('active'));
 
     // 如果点击的是清除按钮（0）
     if (num === 0) {
@@ -9301,11 +9819,16 @@ function selectNumber(num) {
     }
 
     selectedNumber = num;
-    document.querySelectorAll('.num-btn')[num - 1].classList.add('active');
+    
+    // 检查按钮是否存在，避免在非数独页面调用时报错
+    if (numButtons[num - 1]) {
+        numButtons[num - 1].classList.add('active');
+    }
 
     if (selectedCell !== null) {
         placeNumber(num);
     }
+    selectedNumber = null;
 }
 
 /**
@@ -9321,6 +9844,17 @@ function placeNumber(num) {
     // 检查是否为固定数字
     if (originalPuzzle[index] !== '0') return;
 
+    // 记录操作前的棋盘状态（用于撤销）
+    // 使用深拷贝保存当前状态
+    const boardSnapshot = currentBoard.map(cell => 
+        Array.isArray(cell) ? [...cell] : cell
+    );
+    const lastAction = {
+        index: index,
+        previousBoard: boardSnapshot,
+        previousInputMode: inputMode
+    };
+
     // 根据输入模式执行不同操作
     if (inputMode === 'exact') {
         // 确定模式：设置确定值
@@ -9328,23 +9862,32 @@ function placeNumber(num) {
             // 清除
             currentBoard[index] = [];
         } else {
-            // 设置确定值
+            // 检查答案是否正确
+            const correctAnswer = parseInt(currentPuzzle.solution[index]);
+            const isCorrect = num === correctAnswer;
+            
+            // 设置确定值（无论对错都设置）
             currentBoard[index] = num;
 
-            // 删除同行、同列、同宫中的重复候选数字
-            let affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
-            // 如果是对角线数独，还需要删除对角线上的候选数
-            if (currentPuzzle.gameTypeStr === 'DIAGONAL') {
-                affectedIndices = [...affectedIndices, ...getDiagonals(row, col)];
-            }
-            affectedIndices.forEach(idx => {
-                if (Array.isArray(currentBoard[idx])) {
-                    const candidateIdx = currentBoard[idx].indexOf(num);
-                    if (candidateIdx >= 0) {
-                        currentBoard[idx].splice(candidateIdx, 1);
-                    }
+            if (!isCorrect) {
+                // 答案错误，扣除一颗心
+                loseLife();
+            } else {
+                // 删除同行、同列、同宫中的重复候选数字
+                let affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
+                // 如果是对角线数独，还需要删除对角线上的候选数
+                if (currentPuzzle.gameTypeStr === 'DIAGONAL') {
+                    affectedIndices = [...affectedIndices, ...getDiagonals(row, col)];
                 }
-            });
+                affectedIndices.forEach(idx => {
+                    if (Array.isArray(currentBoard[idx])) {
+                        const candidateIdx = currentBoard[idx].indexOf(num);
+                        if (candidateIdx >= 0) {
+                            currentBoard[idx].splice(candidateIdx, 1);
+                        }
+                    }
+                });
+            }
         }
 
         // 更新当前格子的显示（确定值或空）
@@ -9407,8 +9950,15 @@ function placeNumber(num) {
     
     // 清除提示高亮样式
     document.querySelectorAll('.cell').forEach(cell => {
-        cell.classList.remove('hint-highlight', 'hint-affected');
+        cell.classList.remove('hint-highlight', 'hint-affected', 'hint-related', 'hint-same-num', 'hint-related-fixed', 'hint-same-num-fixed');
     });
+
+    // 记录到撤销栈（仅在操作成功时记录，错误答案不记录）
+    // 注意：错误答案时已经直接return，所以这里记录的肯定是成功的操作
+    if (undoStack.length > 50) {
+        undoStack.shift(); // 限制撤销栈大小，最多50步
+    }
+    undoStack.push(lastAction);
 
     // 检查冲突（只检查确定值）
     checkConflicts();
@@ -9609,23 +10159,34 @@ function checkSolution() {
         Storage.saveRecord(record);
         
         // 显示涂色模式按钮
-        document.getElementById('colorModeBtn').style.display = 'inline-block';
+        const colorModeBtn = document.getElementById('colorModeBtn');
+        if (colorModeBtn) {
+            colorModeBtn.style.display = 'inline-block';
+        }
 
         // 标记已胜利
         hasWon = true;
 
         // 显示胜利弹窗
-        document.getElementById('completionTime').textContent = formatTime(seconds);
+        const completionTime = document.getElementById('completionTime');
+        if (completionTime) {
+            completionTime.textContent = formatTime(seconds);
+        }
 
-        if (isNewRecord) {
-            document.getElementById('newRecordMsg').style.display = 'block';
-        } else {
-            document.getElementById('newRecordMsg').style.display = 'none';
+        const newRecordMsg = document.getElementById('newRecordMsg');
+        if (newRecordMsg) {
+            newRecordMsg.style.display = isNewRecord ? 'block' : 'none';
         }
 
         if (record.bestTime) {
-            document.getElementById('bestRecordMsg').style.display = 'block';
-            document.getElementById('finalBestTime').textContent = formatTime(record.bestTime);
+            const bestRecordMsg = document.getElementById('bestRecordMsg');
+            if (bestRecordMsg) {
+                bestRecordMsg.style.display = 'block';
+            }
+            const finalBestTime = document.getElementById('finalBestTime');
+            if (finalBestTime) {
+                finalBestTime.textContent = formatTime(record.bestTime);
+            }
         }
         
         // 播放胜利庆祝动画
@@ -9642,10 +10203,22 @@ function checkSolution() {
         }
         
         // 显示胜利弹窗，隐藏数字输入和游戏控制
-        document.getElementById('winModal').style.display = 'block';
-        document.getElementById('numberKeyPad').style.display = 'none';
-        document.getElementById('gameControls').style.display = 'none';
-        document.getElementById('modeToggleBtn').style.display = 'none';
+        const winModal = document.getElementById('winModal');
+        if (winModal) {
+            winModal.style.display = 'block';
+        }
+        const numberKeyPad = document.getElementById('numberKeyPad');
+        if (numberKeyPad) {
+            numberKeyPad.style.display = 'none';
+        }
+        const gameControls = document.getElementById('gameControls');
+        if (gameControls) {
+            gameControls.style.display = 'none';
+        }
+        const modeToggleBtn = document.getElementById('modeToggleBtn');
+        if (modeToggleBtn) {
+            modeToggleBtn.style.display = 'none';
+        }
     } else {
         customAlert('答案不正确，请继续尝试！', 'error');
     }
@@ -9666,7 +10239,17 @@ function resetPuzzle() {
     
     // 重置题目，尝试次数+1
     attemptCount++;
-    document.getElementById('attemptInfo').textContent = `已重置 ${attemptCount} 次`;
+    const attemptInfo = document.getElementById('attemptInfo');
+    if (attemptInfo) {
+        attemptInfo.textContent = `已重置 ${attemptCount} 次`;
+    }
+    
+    // 重置爱心数量
+    lives = 3;
+    updateLivesDisplay();
+    
+    // 清空撤销栈
+    undoStack = [];
 }
 
 /**
@@ -9698,14 +10281,26 @@ function newPuzzle() {
 function resetGameControls() {
     // 重置涂色模式
     isColorMode = false;
-    document.getElementById('colorModeBtn').textContent = '🎨 涂色模式';
-    document.getElementById('colorModeBtn').style.display = 'none';
+    const colorModeBtn = document.getElementById('colorModeBtn');
+    if (colorModeBtn) {
+        colorModeBtn.textContent = '🎨 涂色模式';
+        colorModeBtn.style.display = 'none';
+    }
     // 重置胜利状态
     hasWon = false;
     // 重置数字输入和游戏控制
-    document.getElementById('numberKeyPad').style.display = 'grid';
-    document.getElementById('gameControls').style.display = 'flex';
-    document.getElementById('modeToggleBtn').style.display = 'inline-block';
+    const numberKeyPad = document.getElementById('numberKeyPad');
+    if (numberKeyPad) {
+        numberKeyPad.style.display = 'grid';
+    }
+    const gameControls = document.getElementById('gameControls');
+    if (gameControls) {
+        gameControls.style.display = 'flex';
+    }
+    const modeToggleBtn = document.getElementById('modeToggleBtn');
+    if (modeToggleBtn) {
+        modeToggleBtn.style.display = 'inline-block';
+    }
     
     // 检查道具权限，显示相应的按钮
     updateGameControlButtons();
@@ -9742,6 +10337,10 @@ function updateGameControlButtons() {
             autoSolveBtn.style.display = 'none';
         }
     }
+    
+    // 提示角标
+    const hintCount = items['hint'] || 0;
+    updateHintBadge(hintCount);
 }
 
 // ==================== 计时器函数 ====================
@@ -9787,7 +10386,15 @@ function stopTimer() {
     * 更新计时器显示
     */
 function updateTimerDisplay() {
-    document.getElementById('timer').textContent = formatTime(seconds);
+    const timerEl = document.getElementById('timerValue');
+    if (timerEl) {
+        timerEl.textContent = formatTime(seconds);
+    }
+    // 兼容旧版本
+    const oldTimerEl = document.getElementById('timer');
+    if (oldTimerEl) {
+        oldTimerEl.textContent = formatTime(seconds);
+    }
 }
 
 /**
@@ -10391,14 +10998,26 @@ function loadRecords(filter = 'ALL') {
     // 按ID倒序排列
     filteredRecords.sort((a, b) => b.puzzleId - a.puzzleId);
 
-    const latestInProgress = filteredRecords.find(r => !r.isCompleted && !r.isAbandoned);
+    const latestInProgress = filteredRecords.find(r => !r.isCompleted && !r.isAbandoned && !r.isFailed);
 
     tbody.innerHTML = filteredRecords.map(record => {
         const isLatestInProgress = latestInProgress && record.puzzleId === latestInProgress.puzzleId;
         const canContinue = isLatestInProgress;
-        const canView = record.isCompleted && record.solution;
-        const statusText = record.isAbandoned ? '已放弃' : (record.isCompleted ? '已完成' : '进行中');
-        const statusClass = record.isAbandoned ? 'abandoned' : (record.isCompleted ? 'completed' : 'in-progress');
+        const canView = (record.isCompleted || record.isFailed) && record.solution;
+        let statusText, statusClass;
+        if (record.isAbandoned) {
+            statusText = '已放弃';
+            statusClass = 'abandoned';
+        } else if (record.isFailed) {
+            statusText = '失败';
+            statusClass = 'failed';
+        } else if (record.isCompleted) {
+            statusText = '已完成';
+            statusClass = 'completed';
+        } else {
+            statusText = '进行中';
+            statusClass = 'in-progress';
+        }
 
         const startTimeText = record.startTime ? formatDateTime(record.startTime) : '--';
         const duration = record.isCompleted ? (record.completionTime || 0) : (record.elapsedTime || 0);
@@ -10432,7 +11051,7 @@ function filterRecords(filter) {
     */
 function hasInProgressGame() {
     const records = Storage.getRecords();
-    return records.some(r => !r.isCompleted && !r.isAbandoned);
+    return records.some(r => !r.isCompleted && !r.isAbandoned && !r.isFailed);
 }
 
 /**
@@ -10440,7 +11059,7 @@ function hasInProgressGame() {
     */
 function getLatestInProgressGame() {
     const records = Storage.getRecords();
-    const inProgress = records.filter(r => !r.isCompleted && !r.isAbandoned);
+    const inProgress = records.filter(r => !r.isCompleted && !r.isAbandoned && !r.isFailed);
     if (inProgress.length === 0) return null;
     return inProgress.reduce((latest, current) =>
         current.puzzleId > latest.puzzleId ? current : latest
@@ -10521,6 +11140,15 @@ function continuePuzzle(puzzleId, gameType) {
     * 恢复游戏状态
     */
 function restoreGameState(record) {
+    // 如果游戏已失败，不允许继续
+    if (record.isFailed) {
+        customAlert('该游戏已失败，请开始新游戏', 'error');
+        setTimeout(() => {
+            goHome();
+        }, 2000);
+        return;
+    }
+    
     // 根据难度确定棋盘尺寸（优先从record中读取）
     let boardSize = 9;
     
@@ -10624,14 +11252,29 @@ function restoreGameState(record) {
     seconds = record.elapsedTime || 0;
 
     // 更新显示
-    document.getElementById('puzzleNumber').textContent = `题目 #${record.puzzleId}`;
-    document.getElementById('attemptInfo').textContent = `第 ${attemptCount} 次尝试`;
+    const puzzleNumber = document.getElementById('puzzleNumber');
+    if (puzzleNumber) {
+        puzzleNumber.textContent = `题目 #${record.puzzleId}`;
+    }
+    const attemptInfo = document.getElementById('attemptInfo');
+    if (attemptInfo) {
+        attemptInfo.textContent = `第 ${attemptCount} 次尝试`;
+    }
 
     if (bestTime) {
-        document.getElementById('bestTimeInfo').style.display = 'block';
-        document.getElementById('bestTime').textContent = formatTime(bestTime);
+        const bestTimeInfo = document.getElementById('bestTimeInfo');
+        if (bestTimeInfo) {
+            bestTimeInfo.style.display = 'block';
+        }
+        const bestTimeEl = document.getElementById('bestTime');
+        if (bestTimeEl) {
+            bestTimeEl.textContent = formatTime(bestTime);
+        }
     } else {
-        document.getElementById('bestTimeInfo').style.display = 'none';
+        const bestTimeInfo = document.getElementById('bestTimeInfo');
+        if (bestTimeInfo) {
+            bestTimeInfo.style.display = 'none';
+        }
     }
 
     // 渲染棋盘
@@ -10639,9 +11282,16 @@ function restoreGameState(record) {
     
     // 更新游戏控制按钮显示（根据道具权限）
     updateGameControlButtons();
+    
+    // 更新积分显示
+    updateCoinDisplay();
 
     // 启动计时器（从保存的时间继续）
     startTimer(seconds);
+    
+    // 恢复爱心数量
+    lives = record.lives !== undefined ? record.lives : 3;
+    updateLivesDisplay();
 }
 
 // ==================== 弹窗函数 ====================
@@ -10862,7 +11512,7 @@ function closeModal(modalId) {
             modal.onclick = null;
             // 清除高亮
             document.querySelectorAll('.cell').forEach(cell => {
-                cell.classList.remove('hint-highlight', 'hint-affected');
+                cell.classList.remove('hint-highlight', 'hint-affected', 'hint-related', 'hint-same-num', 'hint-related-fixed', 'hint-same-num-fixed');
             });
             // 延迟删除，确保事件处理完成
             setTimeout(() => {

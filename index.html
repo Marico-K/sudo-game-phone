@@ -160,6 +160,7 @@
                     <p>或</p>
                     <button class="home-btn secondary" onclick="clearProgressAndShowGameType()">🎲 开始新游戏</button>
                     <button class="home-btn secondary" id="farmBtnContinue" onclick="goToFarm()">🌾 数独农场</button>
+                    <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -192,6 +193,8 @@
                 <div class="home-buttons-area">
                     <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
                     <button class="home-btn secondary" id="farmBtnDefault" onclick="goToFarm()">🌾 数独农场</button>
+                    <button class="home-btn secondary" onclick="goToHundredsBoard()">🔢 百数乐园</button>
+                    <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -1083,6 +1086,16 @@
                 return;
             }
             window.location.href = 'farm.html';
+        }
+
+        // 跳转百数乐园页面
+        function goToHundredsBoard() {
+            window.location.href = 'hundreds-board.html';
+        }
+
+        // 跳转计算天地页面
+        function goToMathWorld() {
+            window.location.href = 'math-world.html';
         }
         
         // 点击弹窗外部关闭

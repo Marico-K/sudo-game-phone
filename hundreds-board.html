@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百数乐园 - 数感培养</title>
+    <link rel="stylesheet" href="sudoku.css">
+    <style>
+        body {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        /* 游戏选择网格 */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .game-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 16px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .game-card:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .game-card .icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .game-card .name {
+            color: white;
+            font-size: 0.85em;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .game-card.active {
+            background: rgba(255,255,255,0.35);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 游戏区域 */
+        .game-area {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        /* 百数板样式 */
+        .hundreds-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            background: #333;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            aspect-ratio: 1;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .board-cell {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+            position: relative;
+            color: #333;
+        }
+
+        .board-cell:hover {
+            background: #e8f4fd;
+        }
+
+        .board-cell.selected {
+            background: #4CAF50;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .board-cell.highlighted {
+            background: white;
+            color: #333;
+        }
+
+        .board-cell.missing {
+            background: #FFEB3B;
+            border: 2px dashed #FF9800;
+        }
+
+        .board-cell.correct {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .board-cell.wrong {
+            background: #F44336;
+            color: white;
+        }
+
+        .board-cell.blocked {
+            background: #f0f0f0;
+            color: #999;
+        }
+
+        /* 控制区域 */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .control-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 游戏信息 */
+        .game-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .game-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .game-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .game-info .highlight {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+
+        /* 数字输入区域 */
+        .number-input-area {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            max-width: 250px;
+            margin: 0 auto 20px auto;
+        }
+
+        .num-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .num-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* 骰子 */
+        .dice-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0 auto 10px auto;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out;
+        }
+
+        @keyframes roll {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            25% { transform: rotateX(90deg) rotateY(90deg); }
+            50% { transform: rotateX(180deg) rotateY(180deg); }
+            75% { transform: rotateX(270deg) rotateY(270deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        /* 棋子 */
+        .piece {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* 棋子跳跃动画 */
+        .piece-jump {
+            animation: pieceJump 0.4s ease-out;
+        }
+
+        @keyframes pieceJump {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            30% { transform: translate(-50%, -150%) scale(1.2); opacity: 1; }
+            70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* 棋子消失动画 */
+        .piece-jumping {
+            animation: pieceJumping 0.3s ease-in forwards;
+        }
+
+        @keyframes pieceJumping {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -150%) scale(1.3); opacity: 0.8; }
+            100% { transform: translate(-50%, -200%) scale(0.3); opacity: 0; }
+        }
+
+        /* 棋子到达弹跳 */
+        .piece-bounce {
+            animation: pieceBounce 0.6s ease-out;
+        }
+
+        @keyframes pieceBounce {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            30% { transform: translate(-50%, -100%) scale(1.4); }
+            50% { transform: translate(-50%, -30%) scale(0.95); }
+            70% { transform: translate(-50%, -60%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 棋子离开 */
+        .piece-leaving {
+            animation: pieceLeaving 0.3s ease-in forwards;
+        }
+
+        @keyframes pieceLeaving {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -200%) scale(0); opacity: 0; }
+        }
+
+        /* 路径高亮 - 棋子经过的格子 */
+        .path-trail {
+            background: rgba(255, 230, 109, 0.4) !important;
+            transition: background 0.2s ease;
+        }
+
+        /* 棋子经过闪烁效果 */
+        .piece-passing {
+            animation: piecePassing 0.3s ease-out;
+        }
+
+        @keyframes piecePassing {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 230, 109, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(255, 230, 109, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 230, 109, 0); }
+        }
+
+        /* 棋子到达的格子 */
+        .piece-arriving {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4) !important;
+            animation: cellArrive 0.5s ease-out;
+        }
+
+        @keyframes cellArrive {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.3); box-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+            100% { transform: scale(1); }
+        }
+
+        /* 陷阱标记 */
+        .trap-mark {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7em;
+            opacity: 0.7;
+        }
+
+        /* 奖励标记 */
+        .bonus-mark {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7em;
+        }
+
+        /* 骰子滚动 */
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(180deg) scale(1.2); }
+            50% { transform: rotate(360deg) scale(0.8); }
+            75% { transform: rotate(540deg) scale(1.1); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+
+        .dice.rolling {
+            animation: diceRoll 0.5s ease-out;
+        }
+
+        /* 返回首页按钮 */
+        .home-back-btn {
+            display: block;
+            margin: 20px auto 0 auto;
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .home-back-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 玩法选择首页 -->
+        <div id="homePage" style="display: block;">
+            <div class="header">
+                <h1>🔢 百数乐园</h1>
+                <p>趣味数感培养游戏</p>
+            </div>
+            
+            <div class="games-grid">
+                <div class="game-card" onclick="startGame('counting')">
+                    <div class="icon">🎵</div>
+                    <div class="name">唱数游戏</div>
+                </div>
+                <div class="game-card" onclick="startGame('findNumber')">
+                    <div class="icon">👂</div>
+                    <div class="name">听声找数</div>
+                </div>
+                <div class="game-card" onclick="startGame('numberHome')">
+                    <div class="icon">🏠</div>
+                    <div class="name">数字回家</div>
+                </div>
+                <div class="game-card" onclick="startGame('missingNumber')">
+                    <div class="icon">❓</div>
+                    <div class="name">数字迷路</div>
+                </div>
+                <div class="game-card" onclick="startGame('compare')">
+                    <div class="icon">🐟</div>
+                    <div class="name">比大小</div>
+                </div>
+                <div class="game-card" onclick="startGame('skipCount')">
+                    <div class="icon">⏭️</div>
+                    <div class="name">跳数入门</div>
+                </div>
+                <div class="game-card" onclick="startGame('neighbors')">
+                    <div class="icon">🔍</div>
+                    <div class="name">找四邻</div>
+                </div>
+                <div class="game-card" onclick="startGame('oddEven')">
+                    <div class="icon">⚖️</div>
+                    <div class="name">单双数</div>
+                </div>
+                <div class="game-card" onclick="startGame('flyGame')">
+                    <div class="icon">✈️</div>
+                    <div class="name">飞行棋</div>
+                </div>
+                <div class="game-card" onclick="startGame('shulte')">
+                    <div class="icon">🎯</div>
+                    <div class="name">舒尔特</div>
+                </div>
+            </div>
+
+            <button class="home-back-btn" onclick="goBack()">🏠 返回首页</button>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div id="gameArea" style="display: none;">
+            <!-- 游戏内容将动态生成 -->
+        </div>
+    </div>
+
+    <script src="dialog.js"></script>
+    <script src="sudoku.js"></script>
+    <script>
+        let currentGame = '';
+        let gameData = {
+            board: [],
+            selectedCells: [],
+            targetNumbers: [],
+            score: 0,
+            level: 1,
+            currentPosition: 1,
+            diceValue: 1
+        };
+
+        function safeSetText(selector, text) {
+            const el = document.querySelector(selector);
+            if (el) el.textContent = text;
+        }
+
+        // 初始化百数板
+        function initBoard() {
+            const board = [];
+            for (let i = 1; i <= 100; i++) {
+                board.push(i);
+            }
+            return board;
+        }
+
+        // 开始游戏
+        function startGame(gameName) {
+            currentGame = gameName;
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+
+            switch(gameName) {
+                case 'counting':
+                    renderCountingGame();
+                    break;
+                case 'findNumber':
+                    renderFindNumberGame();
+                    break;
+                case 'numberHome':
+                    renderNumberHomeGame();
+                    break;
+                case 'missingNumber':
+                    renderMissingNumberGame();
+                    break;
+                case 'compare':
+                    renderCompareGame();
+                    break;
+                case 'skipCount':
+                    renderSkipCountGame();
+                    break;
+                case 'neighbors':
+                    renderNeighborsGame();
+                    break;
+                case 'oddEven':
+                    renderOddEvenGame();
+                    break;
+                case 'flyGame':
+                    renderFlyGame();
+                    break;
+                case 'shulte':
+                    renderShulteGame();
+                    break;
+            }
+        }
+
+        // 返回玩法选择首页
+        function backToHome() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        }
+
+        // 返回数独首页
+        function goBack() {
+            location.href = 'index.html';
+        }
+
+        // ==================== 唱数游戏 ====================
+        function renderCountingGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                mode: 'forward',
+                startNum: 1,
+                endNum: 10,
+                currentNum: 1
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>🎵 唱数游戏</h3>
+                    <p>按照顺序点击数字</p>
+                    <p class="highlight">目标: ${gameData.startNum} → ${gameData.endNum}</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setCountMode('forward')">🔼 正数</button>
+                    <button class="control-btn secondary" onclick="setCountMode('backward')">🔽 倒数</button>
+                    <button class="control-btn secondary" onclick="setCountRange()">🎯 设置范围</button>
+                </div>
+                <div class="hundreds-board" id="countingBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderCountingBoard();
+        }
+
+        function setCountMode(mode) {
+            gameData.mode = mode;
+            gameData.currentNum = mode === 'forward' ? gameData.startNum : gameData.endNum;
+            renderCountingBoard();
+        }
+
+        async function setCountRange() {
+            const startStr = await customPrompt('请输入起始数字:', '1', { 
+                title: '设置起始数字',
+                type: 'number',
+                placeholder: '输入数字'
+            });
+            if (startStr === null) return;
+            
+            const endStr = await customPrompt('请输入结束数字:', '10', { 
+                title: '设置结束数字',
+                type: 'number',
+                placeholder: '输入数字'
+            });
+            if (endStr === null) return;
+            
+            const start = parseInt(startStr) || 1;
+            const end = parseInt(endStr) || 10;
+            gameData.startNum = Math.min(start, end);
+            gameData.endNum = Math.max(start, end);
+            gameData.currentNum = gameData.mode === 'forward' ? gameData.startNum : gameData.endNum;
+            document.querySelector('.highlight').textContent = `目标: ${gameData.startNum} → ${gameData.endNum}`;
+            renderCountingBoard();
+        }
+
+        function renderCountingBoard() {
+            const board = document.getElementById('countingBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (i >= gameData.startNum && i <= gameData.endNum) {
+                    cell.classList.add('highlighted');
+                }
+                
+                if (gameData.mode === 'forward' && i < gameData.currentNum) {
+                    cell.classList.add('correct');
+                } else if (gameData.mode === 'backward' && i > gameData.currentNum) {
+                    cell.classList.add('correct');
+                }
+                
+                // 移除提示高亮，不再标记当前目标数字
+                // if (i === gameData.currentNum) {
+                //     cell.classList.add('selected');
+                // }
+                
+                cell.onclick = () => handleCountingClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleCountingClick(num) {
+            if (gameData.mode === 'forward') {
+                if (num === gameData.currentNum) {
+                    gameData.currentNum++;
+                    if (gameData.currentNum > gameData.endNum) {
+                        customAlert('🎉 太棒了！完成唱数！');
+                        gameData.currentNum = gameData.startNum;
+                    }
+                } else if (num > gameData.currentNum) {
+                    customAlert('⚠️ 请按顺序点击！');
+                }
+            } else {
+                if (num === gameData.currentNum) {
+                    gameData.currentNum--;
+                    if (gameData.currentNum < gameData.startNum) {
+                        customAlert('🎉 太棒了！完成倒数！');
+                        gameData.currentNum = gameData.endNum;
+                    }
+                } else if (num < gameData.currentNum) {
+                    customAlert('⚠️ 请按顺序点击！');
+                }
+            }
+            renderCountingBoard();
+        }
+
+        // ==================== 听声找数游戏 ====================
+        function renderFindNumberGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                targetNumbers: [],
+                foundNumbers: [],
+                level: 1
+            };
+            generateFindNumbers();
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>👂 听声找数</h3>
+                    <p>找到并点击下面的数字：</p>
+                    <p class="highlight" id="targetDisplay"></p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn primary" onclick="generateFindNumbers()">🔄 新题目</button>
+                    <button class="control-btn secondary" onclick="speakNumbers()">🔊 再读一遍</button>
+                </div>
+                <div class="hundreds-board" id="findBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderFindBoard();
+            speakNumbers();
+        }
+
+        function generateFindNumbers() {
+            const count = Math.min(3 + gameData.level, 5);
+            gameData.targetNumbers = [];
+            gameData.foundNumbers = [];
+            
+            while (gameData.targetNumbers.length < count) {
+                const num = Math.floor(Math.random() * 100) + 1;
+                if (!gameData.targetNumbers.includes(num)) {
+                    gameData.targetNumbers.push(num);
+                }
+            }
+            gameData.targetNumbers.sort((a, b) => a - b);
+            
+            if (document.getElementById('targetDisplay')) {
+                document.getElementById('targetDisplay').textContent = gameData.targetNumbers.join(', ');
+            }
+        }
+
+        function speakNumbers() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                gameData.targetNumbers.forEach((num, index) => {
+                    setTimeout(() => {
+                        const utterance = new SpeechSynthesisUtterance(num.toString());
+                        utterance.lang = 'zh-CN';
+                        window.speechSynthesis.speak(utterance);
+                    }, index * 800);
+                });
+            }
+        }
+
+        function renderFindBoard() {
+            const board = document.getElementById('findBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (gameData.foundNumbers.includes(i)) {
+                    cell.classList.add('correct');
+                } else if (gameData.targetNumbers.includes(i)) {
+                    cell.classList.add('highlighted');
+                }
+                
+                cell.onclick = () => handleFindClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleFindClick(num) {
+            if (gameData.targetNumbers.includes(num) && !gameData.foundNumbers.includes(num)) {
+                gameData.foundNumbers.push(num);
+                if (gameData.foundNumbers.length === gameData.targetNumbers.length) {
+                    customAlert('🎉 全部找到！太棒了！');
+                    gameData.level++;
+                    generateFindNumbers();
+                }
+            }
+            renderFindBoard();
+        }
+
+        // ==================== 数字回家游戏 ====================
+        function renderNumberHomeGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                range: 20,
+                shuffled: [],
+                placed: [],
+                correct: 0
+            };
+            initNumberHome();
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>🏠 数字回家</h3>
+                    <p>将打乱的数字拖放到正确位置</p>
+                    <p>范围: 1-${gameData.range}</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setRange(20)">1-20</button>
+                    <button class="control-btn secondary" onclick="setRange(50)">1-50</button>
+                    <button class="control-btn secondary" onclick="setRange(100)">1-100</button>
+                    <button class="control-btn primary" onclick="initNumberHome()">🔄 重新开始</button>
+                </div>
+                <div class="hundreds-board" id="homeBoard"></div>
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${(gameData.correct / gameData.range) * 100}%"></div>
+                    </div>
+                    <p>完成: ${gameData.correct}/${gameData.range}</p>
+                </div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderHomeBoard();
+        }
+
+        function setRange(range) {
+            gameData.range = range;
+            initNumberHome();
+            renderHomeBoard();
+        }
+
+        function initNumberHome() {
+            gameData.shuffled = [];
+            gameData.placed = [];
+            gameData.correct = 0;
+            
+            for (let i = 1; i <= gameData.range; i++) {
+                gameData.shuffled.push(i);
+            }
+            
+            for (let i = gameData.shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameData.shuffled[i], gameData.shuffled[j]] = [gameData.shuffled[j], gameData.shuffled[i]];
+            }
+        }
+
+        function renderHomeBoard() {
+            const board = document.getElementById('homeBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                
+                if (i > gameData.range) {
+                    cell.classList.add('blocked');
+                    cell.textContent = '';
+                } else if (gameData.placed.includes(i)) {
+                    cell.classList.add('correct');
+                    cell.textContent = i;
+                } else {
+                    cell.textContent = '?';
+                    cell.classList.add('missing');
+                }
+                
+                cell.onclick = () => handleHomeClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleHomeClick(pos) {
+            if (pos > gameData.range || gameData.placed.includes(pos)) return;
+            
+            if (gameData.shuffled.length > 0) {
+                const num = gameData.shuffled.shift();
+                gameData.placed.push(pos);
+                
+                if (pos === num) {
+                    gameData.correct++;
+                }
+                
+                renderHomeBoard();
+                
+                if (gameData.placed.length === gameData.range) {
+                    const accuracy = Math.round((gameData.correct / gameData.range) * 100);
+                    customAlert(`🎯 完成！正确率: ${accuracy}%`);
+                }
+            }
+        }
+
+        // ==================== 数字迷路游戏 ====================
+        function renderMissingNumberGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                range: 50,
+                missing: [],
+                board: []
+            };
+            initMissingNumber();
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>❓ 数字迷路</h3>
+                    <p>找出缺失的数字并填入</p>
+                    <p>范围: 1-${gameData.range}</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setMissingRange(30)">1-30</button>
+                    <button class="control-btn secondary" onclick="setMissingRange(50)">1-50</button>
+                    <button class="control-btn secondary" onclick="setMissingRange(100)">1-100</button>
+                    <button class="control-btn primary" onclick="initMissingNumber()">🔄 新题目</button>
+                </div>
+                <div class="hundreds-board" id="missingBoard"></div>
+                <div class="number-input-area" id="numInput"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderMissingBoard();
+            renderNumberInput();
+        }
+
+        function setMissingRange(range) {
+            gameData.range = range;
+            initMissingNumber();
+            renderMissingBoard();
+        }
+
+        function initMissingNumber() {
+            gameData.board = [];
+            gameData.missing = [];
+            
+            const missingCount = Math.min(Math.floor(gameData.range / 10), 10);
+            
+            for (let i = 1; i <= gameData.range; i++) {
+                gameData.board.push(i);
+            }
+            
+            while (gameData.missing.length < missingCount) {
+                const pos = Math.floor(Math.random() * gameData.range);
+                if (!gameData.missing.includes(pos)) {
+                    gameData.missing.push(pos);
+                }
+            }
+            
+            gameData.missing.sort((a, b) => a - b);
+            gameData.missing.forEach(pos => {
+                gameData.board[pos] = 0;
+            });
+        }
+
+        function renderMissingBoard() {
+            const board = document.getElementById('missingBoard');
+            board.innerHTML = '';
+            
+            for (let i = 0; i < 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                
+                if (i >= gameData.range) {
+                    cell.classList.add('blocked');
+                    cell.textContent = '';
+                } else if (gameData.board[i] === 0) {
+                    cell.classList.add('missing');
+                    cell.textContent = '?';
+                    cell.dataset.pos = i;
+                } else {
+                    cell.textContent = gameData.board[i];
+                }
+                
+                cell.onclick = () => handleMissingClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function renderNumberInput() {
+            const inputArea = document.getElementById('numInput');
+            inputArea.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn';
+                btn.textContent = i;
+                btn.onclick = () => inputNumber(i);
+                inputArea.appendChild(btn);
+            }
+        }
+
+        let selectedMissingPos = -1;
+
+        function handleMissingClick(pos) {
+            if (pos >= gameData.range) return;
+            
+            document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('selected'));
+            
+            if (gameData.board[pos] === 0) {
+                selectedMissingPos = pos;
+                document.querySelectorAll('.board-cell')[pos].classList.add('selected');
+            }
+        }
+
+        function inputNumber(num) {
+            if (selectedMissingPos === -1) {
+                customAlert('请先点击一个空位！');
+                return;
+            }
+            
+            const correctNum = selectedMissingPos + 1;
+            
+            if (num === correctNum) {
+                gameData.board[selectedMissingPos] = num;
+                gameData.missing = gameData.missing.filter(p => p !== selectedMissingPos);
+                
+                document.querySelectorAll('.board-cell')[selectedMissingPos].classList.remove('missing', 'selected');
+                document.querySelectorAll('.board-cell')[selectedMissingPos].classList.add('correct');
+                document.querySelectorAll('.board-cell')[selectedMissingPos].textContent = num;
+                
+                if (gameData.missing.length === 0) {
+                    customAlert('🎉 全部找对了！太棒了！');
+                }
+            } else {
+                customAlert(`❌ 不对，应该是 ${correctNum}`);
+            }
+            
+            selectedMissingPos = -1;
+        }
+
+        // ==================== 比大小游戏 ====================
+        function renderCompareGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                playerNum: 0,
+                computerNum: 0,
+                playerScore: 0,
+                computerScore: 0,
+                round: 1
+            };
+            newRound();
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>🐟 大鱼吃小鱼</h3>
+                    <p>翻出更大的数字获胜！</p>
+                    <p>得分: 你 ${gameData.playerScore} : ${gameData.computerScore} 电脑</p>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
+                    <div style="text-align: center;">
+                        <div class="board-cell" style="width: 80px; height: 80px; font-size: 2em;" id="playerCard">?</div>
+                        <p style="margin-top: 10px;">你的数字</p>
+                    </div>
+                    <div style="font-size: 2em; align-self: center;">VS</div>
+                    <div style="text-align: center;">
+                        <div class="board-cell" style="width: 80px; height: 80px; font-size: 2em;" id="computerCard">?</div>
+                        <p style="margin-top: 10px;">电脑数字</p>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="control-btn primary" onclick="playRound()">🎲 翻牌</button>
+                    <button class="control-btn secondary" onclick="resetCompare()">🔄 重新开始</button>
+                </div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+        }
+
+        function newRound() {
+            gameData.playerNum = Math.floor(Math.random() * 100) + 1;
+            gameData.computerNum = Math.floor(Math.random() * 100) + 1;
+        }
+
+        function playRound() {
+            document.getElementById('playerCard').textContent = gameData.playerNum;
+            document.getElementById('computerCard').textContent = gameData.computerNum;
+            
+            setTimeout(() => {
+                if (gameData.playerNum > gameData.computerNum) {
+                    gameData.playerScore++;
+                    customAlert(`🎉 你赢了！${gameData.playerNum} > ${gameData.computerNum}`);
+                } else if (gameData.playerNum < gameData.computerNum) {
+                    gameData.computerScore++;
+                    customAlert(`😢 电脑赢了！${gameData.playerNum} < ${gameData.computerNum}`);
+                } else {
+                    customAlert(`🤝 平局！${gameData.playerNum} = ${gameData.computerNum}`);
+                }
+                
+                gameData.round++;
+                
+                if (gameData.round > 5) {
+                    const winner = gameData.playerScore > gameData.computerScore ? '你' : 
+                                   gameData.computerScore > gameData.playerScore ? '电脑' : '平局';
+                    customAlert(`🏆 游戏结束！${winner}获胜！\n最终比分: ${gameData.playerScore} : ${gameData.computerScore}`);
+                    resetCompare();
+                } else {
+                    newRound();
+                    document.getElementById('playerCard').textContent = '?';
+                    document.getElementById('computerCard').textContent = '?';
+                    safeSetText('.game-info p:nth-child(3)', `得分: 你 ${gameData.playerScore} : ${gameData.computerScore} 电脑`);
+                }
+            }, 500);
+        }
+
+        function resetCompare() {
+            gameData = {
+                playerNum: 0,
+                computerNum: 0,
+                playerScore: 0,
+                computerScore: 0,
+                round: 1
+            };
+            newRound();
+            document.getElementById('playerCard').textContent = '?';
+            document.getElementById('computerCard').textContent = '?';
+            safeSetText('.game-info p:nth-child(3)', `得分: 你 ${gameData.playerScore} : ${gameData.computerScore} 电脑`);
+        }
+
+        // ==================== 跳数入门游戏 ====================
+        function renderSkipCountGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                step: 2,
+                marked: []
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>⏭️ 跳数入门</h3>
+                    <p>按 ${gameData.step} 个 ${gameData.step} 个数，圈出所有数字</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setStep(2)">2个2个数</button>
+                    <button class="control-btn secondary" onclick="setStep(5)">5个5个数</button>
+                    <button class="control-btn secondary" onclick="setStep(10)">10个10个数</button>
+                    <button class="control-btn primary" onclick="resetSkipCount()">🔄 重新开始</button>
+                </div>
+                <div class="hundreds-board" id="skipBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderSkipBoard();
+        }
+
+        function setStep(step) {
+            gameData.step = step;
+            gameData.marked = [];
+            safeSetText('.game-info p', `按 ${step} 个 ${step} 个数，圈出所有数字`);
+            renderSkipBoard();
+        }
+
+        function resetSkipCount() {
+            gameData.marked = [];
+            renderSkipBoard();
+        }
+
+        function renderSkipBoard() {
+            const board = document.getElementById('skipBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (gameData.marked.includes(i)) {
+                    cell.classList.add('selected');
+                } else if (i % gameData.step === 0) {
+                    cell.classList.add('highlighted');
+                }
+                
+                cell.onclick = () => handleSkipClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleSkipClick(num) {
+            if (num % gameData.step === 0) {
+                if (!gameData.marked.includes(num)) {
+                    gameData.marked.push(num);
+                    
+                    if (gameData.marked.length === Math.floor(100 / gameData.step)) {
+                        customAlert('🎉 全部找对了！太棒了！');
+                    }
+                }
+            } else {
+                customAlert('⚠️ 不对哦，不是这个数字！');
+            }
+            renderSkipBoard();
+        }
+
+        // ==================== 找四邻游戏 ====================
+        function renderNeighborsGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                targetNum: 0,
+                neighbors: {},
+                found: []
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>🔍 找四邻</h3>
+                    <p>找出数字 <span class="highlight">0</span> 的上下左右邻居</p>
+                    <p>已找到: 0/4</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn primary" onclick="generateNeighbors(); updateNeighborsUI(); renderNeighborsBoard();">🔄 新题目</button>
+                </div>
+                <div class="hundreds-board" id="neighborsBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            
+            generateNeighbors();
+            updateNeighborsUI();
+            renderNeighborsBoard();
+        }
+
+        function updateNeighborsUI() {
+            const spanEl = document.querySelector('.game-info p:nth-child(2) span');
+            const pEl = document.querySelector('.game-info p:nth-child(3)');
+            if (spanEl) spanEl.textContent = gameData.targetNum;
+            if (pEl) pEl.textContent = `已找到: ${gameData.found.length}/4`;
+        }
+
+        function generateNeighbors() {
+            gameData.targetNum = Math.floor(Math.random() * 80) + 11;
+            
+            gameData.neighbors = {
+                left: gameData.targetNum - 1,
+                right: gameData.targetNum + 1,
+                up: gameData.targetNum - 10,
+                down: gameData.targetNum + 10
+            };
+            gameData.found = [];
+        }
+
+        function renderNeighborsBoard() {
+            const board = document.getElementById('neighborsBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (i === gameData.targetNum) {
+                    cell.classList.add('selected');
+                } else if (gameData.found.includes(i)) {
+                    cell.classList.add('correct');
+                } else if (Object.values(gameData.neighbors).includes(i)) {
+                    cell.classList.add('highlighted');
+                }
+                
+                cell.onclick = () => handleNeighborsClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleNeighborsClick(num) {
+            if (num === gameData.targetNum) return;
+            
+            if (Object.values(gameData.neighbors).includes(num) && !gameData.found.includes(num)) {
+                gameData.found.push(num);
+                updateNeighborsUI();
+                
+                if (gameData.found.length === 4) {
+                    customAlert(`🎉 全部找到！\n${gameData.targetNum} 的邻居是:\n左: ${gameData.neighbors.left}\n右: ${gameData.neighbors.right}\n上: ${gameData.neighbors.up}\n下: ${gameData.neighbors.down}`);
+                    generateNeighbors();
+                    updateNeighborsUI();
+                    renderNeighborsBoard();
+                }
+            } else if (!Object.values(gameData.neighbors).includes(num)) {
+                customAlert('⚠️ 这不是邻居哦！');
+            }
+            renderNeighborsBoard();
+        }
+
+        // ==================== 单双数游戏 ====================
+        function renderOddEvenGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                mode: 'even',
+                marked: []
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>⚖️ 单双数分类</h3>
+                    <p>找出所有${gameData.mode === 'even' ? '双数' : '单数'}</p>
+                    <p>已找到: ${gameData.marked.length}个</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setOddEvenMode('even')">🔵 找双数</button>
+                    <button class="control-btn secondary" onclick="setOddEvenMode('odd')">🔴 找单数</button>
+                    <button class="control-btn primary" onclick="resetOddEven()">🔄 重新开始</button>
+                </div>
+                <div class="hundreds-board" id="oddEvenBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderOddEvenBoard();
+        }
+
+        function setOddEvenMode(mode) {
+            gameData.mode = mode;
+            gameData.marked = [];
+            safeSetText('.game-info p:nth-child(2)', `找出所有${mode === 'even' ? '双数' : '单数'}`);
+            safeSetText('.game-info p:nth-child(3)', '已找到: 0个');
+            renderOddEvenBoard();
+        }
+
+        function resetOddEven() {
+            gameData.marked = [];
+            safeSetText('.game-info p:nth-child(3)', '已找到: 0个');
+            renderOddEvenBoard();
+        }
+
+        function renderOddEvenBoard() {
+            const board = document.getElementById('oddEvenBoard');
+            board.innerHTML = '';
+            
+            const isEven = gameData.mode === 'even';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (gameData.marked.includes(i)) {
+                    cell.classList.add(isEven ? 'correct' : 'selected');
+                } else if ((i % 2 === 0) === isEven) {
+                    cell.classList.add('highlighted');
+                }
+                
+                cell.onclick = () => handleOddEvenClick(i);
+                board.appendChild(cell);
+            }
+        }
+
+        function handleOddEvenClick(num) {
+            const isEven = gameData.mode === 'even';
+            const isCorrect = (num % 2 === 0) === isEven;
+            
+            if (isCorrect && !gameData.marked.includes(num)) {
+                gameData.marked.push(num);
+                document.querySelector('.game-info p:nth-child(3)').textContent = 
+                    `已找到: ${gameData.marked.length}个`;
+                
+                if (gameData.marked.length === 50) {
+                    customAlert('🎉 全部找对了！太棒了！');
+                }
+            } else if (!isCorrect) {
+                customAlert('⚠️ 这不是' + (isEven ? '双数' : '单数') + '哦！');
+            }
+            renderOddEvenBoard();
+        }
+
+        // ==================== 飞行棋游戏 ====================
+        function renderFlyGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                position: 1,
+                diceValue: 1,
+                traps: [17, 31, 45, 62, 78, 89],
+                bonuses: [10, 25, 40, 55, 70, 85]
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>✈️ 数字飞行棋</h3>
+                    <p>从 1 出发，掷骰子前进，先到 100 获胜！</p>
+                    <p>当前位置: <span class="highlight">${gameData.position}</span></p>
+                </div>
+                <div class="dice-container">
+                    <div class="dice" id="dice">${gameData.diceValue}</div>
+                    <button class="control-btn primary" onclick="rollDice()">🎲 掷骰子</button>
+                    <button class="control-btn secondary" onclick="resetFlyGame()">🔄 重新开始</button>
+                </div>
+                <div class="hundreds-board" id="flyBoard"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            renderFlyBoard();
+        }
+
+        function rollDice() {
+            const dice = document.getElementById('dice');
+            dice.classList.add('rolling');
+            
+            setTimeout(() => {
+                gameData.diceValue = Math.floor(Math.random() * 6) + 1;
+                dice.textContent = gameData.diceValue;
+                dice.classList.remove('rolling');
+                
+                movePiece();
+            }, 500);
+        }
+
+        function movePiece() {
+            const dice = gameData.diceValue;
+            const stepsToMove = dice;
+            const startPos = gameData.position;
+            const newPos = startPos + dice;
+            
+            if (newPos >= 100) {
+                // 播放走到100的动画
+                animateMove(startPos, 100, stepsToMove, () => {
+                    gameData.position = 100;
+                    customAlert('🎉 恭喜！你到达终点了！');
+                    resetFlyGame();
+                });
+                return;
+            }
+            
+            // 一步步动画移动
+            animateMove(startPos, newPos, stepsToMove, () => {
+                let finalPos = newPos;
+                
+                if (gameData.traps.includes(newPos)) {
+                    finalPos = Math.max(1, newPos - 5);
+                    customAlert(`⚠️ 踩到陷阱！后退 5 步，现在在 ${finalPos}`);
+                    animateMove(newPos, finalPos, 5, () => {
+                        gameData.position = finalPos;
+                        safeSetText('.game-info p:nth-child(3) span', finalPos);
+                        renderFlyBoard();
+                    });
+                } else if (gameData.bonuses.includes(newPos)) {
+                    finalPos = Math.min(100, newPos + 5);
+                    customAlert(`🎁 获得奖励！前进 5 步，现在在 ${finalPos}`);
+                    animateMove(newPos, finalPos, 5, () => {
+                        gameData.position = finalPos;
+                        safeSetText('.game-info p:nth-child(3) span', finalPos);
+                        renderFlyBoard();
+                    });
+                } else {
+                    gameData.position = finalPos;
+                    safeSetText('.game-info p:nth-child(3) span', finalPos);
+                    renderFlyBoard();
+                }
+            });
+        }
+
+        // 动画移动棋子
+        function animateMove(fromPos, toPos, steps, callback) {
+            const board = document.getElementById('flyBoard');
+            const stepDelay = 200; // 每步200ms
+            
+            if (steps <= 0 || fromPos === toPos) {
+                if (callback) callback();
+                return;
+            }
+            
+            // 计算每步实际移动方向
+            const direction = toPos > fromPos ? 1 : -1;
+            const actualSteps = Math.min(steps, Math.abs(toPos - fromPos));
+            
+            // 清除之前的高亮路径
+            board.classList.add('moving');
+            
+            // 移除旧位置棋子
+            const oldCell = board.querySelector(`.board-cell:nth-child(${fromPos})`);
+            if (oldCell) {
+                oldCell.classList.remove('selected');
+                const oldPiece = oldCell.querySelector('.piece');
+                if (oldPiece) oldPiece.classList.add('piece-leaving');
+            }
+            
+            // 标记路径上的格子为路径高亮
+            for (let p = fromPos + direction; p !== toPos; p += direction) {
+                const pathCell = board.querySelector(`.board-cell:nth-child(${p})`);
+                if (pathCell) {
+                    pathCell.classList.add('path-trail');
+                }
+            }
+            
+            // 逐步移动
+            let currentStep = 0;
+            function moveOneStep() {
+                currentStep++;
+                if (currentStep >= actualSteps) {
+                    // 到达目标位置
+                    const targetCell = board.querySelector(`.board-cell:nth-child(${toPos})`);
+                    if (targetCell) {
+                        targetCell.classList.add('selected', 'piece-arriving');
+                        if (!targetCell.querySelector('.piece')) {
+                            const piece = document.createElement('div');
+                            piece.className = 'piece piece-bounce';
+                            targetCell.appendChild(piece);
+                        } else {
+                            targetCell.querySelector('.piece').classList.add('piece-bounce');
+                        }
+                        setTimeout(() => {
+                            targetCell.classList.remove('piece-arriving');
+                            if (targetCell.querySelector('.piece')) {
+                                targetCell.querySelector('.piece').classList.remove('piece-bounce');
+                            }
+                            // 清除路径高亮
+                            document.querySelectorAll('.path-trail').forEach(el => el.classList.remove('path-trail'));
+                            board.classList.remove('moving');
+                            if (callback) callback();
+                        }, 300);
+                    } else {
+                        if (callback) callback();
+                    }
+                    return;
+                }
+                
+                const nextPos = fromPos + direction * currentStep;
+                const nextCell = board.querySelector(`.board-cell:nth-child(${nextPos})`);
+                if (nextCell) {
+                    // 移除当前位置的棋子
+                    const currentPos = fromPos + direction * (currentStep - 1);
+                    const currentCell = board.querySelector(`.board-cell:nth-child(${currentPos})`);
+                    if (currentCell) {
+                        const piece = currentCell.querySelector('.piece');
+                        if (piece) {
+                            piece.classList.add('piece-jumping');
+                            setTimeout(() => piece.remove(), 200);
+                        }
+                        currentCell.classList.remove('selected');
+                    }
+                    
+                    // 在新位置添加跳跃的棋子
+                    nextCell.classList.add('selected');
+                    const piece = document.createElement('div');
+                    piece.className = 'piece piece-jump';
+                    nextCell.appendChild(piece);
+                    setTimeout(() => {
+                        piece.classList.remove('piece-jump');
+                    }, 200);
+                    
+                    // 播放移动音效（视觉提示）
+                    nextCell.classList.add('piece-passing');
+                    setTimeout(() => {
+                        nextCell.classList.remove('piece-passing');
+                    }, 200);
+                }
+                
+                setTimeout(moveOneStep, stepDelay);
+            }
+            
+            // 启动第一步
+            setTimeout(moveOneStep, 50);
+        }
+
+        function resetFlyGame() {
+            gameData.position = 1;
+            gameData.diceValue = 1;
+            document.getElementById('dice').textContent = '1';
+            safeSetText('.game-info p:nth-child(3) span', '1');
+            renderFlyBoard();
+        }
+
+        function renderFlyBoard() {
+            const board = document.getElementById('flyBoard');
+            board.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = i;
+                
+                if (i === gameData.position) {
+                    cell.classList.add('selected');
+                    const piece = document.createElement('div');
+                    piece.className = 'piece';
+                    cell.appendChild(piece);
+                } else if (gameData.traps.includes(i)) {
+                    cell.classList.add('wrong');
+                    const trap = document.createElement('div');
+                    trap.className = 'trap-mark';
+                    trap.textContent = '⚠';
+                    cell.appendChild(trap);
+                } else if (gameData.bonuses.includes(i)) {
+                    cell.classList.add('highlighted');
+                    const bonus = document.createElement('div');
+                    bonus.className = 'bonus-mark';
+                    bonus.textContent = '🎁';
+                    cell.appendChild(bonus);
+                }
+                
+                board.appendChild(cell);
+            }
+        }
+
+        // ==================== 舒尔特方格游戏 ====================
+        function renderShulteGame() {
+            const gameArea = document.getElementById('gameArea');
+            gameData = {
+                size: 9,
+                grid: [],
+                currentTarget: 1,
+                startTime: null,
+                elapsedTime: 0
+            };
+
+            gameArea.innerHTML = `
+                <div class="game-info">
+                    <h3>🎯 舒尔特方格</h3>
+                    <p>按顺序快速点击数字 1, 2, 3...</p>
+                    <p>目标: <span class="highlight">${gameData.currentTarget}</span></p>
+                    <p id="timer">时间: 0.00秒</p>
+                </div>
+                <div class="controls">
+                    <button class="control-btn secondary" onclick="setShulteSize(9)">3×3</button>
+                    <button class="control-btn secondary" onclick="setShulteSize(16)">4×4</button>
+                    <button class="control-btn secondary" onclick="setShulteSize(25)">5×5</button>
+                    <button class="control-btn primary" onclick="initShulte()">🔄 新游戏</button>
+                </div>
+                <div id="shulteGrid" style="display: grid; gap: 5px; max-width: 300px; margin: 0 auto;"></div>
+                <button class="back-btn" onclick="backToHome()">⬅️ 返回玩法选择</button>
+            `;
+            initShulte();
+            renderShulteGrid();
+        }
+
+        function setShulteSize(size) {
+            gameData.size = size;
+            initShulte();
+            renderShulteGrid();
+        }
+
+        function initShulte() {
+            gameData.grid = [];
+            for (let i = 1; i <= gameData.size; i++) {
+                gameData.grid.push(i);
+            }
+            
+            for (let i = gameData.grid.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameData.grid[i], gameData.grid[j]] = [gameData.grid[j], gameData.grid[i]];
+            }
+            
+            gameData.currentTarget = 1;
+            gameData.startTime = Date.now();
+            gameData.elapsedTime = 0;
+            
+            updateTimer();
+        }
+
+        function updateTimer() {
+            if (gameData.startTime && gameData.currentTarget <= gameData.size) {
+                gameData.elapsedTime = (Date.now() - gameData.startTime) / 1000;
+                const timerEl = document.getElementById('timer');
+                if (timerEl) timerEl.textContent = `时间: ${gameData.elapsedTime.toFixed(2)}秒`;
+                requestAnimationFrame(updateTimer);
+            }
+        }
+
+        function renderShulteGrid() {
+            const grid = document.getElementById('shulteGrid');
+            const cols = Math.sqrt(gameData.size);
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            grid.innerHTML = '';
+            
+            gameData.grid.forEach(num => {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.textContent = num;
+                cell.style.fontSize = gameData.size === 9 ? '1.5em' : gameData.size === 16 ? '1.2em' : '1em';
+                
+                if (num === gameData.currentTarget) {
+                    cell.classList.add('selected');
+                }
+                
+                cell.onclick = () => handleShulteClick(num);
+                grid.appendChild(cell);
+            });
+        }
+
+        function handleShulteClick(num) {
+            if (num === gameData.currentTarget) {
+                gameData.currentTarget++;
+                
+                if (gameData.currentTarget > gameData.size) {
+                    const time = gameData.elapsedTime.toFixed(2);
+                    customAlert(`🎉 完成！用时 ${time}秒`);
+                    initShulte();
+                } else {
+                    document.querySelector('.game-info p:nth-child(3) span').textContent = gameData.currentTarget;
+                }
+                renderShulteGrid();
+            }
+        }
+    </script>
+</body>
+</html>

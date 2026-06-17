@@ -200,3 +200,86 @@ window.customConfirmAsync = function(message, options = {}) {
         customConfirm(message, () => resolve(true), () => resolve(false), options);
     });
 };
+
+// 自定义输入弹窗（替代原生 prompt）
+function customPrompt(message, defaultValue = '', options = {}) {
+    return new Promise((resolve) => {
+        const {
+            title = '输入',
+            placeholder = '',
+            type = 'text',
+            validate = null,
+            cancelText = '取消',
+            confirmText = '确定'
+        } = options;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-dialog-overlay';
+        overlay.innerHTML = `
+            <div class="custom-dialog custom-dialog-prompt" role="dialog" aria-labelledby="customPromptTitle">
+                <div class="custom-dialog-header" style="background: #667eea">
+                    <span class="custom-dialog-icon">📝</span>
+                    <span class="custom-dialog-title" id="customPromptTitle">${escapeHtml(title)}</span>
+                </div>
+                <div class="custom-dialog-body">
+                    <div class="dialog-message-line">${escapeHtml(String(message))}</div>
+                    <input 
+                        type="${type}" 
+                        class="custom-dialog-input" 
+                        placeholder="${escapeHtml(placeholder)}" 
+                        value="${escapeHtml(defaultValue)}"
+                        autocomplete="off"
+                    />
+                </div>
+                <div class="custom-dialog-footer">
+                    <button class="custom-dialog-btn custom-dialog-btn-secondary" data-action="cancel">${escapeHtml(cancelText)}</button>
+                    <button class="custom-dialog-btn custom-dialog-btn-primary" data-action="confirm" style="background: #667eea">${escapeHtml(confirmText)}</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            overlay.classList.add('show');
+            // 聚焦输入框
+            const input = overlay.querySelector('.custom-dialog-input');
+            input.focus();
+            input.select();
+        });
+
+        const closeDialog = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.remove();
+                resolve(result);
+            }, 200);
+        };
+
+        const handleConfirm = () => {
+            const input = overlay.querySelector('.custom-dialog-input');
+            const value = input.value;
+            
+            if (validate && !validate(value)) {
+                input.classList.add('error');
+                return;
+            }
+            
+            closeDialog(value);
+        };
+
+        overlay.querySelector('[data-action="confirm"]').addEventListener('click', handleConfirm);
+        overlay.querySelector('[data-action="cancel"]').addEventListener('click', () => closeDialog(null));
+
+        // Enter 确认，ESC 取消
+        const keyHandler = (e) => {
+            if (e.key === 'Enter') {
+                handleConfirm();
+            } else if (e.key === 'Escape') {
+                closeDialog(null);
+                document.removeEventListener('keydown', keyHandler);
+            }
+        };
+        document.addEventListener('keydown', keyHandler);
+    });
+}

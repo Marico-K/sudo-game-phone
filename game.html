@@ -43,31 +43,49 @@
             <div class="header-center">
                 <h1 id="gameTypeTitle">数独游戏</h1>
             </div>
-            <div class="header-right">
-                <div class="timer" id="timer">00:00</div>
-            </div>
         </header>
 
         <main class="game-main">
-            <!-- 游戏信息区 -->
-            <div class="game-info">
-                <div class="puzzle-info" style="display: none;">
-                    <span id="puzzleNumber">题目 #1</span>
-                    <span id="attemptInfo">第 1 次尝试</span>
+            <!-- 顶部状态栏：爱心+积分+计时器 -->
+            <div class="top-status-bar">
+                <div class="lives-display-top" id="livesDisplayTop">
+                    <span class="life-heart-top">❤️</span>
+                    <span class="life-heart-top">❤️</span>
+                    <span class="life-heart-top">❤️</span>
                 </div>
-                <div class="best-time" id="bestTimeInfo" style="display: none;">
-                    最佳成绩: <span id="bestTime">--:--</span>
+                <div class="coin-display">
+                    <span class="coin-icon">💰</span>
+                    <span class="coin-value" id="coinValue">0</span>
                 </div>
-                <div class="game-actions">
-                    <button class="action-toggle-btn" id="colorModeBtn" onclick="toggleColorMode()"
-                        style="display: none;">🎨 涂色模式</button>
-                    <button class="action-toggle-btn" id="modeToggleBtn" onclick="toggleInputMode()">✏️ 确定模式</button>
-                    <button class="action-toggle-btn help-btn-in-game" onclick="showHelp()">❓ 帮助</button>
+                <div class="timer-display">
+                    <span class="timer-icon">⏱</span>
+                    <span class="timer-value" id="timerValue">00:00</span>
                 </div>
             </div>
 
             <!-- 数独棋盘 -->
             <div class="sudoku-board" id="sudokuBoard"></div>
+
+            <!-- 功能按钮区：撤销、删除、笔记、提示 -->
+            <div class="action-buttons-bar">
+                <button class="action-icon-btn" id="undoBtn" onclick="undoLastAction()">
+                    <span class="action-icon">↩️</span>
+                    <span class="action-label">撤销</span>
+                </button>
+                <button class="action-icon-btn" onclick="clearSelectedCell()">
+                    <span class="action-icon">🗑️</span>
+                    <span class="action-label">删除</span>
+                </button>
+                <button class="action-icon-btn" id="noteBtn" onclick="toggleInputMode()">
+                    <span class="action-icon">✏️</span>
+                    <span class="action-label">笔记</span>
+                </button>
+                <button class="action-icon-btn" id="hintBtn" onclick="showHint()">
+                    <span class="action-icon">💡</span>
+                    <span class="action-label">提示</span>
+                    <span class="hint-badge" id="hintBadge" style="display: none;">0</span>
+                </button>
+            </div>
 
             <!-- 数字键盘 -->
             <div id="numberKeyPad" class="number-keypad"></div>
@@ -76,7 +94,6 @@
             <div id="gameControls" class="game-controls">
                 <button class="control-btn" id="autoDraftBtn" onclick="fillAllCandidates()" style="display: none;">🎯 一键草稿</button>
                 <button class="control-btn" id="autoSolveBtn" onclick="fillUniqueCandidates()" style="display: none;">✅ 一键答题</button>
-                <button class="control-btn" id="hintBtn" onclick="showHint()">💡 提示 <span class="shortcut-key">(H)</span></button>
                 <button class="control-btn" onclick="clearAllCandidates()">🗑️ 清除草稿</button>
                 <button class="control-btn" onclick="resetPuzzle()">↺ 重置题目</button>
                 <button class="control-btn" onclick="newPuzzle()">🎲 新题目</button>
@@ -172,6 +189,22 @@
                         涂色效果</button>
                     <button class="modal-btn" onclick="newPuzzle(); closeModal('winModal');">再来一题</button>
                     <button class="modal-btn" onclick="goHome(); closeModal('winModal');">返回主页</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 失败弹窗 -->
+        <div class="modal" id="loseModal" style="display: none;">
+            <div class="modal-content lose-content">
+                <span class="close" onclick="closeModal('loseModal')">&times;</span>
+                <h2>😢 游戏结束</h2>
+                <div class="lose-info">
+                    <p>您的爱心已全部耗尽！</p>
+                    <p>别灰心，再接再厉！</p>
+                </div>
+                <div class="lose-buttons">
+                    <button class="modal-btn" onclick="newPuzzle(); closeModal('loseModal');">再来一题</button>
+                    <button class="modal-btn secondary" onclick="goHome(); closeModal('loseModal');">返回主页</button>
                 </div>
             </div>
         </div>

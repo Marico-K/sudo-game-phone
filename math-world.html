@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算天地 - 数学运算练习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* 选择页面样式 */
+        .select-page {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .select-page h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 2em;
+        }
+
+        .select-page p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option-item:hover {
+            background: #e8f4fd;
+        }
+
+        .option-item.selected {
+            background: #e8f4fd;
+            border-color: #667eea;
+        }
+
+        .option-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 答题页面样式 */
+        .quiz-page {
+            display: none;
+            align-self: flex-start;
+            margin-top: 20px;
+        }
+
+        .quiz-header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .quiz-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid #333;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .quiz-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .quiz-card.answered {
+            background: #e8f5e9;
+        }
+
+        .quiz-card.correct {
+            background: #c8e6c9;
+        }
+
+        .quiz-card.wrong {
+            background: #ffcdd2;
+        }
+
+        .quiz-expression {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            text-align: right;
+            line-height: 1.6;
+            padding-right: 5px;
+        }
+
+        .quiz-answer-row {
+            border-top: 2px solid #333;
+            padding-top: 8px;
+            text-align: center;
+        }
+
+        .quiz-answer {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            min-height: 28px;
+        }
+
+        .done-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .done-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        .done-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 答题弹窗样式 */
+        .answer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .answer-modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            animation: modalIn 0.3s ease;
+            border: 5px solid #333;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #333;
+            background: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .modal-question {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .modal-num {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .modal-expression {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.6;
+            text-align: right;
+        }
+
+        .answer-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .answer-option {
+            padding: 18px 24px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: 3px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #333;
+            min-width: 80px;
+        }
+
+        .answer-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .answer-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* 结果页面样式 */
+        .result-page {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            margin: auto;
+        }
+
+        .result-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .result-message {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .result-btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .result-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .back-home-btn {
+            display: block;
+            margin-top: 10px;
+            padding: 15px 40px;
+            font-size: 1em;
+            font-weight: bold;
+            background: white;
+            color: #666;
+            border: 3px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .back-home-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .select-page {
+                padding: 20px;
+            }
+
+            .select-page h1 {
+                font-size: 1.6em;
+            }
+
+            .option-item {
+                padding: 12px;
+            }
+
+            .quiz-card {
+                padding: 8px 8px;
+                min-height: 80px;
+            }
+
+            .quiz-expression {
+                font-size: 0.9em;
+            }
+
+            .modal-content {
+                padding: 25px 20px 20px;
+                max-width: 95%;
+                border-width: 4px;
+            }
+
+            .modal-header {
+                margin-bottom: 20px;
+            }
+
+            .modal-close {
+                width: 32px;
+                height: 32px;
+                font-size: 1em;
+                border-width: 2px;
+            }
+
+            .modal-num {
+                font-size: 12px;
+            }
+
+            .modal-question {
+                margin-bottom: 25px;
+            }
+
+            .modal-expression {
+                font-size: 2.8em;
+                line-height: 1.4;
+                padding: 0 40px;
+            }
+
+            .answer-options {
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+
+            .answer-option {
+                padding: 12px 14px;
+                font-size: 1.2em;
+                min-width: 60px;
+                border-width: 2px;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 选择页面 -->
+        <div class="select-page" id="selectPage">
+            <h1>🧮 计算天地</h1>
+            <p>数学运算练习游戏</p>
+            
+            <div class="section-title">选择运算类型</div>
+            <div class="options-grid">
+                <label class="option-item">
+                    <input type="radio" name="operation" value="add" checked>
+                    <span>➕ 加法</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="operation" value="sub">
+                    <span>➖ 减法</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="operation" value="mul">
+                    <span>✖️ 乘法</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="operation" value="div">
+                    <span>➗ 除法</span>
+                </label>
+            </div>
+
+            <div class="section-title">选择数字范围</div>
+            <div class="options-grid">
+                <label class="option-item">
+                    <input type="radio" name="range" value="1-9" checked>
+                    <span>个位数</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="range" value="1-19">
+                    <span>20以内</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="range" value="1-49">
+                    <span>50以内</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="range" value="1-99">
+                    <span>100以内</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="range" value="10-99">
+                    <span>十位数</span>
+                </label>
+                <label class="option-item">
+                    <input type="radio" name="range" value="100-999">
+                    <span>百位数</span>
+                </label>
+            </div>
+
+            <button class="start-btn" onclick="startQuiz()">开始答题</button>
+        </div>
+
+        <!-- 答题页面 -->
+        <div class="quiz-page" id="quizPage">
+            <div class="quiz-header">
+                <h2 id="quizTitle">📝 答题中</h2>
+                <p id="quizSubtitle">点击题目选择答案，完成后点击「完成」按钮</p>
+            </div>
+            
+            <div class="quiz-grid" id="quizGrid"></div>
+            
+            <button class="done-btn" id="doneBtn" disabled onclick="checkAnswers()">完成答题</button>
+            <button class="result-btn" id="newQuizBtn" style="display:none; margin-top:10px;" onclick="restartQuiz()">🆕 新题目</button>
+            <button class="back-home-btn" id="backHomeBtn" style="display:none; margin-top:10px;" onclick="goHome()">🏠 返回首页</button>
+        </div>
+
+        <!-- 答题弹窗 -->
+        <div class="answer-modal" id="answerModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-num" id="modalNum">第 1 题</span>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
+                <div class="modal-question">
+                    <div class="modal-expression" id="modalExpression"></div>
+                </div>
+                <div class="answer-options" id="answerOptions"></div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div class="result-page" id="resultPage">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <h2 class="result-title" id="resultTitle">恭喜完成！</h2>
+            <div class="result-score" id="resultScore">20/20</div>
+            <p class="result-text" id="resultText"></p>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="result-btn" onclick="restartQuiz()">🆕 新题目</button>
+            <button class="back-home-btn" onclick="goHome()">🏠 返回首页</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestions = [];
+        let currentQuizIndex = -1;
+        let answeredCount = 0;
+
+        // 生成题目
+        function generateQuestions(operation, range) {
+            const questions = [];
+            const [min, max] = range.split('-').map(Number);
+            const usedQuestions = new Set();
+            
+            while (questions.length < 20) {
+                let num1, num2, answer;
+                
+                switch (operation) {
+                    case 'add':
+                        num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+                        num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+                        if (num1 > num2) [num1, num2] = [num2, num1];
+                        answer = num1 + num2;
+                        break;
+                    case 'sub':
+                        num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+                        num2 = Math.floor(Math.random() * num1) + 1;
+                        answer = num1 - num2;
+                        break;
+                    case 'mul':
+                        num1 = Math.floor(Math.random() * Math.min(max, 9)) + 1;
+                        num2 = Math.floor(Math.random() * Math.min(max, 9)) + 1;
+                        if (num1 > num2) [num1, num2] = [num2, num1];
+                        answer = num1 * num2;
+                        break;
+                    case 'div':
+                        num2 = Math.floor(Math.random() * Math.min(max, 9)) + 1;
+                        answer = Math.floor(Math.random() * Math.min(max, 9)) + 1;
+                        num1 = num2 * answer;
+                        break;
+                }
+                
+                const key = `${num1}-${operation}-${num2}`;
+                if (usedQuestions.has(key)) continue;
+                
+                usedQuestions.add(key);
+                
+                const options = generateOptions(answer);
+                
+                questions.push({
+                    num1,
+                    num2,
+                    operation,
+                    answer,
+                    userAnswer: null,
+                    options
+                });
+            }
+            
+            return questions;
+        }
+
+        // 生成选项（包含正确答案和3个干扰项）
+        function generateOptions(correctAnswer) {
+            const options = new Set([correctAnswer]);
+            
+            while (options.size < 4) {
+                // 生成接近正确答案的干扰项
+                const offset = Math.floor(Math.random() * 10) - 5;
+                const wrongAnswer = Math.max(0, correctAnswer + offset + (offset >= 0 ? 1 : -1));
+                if (wrongAnswer !== correctAnswer) {
+                    options.add(wrongAnswer);
+                }
+            }
+            
+            return shuffleArray([...options]);
+        }
+
+        // 数组随机排序
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 开始答题
+        function startQuiz() {
+            const operation = document.querySelector('input[name="operation"]:checked').value;
+            const range = document.querySelector('input[name="range"]:checked').value;
+            
+            currentQuestions = generateQuestions(operation, range);
+            answeredCount = 0;
+            
+            document.getElementById('selectPage').style.display = 'none';
+            document.getElementById('quizPage').style.display = 'block';
+            
+            renderQuizGrid();
+        }
+
+        // 渲染答题网格
+        function renderQuizGrid() {
+            const grid = document.getElementById('quizGrid');
+            grid.innerHTML = '';
+            const isDone = document.getElementById('doneBtn').style.display === 'none';
+            
+            currentQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'quiz-card' + (q.userAnswer !== null ? ' answered' : '') + (q.isWrong ? ' wrong' : '') + (q.isCorrect ? ' correct' : '');
+                if (!isDone) {
+                    card.onclick = () => openModal(index);
+                } else {
+                    card.style.cursor = 'default';
+                }
+                
+                const opSymbol = {
+                    'add': '+',
+                    'sub': '−',
+                    'mul': '×',
+                    'div': '÷'
+                };
+                
+                card.innerHTML = `
+                    <div class="quiz-expression">
+                        <div>${q.num1}</div>
+                        <div>${opSymbol[q.operation]} ${q.num2}</div>
+                    </div>
+                    <div class="quiz-answer-row">
+                        <div class="quiz-answer">${q.userAnswer !== null ? q.userAnswer : '?'}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            updateDoneButton();
+        }
+
+        // 打开答题弹窗
+        function openModal(index) {
+            currentQuizIndex = index;
+            const q = currentQuestions[index];
+            
+            document.getElementById('modalNum').textContent = `第 ${index + 1} 题`;
+            
+            const opSymbol = {
+                'add': '+',
+                'sub': '−',
+                'mul': '×',
+                'div': '÷'
+            };
+            
+            document.getElementById('modalExpression').innerHTML = `
+                <div>${q.num1}</div>
+                <div>${opSymbol[q.operation]} ${q.num2}</div>
+                <div style="border-top: 3px solid #333; margin-top: 10px; padding-top: 10px;">?</div>
+            `;
+            
+            const optionsContainer = document.getElementById('answerOptions');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, optIndex) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-option' + (q.userAnswer === option ? ' selected' : '');
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(option);
+                optionsContainer.appendChild(btn);
+            });
+            
+            document.getElementById('answerModal').classList.add('show');
+        }
+
+        // 选择答案
+        function selectAnswer(answer) {
+            const q = currentQuestions[currentQuizIndex];
+            
+            // 更新用户答案
+            q.userAnswer = answer;
+            
+            // 更新弹窗按钮状态
+            document.querySelectorAll('.answer-option').forEach(btn => {
+                btn.classList.remove('selected');
+                if (parseInt(btn.textContent) === answer) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // 如果之前未回答，增加计数
+            if (!q.answered) {
+                q.answered = true;
+                answeredCount++;
+            }
+            
+            closeModal();
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('answerModal').classList.remove('show');
+            renderQuizGrid();
+        }
+
+        // 更新完成按钮状态
+        function updateDoneButton() {
+            const btn = document.getElementById('doneBtn');
+            btn.disabled = answeredCount < 1;
+        }
+
+        // 检查答案
+        function checkAnswers() {
+            let correctCount = 0;
+            
+            currentQuestions.forEach((q, index) => {
+                if (q.userAnswer === q.answer) {
+                    correctCount++;
+                    q.isCorrect = true;
+                    q.isWrong = false;
+                } else {
+                    q.isWrong = true;
+                    q.isCorrect = false;
+                    q.userAnswer = q.answer;
+                }
+            });
+            
+            renderQuizGrid();
+            
+            if (correctCount === 20) {
+                addPoints(10);
+            }
+            
+            showResult(correctCount);
+        }
+
+        // 显示结果
+        function showResult(correctCount) {
+            document.getElementById('quizTitle').textContent = `✅ 答题完成 ${correctCount}/20`;
+            document.getElementById('quizSubtitle').textContent = `答对了 ${correctCount} 题，继续努力！�`;
+            
+            document.getElementById('doneBtn').style.display = 'none';
+            document.getElementById('newQuizBtn').style.display = 'block';
+            document.getElementById('backHomeBtn').style.display = 'block';
+        }
+
+        // 添加积分
+        function addPoints(points) {
+            let playerData = JSON.parse(localStorage.getItem('playerData') || '{}');
+            playerData.points = (playerData.points || 0) + points;
+            
+            // 记录积分奖励
+            if (!playerData.history) {
+                playerData.history = [];
+            }
+            playerData.history.unshift({
+                type: 'math',
+                points: points,
+                date: new Date().toLocaleString('zh-CN')
+            });
+            
+            localStorage.setItem('playerData', JSON.stringify(playerData));
+        }
+
+        // 重新开始
+        function restartQuiz() {
+            document.getElementById('quizPage').style.display = 'none';
+            document.getElementById('selectPage').style.display = 'block';
+        }
+
+        // 返回首页
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

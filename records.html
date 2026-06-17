@@ -268,14 +268,26 @@
             document.getElementById('prevPageBtn').disabled = currentPage <= 1;
             document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
 
-            const latestInProgress = filteredRecords.find(r => !r.isCompleted && !r.isAbandoned);
+            const latestInProgress = filteredRecords.find(r => !r.isCompleted && !r.isAbandoned && !r.isFailed);
 
             document.getElementById('recordsBody').innerHTML = pageRecords.map(record => {
                 const isLatestInProgress = latestInProgress && record.puzzleId === latestInProgress.puzzleId;
                 const canContinue = isLatestInProgress;
                 const canView = record.isCompleted && record.solution;
-                const statusText = record.isAbandoned ? '已放弃' : (record.isCompleted ? '已完成' : '进行中');
-                const statusClass = record.isAbandoned ? 'abandoned' : (record.isCompleted ? 'completed' : 'in-progress');
+                let statusText, statusClass;
+                if (record.isFailed) {
+                    statusText = '失败';
+                    statusClass = 'failed';
+                } else if (record.isAbandoned) {
+                    statusText = '已放弃';
+                    statusClass = 'abandoned';
+                } else if (record.isCompleted) {
+                    statusText = '已完成';
+                    statusClass = 'completed';
+                } else {
+                    statusText = '进行中';
+                    statusClass = 'in-progress';
+                }
 
                 const startTimeText = record.startTime ? formatDateTime(record.startTime) : '--';
                 const duration = record.isCompleted ? (record.completionTime || 0) : (record.elapsedTime || 0);

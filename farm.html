@@ -2162,8 +2162,12 @@
             // 显示结果
             customAlert(`\ud83d\udcb0 成功兑换 ${fish.icon} ${fish.name}，获得 ${fish.exchangeScore} 积分！`, 'success');
             
-            // 刷新界面
-            renderFishpond();
+            // 刷新界面（根据当前标签页刷新）
+            if (currentTab === 'fishpond') {
+                renderFishpond();
+            } else if (currentTab === 'ocean') {
+                renderOcean();
+            }
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
@@ -2265,8 +2269,12 @@
             // 显示结果
             customAlert(`\ud83d\udcb0 成功兑换所有鱼！\n\n${exchangeList.join('\n')}\n\n共获得 ${totalScore} 积分！`, 'success');
             
-            // 刷新界面
-            renderFishpond();
+            // 刷新界面（根据当前标签页刷新）
+            if (currentTab === 'fishpond') {
+                renderFishpond();
+            } else if (currentTab === 'ocean') {
+                renderOcean();
+            }
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
@@ -3031,18 +3039,18 @@
 
         // 施肥
         function fertilize(area, index) {
-            // 检查体力
-            if (!consumeStamina('watering')) {
-                customAlert('体力不足！请食用食物恢复体力。', 'warning');
-                return;
-            }
-
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             const fertilizerCount = items.fertilizer || 0;
 
             if (fertilizerCount <= 0) {
                 customAlert('肥料不足！请在积分商城购买肥料。', 'warning');
+                return;
+            }
+
+            // 检查体力
+            if (!consumeStamina('watering')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
             }
 
@@ -3125,6 +3133,12 @@
 
             if (feedCount <= 0) {
                 customAlert('饲料不足！请在积分商城购买饲料。', 'warning');
+                return;
+            }
+
+            // 检查体力
+            if (!consumeStamina('feeding')) {
+                customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
             }
 
