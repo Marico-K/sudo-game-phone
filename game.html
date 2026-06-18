@@ -54,13 +54,36 @@
                     <span class="life-heart-top">❤️</span>
                 </div>
                 <div class="coin-display">
-                    <span class="coin-icon">💰</span>
+                    <span class="coin-icon">Exp</span>
                     <span class="coin-value" id="coinValue">0</span>
                 </div>
                 <div class="timer-display">
                     <span class="timer-icon">⏱</span>
                     <span class="timer-value" id="timerValue">00:00</span>
                 </div>
+            </div>
+
+            <!-- 进度条和礼盒 -->
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="gameProgressBar"></div>
+                    <!-- 30% 礼盒 -->
+                    <div class="gift-box-wrapper" style="left: 30%;">
+                        <div class="gift-box locked" id="giftBoxBronze">🔒</div>
+                        <span class="gift-label">30%</span>
+                    </div>
+                    <!-- 70% 礼盒 -->
+                    <div class="gift-box-wrapper" style="left: 70%;">
+                        <div class="gift-box locked" id="giftBoxSilver">🔒</div>
+                        <span class="gift-label">70%</span>
+                    </div>
+                    <!-- 100% 礼盒 -->
+                    <div class="gift-box-wrapper" style="left: 100%;">
+                        <div class="gift-box locked" id="giftBoxGold">🔒</div>
+                        <span class="gift-label">100%</span>
+                    </div>
+                </div>
+                <div class="progress-text" id="gameProgressText">0/0 (0%)</div>
             </div>
 
             <!-- 数独棋盘 -->

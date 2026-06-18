@@ -180,281 +180,12 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
-        /* ====== 3x3 农场地块网格 ====== */
-        .farm-grid-3x3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            box-sizing: border-box;
-        }
-
-        /* ====== 地块基础样式 ====== */
-        .farm-plot {
-            aspect-ratio: 1;
-            background: linear-gradient(145deg, #D4A574 0%, #C4956A 50%, #B8885A 100%);
-            border: 2px solid #9E9E9E;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            overflow: hidden;
-            padding: 4px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.08);
-        }
-
-        .farm-plot:hover {
-            transform: translateY(-2px);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .farm-plot:active {
-            transform: translateY(0);
-        }
-
-        /* 浇水后 - 棕色背景 */
-        .farm-plot.watered {
-            background: linear-gradient(145deg, #A07850 0%, #8B6914 50%, #7A5C20 100%);
-        }
-
-        /* 施肥后 - 蓝色边框 */
-        .farm-plot.fertilized {
-            border-color: #2196F3;
-            border-width: 3px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 8px rgba(33, 150, 243, 0.3);
-        }
-
-        /* 未解锁地块 */
-        .farm-plot.locked {
-            background: linear-gradient(145deg, #E8E8E8 0%, #D5D5D5 100%);
-            border-color: #BDBDBD;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .farm-plot.locked:hover {
-            transform: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.08);
-        }
-
-        /* 空地块 */
-        .farm-plot.empty {
-            background: linear-gradient(145deg, #E8D5B7 0%, #D4C4A8 50%, #C9B896 100%);
-            border: 2px dashed #B0A080;
-        }
-
-        .farm-plot.empty:hover {
-            background: linear-gradient(145deg, #F0E0C0 0%, #E0D0B0 50%, #D4C4A0 100%);
-            border-color: #8B7355;
-        }
-
-        /* 地块中的SVG图标 */
-        .plot-icon {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2px;
-        }
-
-        .plot-icon svg {
+        /* 图鉴容器样式 - 单列布局 */
+        .collection-grid-container {
+            display: block;
             width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
         }
 
-        /* 成熟作物发光效果 */
-        .plot-icon.harvest-ready svg {
-            filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.6));
-            animation: harvestGlow 2s ease-in-out infinite;
-        }
-
-        @keyframes harvestGlow {
-            0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.4)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.8)); transform: scale(1.05); }
-        }
-
-        /* 地块名称 */
-        .plot-name {
-            font-size: 0.7em;
-            color: #5D4037;
-            font-weight: 500;
-            text-align: center;
-            line-height: 1.2;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
-        }
-
-        /* 成长进度条（小） */
-        .plot-progress-bar {
-            width: 85%;
-            height: 4px;
-            background: rgba(0,0,0,0.15);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 3px;
-        }
-
-        .plot-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-
-        .plot-progress-text {
-            font-size: 0.6em;
-            color: #6D4C41;
-            margin-top: 1px;
-            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
-        }
-
-        /* 锁定图标 */
-        .plot-locked-icon {
-            font-size: 28px;
-            filter: grayscale(100%);
-            opacity: 0.5;
-        }
-
-        .plot-price {
-            font-size: 0.6em;
-            color: #FF8F00;
-            margin-top: 2px;
-            text-align: center;
-        }
-
-        .farm-plot.locked.cannot-afford .plot-price {
-            color: #E53935;
-        }
-
-        /* ====== 地块操作弹窗 ====== */
-        .plot-action-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1100;
-        }
-
-        .plot-action-modal.show {
-            display: flex;
-        }
-
-        .plot-action-box {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            max-width: 320px;
-            width: 90%;
-            position: relative;
-            text-align: center;
-        }
-
-        .plot-action-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .plot-action-crop {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .plot-action-preview {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .plot-action-preview svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .plot-action-progress {
-            width: 100%;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .plot-action-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
-            border-radius: 3px;
-        }
-
-        .plot-action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .plot-action-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .plot-action-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .plot-action-btn:active {
-            transform: scale(0.98);
-        }
-
-        .plot-action-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .plot-action-btn.water {
-            background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
-            color: white;
-        }
-
-        .plot-action-btn.fertilize {
-            background: linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%);
-            color: white;
-        }
-
-        .plot-action-btn.harvest {
-            background: linear-gradient(135deg, #FF8F00 0%, #EF6C00 100%);
-            color: white;
-        }
-
-        .plot-action-btn.close {
-            background: #f5f5f5;
-            color: #666;
-        }
-
-        /* 旧网格容器（用于其他模块） */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -467,11 +198,6 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             box-sizing: border-box;
-        }
-
-        .collection-grid-container {
-            display: block;
-            width: 100%;
         }
 
         .farm-item {
@@ -589,10 +315,21 @@
             pointer-events: none;
         }
 
-        .item-icon.small { font-size: 32px; }
-        .item-icon.medium { font-size: 40px; }
-        .item-icon.large { font-size: 48px; }
-        .item-icon.full { font-size: 56px; }
+        .item-icon.small {
+            font-size: 32px;
+        }
+
+        .item-icon.medium {
+            font-size: 40px;
+        }
+
+        .item-icon.large {
+            font-size: 48px;
+        }
+
+        .item-icon.full {
+            font-size: 56px;
+        }
 
         .item-name {
             font-size: 0.9em;
@@ -689,7 +426,7 @@
 
         .modal-close {
             position: absolute;
-            top: 0px;
+            top: 10px;
             right: 10px;
             font-size: 24px;
             cursor: pointer;
@@ -861,6 +598,141 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
+        /* 礼盒容器样式 */
+        .gift-boxes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .gift-box-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            gap: 15px;
+        }
+
+        .gift-box-icon {
+            font-size: 48px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .gift-box-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .gift-box-icon.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .gift-box-info {
+            flex: 1;
+        }
+
+        .gift-box-name {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .gift-box-count {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .gift-box-open-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .gift-box-open-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .gift-box-open-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 开礼盒结果弹窗 */
+        .gift-reward-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .gift-reward-modal.show {
+            display: flex;
+        }
+
+        .gift-reward-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: giftOpen 0.5s ease;
+        }
+
+        @keyframes giftOpen {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .gift-reward-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+
+        .gift-reward-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .gift-reward-desc {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .gift-reward-close-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         .empty-hint {
             text-align: center;
             padding: 40px 20px;
@@ -875,7 +747,7 @@
         /* 图鉴样式 */
         .collection-category {
             margin-bottom: 20px;
-            clear: both;
+            clear: both; /* 确保每个分类独立成行 */
         }
 
         .category-title {
@@ -891,7 +763,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
-            clear: both;
+            clear: both; /* 确保网格独立成行 */
         }
 
         .collection-item {
@@ -1012,34 +884,12 @@
                 margin-bottom: 12px;
             }
 
-            /* 移动端3x3网格调整 */
-            .farm-grid-3x3 {
-                gap: 6px;
-            }
-
-            .farm-plot {
-                border-radius: 8px;
-                border-width: 1.5px;
-            }
-
-            .plot-icon {
-                width: 36px;
-                height: 36px;
-            }
-
-            .plot-name {
-                font-size: 0.6em;
-            }
-
-            .plot-progress-bar {
-                height: 3px;
-            }
-
             .grid-container,
             .grid-container-2 {
                 gap: 12px;
             }
 
+            /* 移动端标题容器样式 */
             .section-title-container {
                 margin-bottom: 12px;
             }
@@ -1063,15 +913,33 @@
                 font-size: 36px !important;
             }
 
-            .item-icon.small { font-size: 24px !important; }
-            .item-icon.medium { font-size: 30px !important; }
-            .item-icon.large { font-size: 34px !important; }
-            .item-icon.full { font-size: 36px !important; }
+            .item-icon.small {
+                font-size: 24px !important;
+            }
 
-            .item-name { font-size: 0.85em; }
-            .progress-text { font-size: 0.75em; }
+            .item-icon.medium {
+                font-size: 30px !important;
+            }
 
-            .action-buttons { gap: 6px; }
+            .item-icon.large {
+                font-size: 34px !important;
+            }
+
+            .item-icon.full {
+                font-size: 36px !important;
+            }
+
+            .item-name {
+                font-size: 0.85em;
+            }
+
+            .progress-text {
+                font-size: 0.75em;
+            }
+
+            .action-buttons {
+                gap: 6px;
+            }
 
             .action-btn {
                 padding: 5px 6px;
@@ -1079,9 +947,27 @@
                 border-radius: 5px;
             }
 
+            .exchange-item {
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .exchange-icon {
+                font-size: 24px;
+            }
+
+            .exchange-name {
+                font-size: 0.85em;
+            }
+
+            .exchange-rate {
+                font-size: 0.75em;
+            }
+
+            /* 图鉴移动端适配 */
             .collection-category {
                 margin-bottom: 15px;
-                clear: both;
+                clear: both; /* 确保每个分类独立成行 */
             }
 
             .category-title {
@@ -1095,7 +981,7 @@
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
                 gap: 10px;
-                clear: both;
+                clear: both; /* 确保网格独立成行 */
             }
 
             .collection-item {
@@ -1136,6 +1022,7 @@
                 margin-bottom: 10px;
             }
 
+            /* 弹窗优化 */
             .modal-box {
                 padding: 15px;
                 max-width: 280px;
@@ -1167,17 +1054,8 @@
                 font-size: 1.1em;
             }
 
-            .plot-icon {
-                width: 30px;
-                height: 30px;
-            }
-
-            .farm-grid-3x3 {
-                gap: 4px;
-            }
-
-            .farm-plot {
-                border-radius: 6px;
+            .item-icon {
+                font-size: 30px !important;
             }
         }
     </style>
@@ -1219,6 +1097,7 @@
             <button class="nav-tab" onclick="switchTab('chicken')">🐔 鸡小屋</button>
             <button class="nav-tab" onclick="switchTab('cow')">🐄 动物屋</button>
             <button class="nav-tab" onclick="switchTab('collection')">📚 图鉴</button>
+            <button class="nav-tab" onclick="switchTab('gifts')">🎁 礼盒</button>
         </div>
 
         <div class="tab-content">
@@ -1228,7 +1107,7 @@
                     <div class="section-title">🥬 我的菜园</div>
                     <div class="skill-display" id="gardenSkill"></div>
                 </div>
-                <div class="farm-grid-3x3" id="gardenGrid">
+                <div class="grid-container" id="gardenGrid">
                 </div>
             </div>
 
@@ -1238,7 +1117,7 @@
                     <div class="section-title">🌳 我的果园</div>
                     <div class="skill-display" id="orchardSkill"></div>
                 </div>
-                <div class="farm-grid-3x3" id="orchardGrid">
+                <div class="grid-container" id="orchardGrid">
                 </div>
             </div>
 
@@ -1293,6 +1172,13 @@
                 </div>
             </div>
 
+            <!-- 礼盒 -->
+            <div id="giftsTab" class="tab-panel" style="display: none;">
+                <div class="section-title">🎁 我的礼盒</div>
+                <div class="gift-boxes-container" id="giftBoxesContainer">
+                </div>
+            </div>
+
             <!-- 背包和兑换 -->
             <div class="inventory-section">
                 
@@ -1312,27 +1198,13 @@
         </div>
     </div>
 
-    <!-- 地块操作弹窗 -->
-    <div class="plot-action-modal" id="plotActionModal">
-        <div class="plot-action-box">
-            <span class="modal-close" onclick="closePlotActionModal()">&times;</span>
-            <div class="plot-action-title" id="plotActionTitle">菜地操作</div>
-            <div class="plot-action-preview" id="plotActionPreview"></div>
-            <div class="plot-action-crop" id="plotActionCrop"></div>
-            <div class="plot-action-progress">
-                <div class="plot-action-progress-fill" id="plotActionProgressFill" style="width: 0%"></div>
-            </div>
-            <div class="plot-action-buttons" id="plotActionButtons">
-                <button class="plot-action-btn water" id="plotActionWater" onclick="handleWaterFromModal()">
-                    💧 浇水
-                </button>
-                <button class="plot-action-btn fertilize" id="plotActionFertilize" onclick="handleFertilizeFromModal()">
-                    🧪 施肥
-                </button>
-                <button class="plot-action-btn harvest" id="plotActionHarvest" onclick="handleHarvestFromModal()">
-                    🌾 收获
-                </button>
-            </div>
+    <!-- 开礼盒结果弹窗 -->
+    <div class="gift-reward-modal" id="giftRewardModal">
+        <div class="gift-reward-box">
+            <div class="gift-reward-icon" id="giftRewardIcon">🎁</div>
+            <div class="gift-reward-title" id="giftRewardTitle">恭喜获得奖励！</div>
+            <div class="gift-reward-desc" id="giftRewardDesc"></div>
+            <button class="gift-reward-close-btn" onclick="closeGiftRewardModal()">确定</button>
         </div>
     </div>
 
@@ -1343,204 +1215,30 @@
         // 当前标签页
         let currentTab = 'garden';
 
-        // ====== SVG 图标系统 ======
-
-        // 菜园通用成长阶段图标
-        function getVegetableSVG(growthStage) {
-            const svgs = {
-                seed: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="50" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <ellipse cx="32" cy="47" rx="5" ry="3" fill="#6B4226"/>
-                    <ellipse cx="29" cy="46" rx="2" ry="1.5" fill="#5D4037"/>
-                </svg>`,
-                sprout: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="52" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 52 Q32 35 32 30" stroke="#4CAF50" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="24" cy="34" rx="7" ry="4" fill="#66BB6A" transform="rotate(-25,24,34)"/>
-                    <ellipse cx="40" cy="32" rx="7" ry="4" fill="#66BB6A" transform="rotate(25,40,32)"/>
-                    <ellipse cx="32" cy="28" rx="4" ry="5" fill="#81C784"/>
-                </svg>`,
-                growing: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="54" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 54 Q30 25 32 18" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="21" cy="30" rx="11" ry="7" fill="#43A047" transform="rotate(-20,21,30)"/>
-                    <ellipse cx="43" cy="27" rx="11" ry="7" fill="#43A047" transform="rotate(20,43,27)"/>
-                    <ellipse cx="32" cy="18" rx="7" ry="10" fill="#66BB6A"/>
-                    <ellipse cx="22" cy="22" rx="6" ry="4" fill="#66BB6A" transform="rotate(-35,22,22)"/>
-                    <ellipse cx="42" cy="20" rx="6" ry="4" fill="#66BB6A" transform="rotate(35,42,20)"/>
-                </svg>`,
-                harvest: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="54" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 54 Q30 20 32 12" stroke="#2E7D32" stroke-width="4" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="20" cy="26" rx="13" ry="8" fill="#2E7D32" transform="rotate(-15,20,26)"/>
-                    <ellipse cx="44" cy="23" rx="13" ry="8" fill="#2E7D32" transform="rotate(15,44,23)"/>
-                    <ellipse cx="32" cy="12" rx="9" ry="12" fill="#388E3C"/>
-                    <ellipse cx="18" cy="18" rx="8" ry="5" fill="#43A047" transform="rotate(-30,18,18)"/>
-                    <ellipse cx="46" cy="16" rx="8" ry="5" fill="#43A047" transform="rotate(30,46,16)"/>
-                    <ellipse cx="28" cy="36" rx="7" ry="5" fill="#43A047" transform="rotate(-10,28,36)"/>
-                    <ellipse cx="36" cy="34" rx="7" ry="5" fill="#43A047" transform="rotate(10,36,34)"/>
-                </svg>`
-            };
-            return svgs[growthStage] || svgs.seed;
-        }
-
-        // 果园通用成长阶段图标
-        function getTreeSVG(growthStage) {
-            const svgs = {
-                seed: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="50" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <ellipse cx="32" cy="47" rx="5" ry="3" fill="#6B4226"/>
-                    <ellipse cx="29" cy="46" rx="2" ry="1.5" fill="#5D4037"/>
-                </svg>`,
-                sprout: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="52" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 52 L32 32" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="24" cy="36" rx="6" ry="4" fill="#66BB6A" transform="rotate(-30,24,36)"/>
-                    <ellipse cx="40" cy="34" rx="6" ry="4" fill="#66BB6A" transform="rotate(30,40,34)"/>
-                    <ellipse cx="32" cy="30" rx="5" ry="6" fill="#81C784"/>
-                    <path d="M32 40 L28 44 M32 40 L36 44" stroke="#795548" stroke-width="1.5" fill="none"/>
-                </svg>`,
-                growing: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="54" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 54 L32 20" stroke="#5D4037" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M32 38 L22 30 M32 38 L42 30" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="32" cy="18" rx="18" ry="16" fill="#2E7D32" opacity="0.9"/>
-                    <ellipse cx="18" cy="26" rx="12" ry="10" fill="#388E3C" opacity="0.85"/>
-                    <ellipse cx="46" cy="24" rx="12" ry="10" fill="#388E3C" opacity="0.85"/>
-                    <ellipse cx="32" cy="10" rx="10" ry="8" fill="#43A047" opacity="0.7"/>
-                </svg>`,
-                harvest: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="54" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                    <path d="M32 54 L32 18" stroke="#4E342E" stroke-width="6" fill="none" stroke-linecap="round"/>
-                    <path d="M32 36 L20 26 M32 36 L44 26" stroke="#4E342E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="32" cy="14" rx="20" ry="16" fill="#1B5E20" opacity="0.9"/>
-                    <ellipse cx="16" cy="24" rx="14" ry="11" fill="#2E7D32" opacity="0.85"/>
-                    <ellipse cx="48" cy="22" rx="14" ry="11" fill="#2E7D32" opacity="0.85"/>
-                    <ellipse cx="32" cy="6" rx="11" ry="9" fill="#388E3C" opacity="0.7"/>
-                </svg>`
-            };
-            return svgs[growthStage] || svgs.seed;
-        }
-
-        // 蔬菜成熟收获图标（每种不同）
-        function getVegetableHarvestIcon(type) {
-            const icons = {
-                carrot: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M28 56 Q26 40 30 24 Q32 18 34 24 Q38 40 36 56 Q32 58 28 56" fill="#FF8F00"/>
-                    <path d="M30 24 Q28 16 24 12 M32 22 Q32 14 30 10 M34 24 Q36 16 40 12" stroke="#4CAF50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                    <path d="M28 48 Q32 46 36 48" stroke="#EF6C00" stroke-width="1" fill="none" opacity="0.5"/>
-                    <path d="M27 40 Q32 38 37 40" stroke="#EF6C00" stroke-width="1" fill="none" opacity="0.5"/>
-                </svg>`,
-                tomato: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="32" cy="36" r="16" fill="#E53935"/>
-                    <ellipse cx="28" cy="32" rx="4" ry="6" fill="#EF5350" opacity="0.6"/>
-                    <path d="M32 20 Q28 14 24 16 Q26 12 32 14 Q38 12 40 16 Q36 14 32 20" fill="#4CAF50"/>
-                    <path d="M32 20 L32 16 M28 18 L30 20 M36 18 L34 20" stroke="#388E3C" stroke-width="1.5" fill="none"/>
-                    <ellipse cx="32" cy="52" rx="10" ry="3" fill="#000" opacity="0.1"/>
-                </svg>`,
-                lettuce: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="48" rx="18" ry="6" fill="#2E7D32" opacity="0.8"/>
-                    <ellipse cx="32" cy="42" rx="16" ry="8" fill="#388E3C"/>
-                    <ellipse cx="32" cy="34" rx="14" ry="9" fill="#43A047"/>
-                    <ellipse cx="32" cy="26" rx="11" ry="8" fill="#66BB6A"/>
-                    <ellipse cx="32" cy="20" rx="7" ry="6" fill="#81C784"/>
-                    <path d="M24 38 Q28 28 32 22 Q36 28 40 38" stroke="#2E7D32" stroke-width="1" fill="none" opacity="0.4"/>
-                </svg>`,
-                corn: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M30 52 Q28 32 30 16 Q32 12 34 16 Q36 32 34 52 Q32 54 30 52" fill="#FFCA28"/>
-                    <path d="M31 20 Q35 18 34 24 Q30 22 31 20 M33 28 Q37 26 36 32 Q32 30 33 28 M31 36 Q35 34 34 40 Q30 38 31 36" fill="#F9A825"/>
-                    <path d="M30 16 Q26 12 24 8 M34 16 Q38 12 40 8" stroke="#4CAF50" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <ellipse cx="30" cy="14" rx="4" ry="2" fill="#66BB6A" transform="rotate(-30,30,14)"/>
-                    <ellipse cx="34" cy="14" rx="4" ry="2" fill="#66BB6A" transform="rotate(30,34,14)"/>
-                </svg>`,
-                potato: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="36" rx="18" ry="14" fill="#BCAAA4"/>
-                    <ellipse cx="26" cy="32" rx="6" ry="5" fill="#A1887F" opacity="0.5"/>
-                    <ellipse cx="36" cy="38" rx="5" ry="4" fill="#A1887F" opacity="0.4"/>
-                    <circle cx="22" cy="36" r="2" fill="#8D6E63" opacity="0.5"/>
-                    <circle cx="38" cy="32" r="1.5" fill="#8D6E63" opacity="0.5"/>
-                    <circle cx="30" cy="42" r="1.5" fill="#8D6E63" opacity="0.4"/>
-                    <path d="M24 26 Q26 22 30 24" stroke="#8D6E63" stroke-width="1.5" fill="none"/>
-                    <ellipse cx="32" cy="52" rx="12" ry="3" fill="#000" opacity="0.08"/>
-                </svg>`,
-                eggplant: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="32" cy="38" rx="13" ry="18" fill="#7B1FA2" transform="rotate(10,32,38)"/>
-                    <ellipse cx="28" cy="32" rx="5" ry="8" fill="#8E24AA" opacity="0.5" transform="rotate(10,28,32)"/>
-                    <path d="M32 20 Q30 14 28 12 Q32 14 36 12 Q34 14 32 20" fill="#4CAF50"/>
-                    <path d="M32 20 L32 14 M29 16 L31 19 M35 16 L33 19" stroke="#388E3C" stroke-width="1.5" fill="none"/>
-                    <ellipse cx="32" cy="56" rx="10" ry="2.5" fill="#000" opacity="0.1"/>
-                </svg>`
-            };
-            return icons[type] || icons.carrot;
-        }
-
-        // 果树成熟收获图标（带果实）
-        function getTreeHarvestWithFruit(type) {
-            const fruitColors = {
-                apple: '#E53935',
-                orange: '#FF9800',
-                grape: '#7B1FA2',
-                peach: '#F48FB1'
-            };
-            const fruitHighlight = {
-                apple: '#EF5350',
-                orange: '#FFB74D',
-                grape: '#9C27B0',
-                peach: '#F8BBD0'
-            };
-            const fc = fruitColors[type] || '#E53935';
-            const fh = fruitHighlight[type] || '#EF5350';
-            return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="32" cy="54" rx="16" ry="6" fill="#8B6914" opacity="0.6"/>
-                <path d="M32 54 L32 18" stroke="#4E342E" stroke-width="5" fill="none" stroke-linecap="round"/>
-                <path d="M32 36 L20 26 M32 36 L44 26" stroke="#4E342E" stroke-width="3" fill="none" stroke-linecap="round"/>
-                <ellipse cx="32" cy="14" rx="18" ry="14" fill="#1B5E20" opacity="0.9"/>
-                <ellipse cx="16" cy="24" rx="12" ry="10" fill="#2E7D32" opacity="0.85"/>
-                <ellipse cx="48" cy="22" rx="12" ry="10" fill="#2E7D32" opacity="0.85"/>
-                <ellipse cx="32" cy="6" rx="10" ry="8" fill="#388E3C" opacity="0.7"/>
-                <circle cx="22" cy="22" r="5" fill="${fc}"/>
-                <circle cx="20" cy="20" r="2" fill="${fh}" opacity="0.6"/>
-                <circle cx="42" cy="20" r="5" fill="${fc}"/>
-                <circle cx="40" cy="18" r="2" fill="${fh}" opacity="0.6"/>
-                <circle cx="32" cy="10" r="5" fill="${fc}"/>
-                <circle cx="30" cy="8" r="2" fill="${fh}" opacity="0.6"/>
-                <circle cx="28" cy="30" r="4.5" fill="${fc}"/>
-                <circle cx="26.5" cy="28.5" r="1.8" fill="${fh}" opacity="0.6"/>
-                <circle cx="38" cy="28" r="4.5" fill="${fc}"/>
-                <circle cx="36.5" cy="26.5" r="1.8" fill="${fh}" opacity="0.6"/>
-                ${type === 'grape' ? `<circle cx="18" cy="34" r="3.5" fill="${fc}"/><circle cx="24" cy="36" r="3.5" fill="${fc}"/><circle cx="42" cy="34" r="3.5" fill="${fc}"/>` : ''}
-            </svg>`;
-        }
-
-        // 获取成长阶段名称
-        function getGrowthStage(growth, maxGrowth) {
-            const ratio = growth / maxGrowth;
-            if (ratio < 0.2) return 'seed';
-            if (ratio < 0.5) return 'sprout';
-            if (ratio < 1.0) return 'growing';
-            return 'harvest';
-        }
-
-        // ====== 农场配置 ======
+        // 农场配置
         const farmConfig = {
+            // 蔬菜种子
             vegetables: [
-                { id: 'carrot', name: '胡萝卜', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
-                { id: 'tomato', name: '西红柿', maxGrowth: 120, waterGain: 20, fertilizerGain: 40, exchangeScore: 15 },
-                { id: 'lettuce', name: '生菜', maxGrowth: 80, waterGain: 25, fertilizerGain: 45, exchangeScore: 8 },
-                { id: 'corn', name: '玉米', maxGrowth: 150, waterGain: 15, fertilizerGain: 35, exchangeScore: 20 },
-                { id: 'potato', name: '土豆', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
-                { id: 'eggplant', name: '茄子', maxGrowth: 130, waterGain: 18, fertilizerGain: 38, exchangeScore: 18 },
+                { id: 'carrot', name: '胡萝卜', icon: '🥕', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
+                { id: 'tomato', name: '西红柿', icon: '🍅', maxGrowth: 120, waterGain: 20, fertilizerGain: 40, exchangeScore: 15 },
+                { id: 'lettuce', name: '生菜', icon: '🥬', maxGrowth: 80, waterGain: 25, fertilizerGain: 45, exchangeScore: 8 },
+                { id: 'corn', name: '玉米', icon: '🌽', maxGrowth: 150, waterGain: 15, fertilizerGain: 35, exchangeScore: 20 },
+                { id: 'potato', name: '土豆', icon: '🥔', maxGrowth: 100, waterGain: 20, fertilizerGain: 40, exchangeScore: 10 },
+                { id: 'eggplant', name: '茄子', icon: '🍆', maxGrowth: 130, waterGain: 18, fertilizerGain: 38, exchangeScore: 18 },
             ],
+            // 果树种子
             fruits: [
-                { id: 'apple', name: '苹果树', maxGrowth: 300, waterGain: 15, fertilizerGain: 30, exchangeScore: 30 },
-                { id: 'orange', name: '橙子树', maxGrowth: 350, waterGain: 15, fertilizerGain: 30, exchangeScore: 35 },
-                { id: 'grape', name: '葡萄树', maxGrowth: 280, waterGain: 18, fertilizerGain: 35, exchangeScore: 28 },
-                { id: 'peach', name: '桃树', maxGrowth: 320, waterGain: 15, fertilizerGain: 30, exchangeScore: 32 },
+                { id: 'apple', name: '苹果树', icon: '🍎', maxGrowth: 300, waterGain: 15, fertilizerGain: 30, exchangeScore: 30, harvestIcon: '🍎' },
+                { id: 'orange', name: '橙子树', icon: '🍊', maxGrowth: 350, waterGain: 15, fertilizerGain: 30, exchangeScore: 35, harvestIcon: '🍊' },
+                { id: 'grape', name: '葡萄树', icon: '🍇', maxGrowth: 280, waterGain: 18, fertilizerGain: 35, exchangeScore: 28, harvestIcon: '🍇' },
+                { id: 'peach', name: '桃树', icon: '🍑', maxGrowth: 320, waterGain: 15, fertilizerGain: 30, exchangeScore: 32, harvestIcon: '🍑' },
             ],
+            // 动物
             animals: {
-                chicken: { id: 'chicken', name: '小鸡', maxGrowth: 200, feedGain: 25, snackGain: 50, product: 'egg', productName: '鸡蛋', exchangeScore: 8 },
-                cow: { id: 'cow', name: '小牛', maxGrowth: 250, feedGain: 20, snackGain: 45, product: 'milk', productName: '牛奶', exchangeScore: 12 },
+                chicken: { id: 'chicken', name: '小鸡', icon: '🐣', maxGrowth: 200, feedGain: 25, snackGain: 50, product: 'egg', productName: '鸡蛋', productIcon: '🥚', exchangeScore: 8 },
+                cow: { id: 'cow', name: '小牛', icon: '🐮', maxGrowth: 250, feedGain: 20, snackGain: 45, product: 'milk', productName: '牛奶', productIcon: '🥛', exchangeScore: 12 },
             },
+            // 鱼类配置（包含无价值物品）
             fishes: [
                 { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 25, exchangeScore: 0 },
                 { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 15, exchangeScore: 0 },
@@ -1553,6 +1251,7 @@
                 { id: 'koi', name: '锦鲤', icon: '🎏', rarity: 'rare', probability: 2, exchangeScore: 100 },
                 { id: 'golddragon', name: '金龙鱼', icon: '🐉', rarity: 'legendary', probability: 1, exchangeScore: 500 },
             ],
+            // 浅海鱼类配置
             shallowSeaFishes: [
                 { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 20, exchangeScore: 0 },
                 { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 10, exchangeScore: 0 },
@@ -1568,6 +1267,7 @@
                 { id: 'shrimp', name: '虾', icon: '🦐', rarity: 'common', probability: 10, exchangeScore: 30 },
                 { id: 'shell', name: '贝壳', icon: '🐚', rarity: 'common', probability: 5, exchangeScore: 15 },
             ],
+            // 深海鱼类配置
             deepSeaFishes: [
                 { id: 'seaweed', name: '水草', icon: '🌿', rarity: 'trash', probability: 15, exchangeScore: 0 },
                 { id: 'trash', name: '垃圾', icon: '🗑️', rarity: 'trash', probability: 8, exchangeScore: 0 },
@@ -1589,6 +1289,7 @@
                 { id: 'shark', name: '鲨鱼', icon: '🦈', rarity: 'rare', probability: 2, exchangeScore: 200 },
                 { id: 'octopus', name: '章鱼', icon: '🐙', rarity: 'rare', probability: 2.5, exchangeScore: 180 },
             ],
+            // 道具价格
             items: {
                 fertilizer: { name: '肥料', price: 5 },
                 feed: { name: '饲料', price: 5 },
@@ -1608,123 +1309,16 @@
             }
         };
 
-        // 地块操作弹窗状态
-        let plotActionState = { area: null, index: null };
-
-        // 打开地块操作弹窗
-        function openPlotActionModal(area, index) {
-            const farmData = getFarmData();
-            const today = new Date().toDateString();
-            let plant, config;
-
-            if (area === 'garden') {
-                plant = farmData.garden[index];
-                config = farmConfig.vegetables.find(v => v.id === plant.type);
-            } else if (area === 'orchard') {
-                plant = farmData.orchard[index];
-                config = farmConfig.fruits.find(f => f.id === plant.type);
-            }
-
-            if (!plant || !config) return;
-
-            plotActionState = { area, index };
-
-            const growthPercent = (plant.growth / config.maxGrowth) * 100;
-            const stage = getGrowthStage(plant.growth, config.maxGrowth);
-            const canHarvest = plant.growth >= config.maxGrowth;
-            const canWater = plant.lastWater !== today;
-            const canFertilize = plant.lastFertilize !== today;
-
-            document.getElementById('plotActionTitle').textContent = `${config.name}`;
-            document.getElementById('plotActionCrop').textContent = `成长值: ${plant.growth} / ${config.maxGrowth} (${Math.floor(growthPercent)}%)`;
-            document.getElementById('plotActionProgressFill').style.width = `${Math.min(growthPercent, 100)}%`;
-
-            // 设置预览图标
-            let previewSVG = '';
-            if (area === 'garden') {
-                if (stage === 'harvest') {
-                    previewSVG = getVegetableHarvestIcon(plant.type);
-                } else {
-                    previewSVG = getVegetableSVG(stage);
-                }
-            } else {
-                if (stage === 'harvest') {
-                    previewSVG = getTreeHarvestWithFruit(plant.type);
-                } else {
-                    previewSVG = getTreeSVG(stage);
-                }
-            }
-            document.getElementById('plotActionPreview').innerHTML = previewSVG;
-
-            // 设置按钮状态
-            const waterBtn = document.getElementById('plotActionWater');
-            const fertilizeBtn = document.getElementById('plotActionFertilize');
-            const harvestBtn = document.getElementById('plotActionHarvest');
-
-            if (canWater) {
-                waterBtn.disabled = false;
-                waterBtn.innerHTML = '💧 浇水';
-            } else {
-                waterBtn.disabled = true;
-                waterBtn.innerHTML = '💧 已浇水';
-            }
-
-            if (canFertilize) {
-                fertilizeBtn.disabled = false;
-                fertilizeBtn.innerHTML = '🧪 施肥';
-            } else {
-                fertilizeBtn.disabled = true;
-                fertilizeBtn.innerHTML = '🧪 已施肥';
-            }
-
-            if (canHarvest) {
-                harvestBtn.disabled = false;
-                harvestBtn.style.display = 'flex';
-            } else {
-                harvestBtn.disabled = true;
-                harvestBtn.style.display = 'none';
-            }
-
-            document.getElementById('plotActionModal').classList.add('show');
-        }
-
-        // 关闭地块操作弹窗
-        function closePlotActionModal() {
-            document.getElementById('plotActionModal').classList.remove('show');
-            plotActionState = { area: null, index: null };
-        }
-
-        // 从弹窗执行浇水
-        function handleWaterFromModal() {
-            if (!plotActionState.area || plotActionState.index === null) return;
-            water(plotActionState.area, plotActionState.index);
-            closePlotActionModal();
-        }
-
-        // 从弹窗执行施肥
-        function handleFertilizeFromModal() {
-            if (!plotActionState.area || plotActionState.index === null) return;
-            fertilize(plotActionState.area, plotActionState.index);
-            closePlotActionModal();
-        }
-
-        // 从弹窗执行收获
-        function handleHarvestFromModal() {
-            if (!plotActionState.area || plotActionState.index === null) return;
-            harvest(plotActionState.area, plotActionState.index);
-            closePlotActionModal();
-        }
-
         // 获取农场数据
         function getFarmData() {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             
-            // 计算已解锁的菜园和果园数量（扩展为9个）
+            // 计算已解锁的菜园和果园数量
             let gardenCount = 1; // 第一块免费
             let orchardCount = 1; // 第一块免费
             
-            for (let i = 2; i <= 9; i++) {
+            for (let i = 2; i <= 6; i++) {
                 if (items[`garden_slot_${i}`]) gardenCount++;
                 if (items[`orchard_slot_${i}`]) orchardCount++;
             }
@@ -1734,18 +1328,20 @@
                 orchard: Array(orchardCount).fill(null),
                 chicken: null,
                 cow: null,
-                inventory: {},
-                fishInventory: {},
-                shallowSeaInventory: {},
-                deepSeaInventory: {},
-                lastFishingTime: null,
+                inventory: {}, // 库存（支持稀有度格式：{id: {count: N, rarity: 'common/rare/epic'}}）
+                fishInventory: {}, // 鱼库存
+                shallowSeaInventory: {}, // 浅海库存
+                deepSeaInventory: {}, // 深海库存
+                lastFishingTime: null, // 上次钓鱼时间
                 collection: [],
                 lastActionDate: null,
+                // 技能系统
                 skills: {
-                    watering: { level: 1, exp: 0 },
-                    feeding: { level: 1, exp: 0 },
-                    fishing: { level: 1, exp: 0 }
+                    watering: { level: 1, exp: 0 }, // 浇水技能
+                    feeding: { level: 1, exp: 0 },  // 喂养技能
+                    fishing: { level: 1, exp: 0 }   // 钓鱼技能
                 },
+                // 技能次数统计
                 actionCounts: {
                     watering: 0,
                     feeding: 0,
@@ -1762,9 +1358,10 @@
                 };
             }
             
-            // 更新最大体力
+            // 更新最大体力（根据等级）
             const maxStamina = getMaxStamina();
             if (playerData.stamina.max !== maxStamina) {
+                // 如果最大体力增加了，当前体力也相应增加
                 const diff = maxStamina - playerData.stamina.max;
                 playerData.stamina.max = maxStamina;
                 playerData.stamina.current = Math.min(playerData.stamina.current + diff, maxStamina);
@@ -1775,22 +1372,43 @@
             if (playerData.stamina.lastResetDate !== today) {
                 playerData.stamina.current = playerData.stamina.max;
                 playerData.stamina.lastResetDate = today;
+                // 保存体力重置
                 Storage.savePlayerData(playerData);
             }
             
-            if (!farmData.inventory) farmData.inventory = {};
-            if (!farmData.fishInventory) farmData.fishInventory = {};
-            if (!farmData.shallowSeaInventory) farmData.shallowSeaInventory = {};
-            if (!farmData.deepSeaInventory) farmData.deepSeaInventory = {};
+            // 确保 inventory 字段存在
+            if (!farmData.inventory) {
+                farmData.inventory = {};
+            }
             
-            // 裁剪多余的地块数据
+            // 确保 fishInventory 字段存在
+            if (!farmData.fishInventory) {
+                farmData.fishInventory = {};
+            }
+            
+            // 确保 shallowSeaInventory 字段存在
+            if (!farmData.shallowSeaInventory) {
+                farmData.shallowSeaInventory = {};
+            }
+            
+            // 确保 deepSeaInventory 字段存在
+            if (!farmData.deepSeaInventory) {
+                farmData.deepSeaInventory = {};
+            }
+            
+            // 如果现有数据有空地超过已解锁数量，裁剪多余的空地
+            // 同时保留已有种植的数据
             if (farmData.garden && farmData.garden.length > gardenCount) {
-                farmData.garden = farmData.garden.slice(0, gardenCount);
+                // 保留已解锁的部分（包含种植数据）
+                const trimmedGarden = farmData.garden.slice(0, gardenCount);
+                farmData.garden = trimmedGarden;
                 saveFarmData(farmData);
             }
             
             if (farmData.orchard && farmData.orchard.length > orchardCount) {
-                farmData.orchard = farmData.orchard.slice(0, orchardCount);
+                // 保留已解锁的部分（包含种植数据）
+                const trimmedOrchard = farmData.orchard.slice(0, orchardCount);
+                farmData.orchard = trimmedOrchard;
                 saveFarmData(farmData);
             }
             
@@ -1799,17 +1417,21 @@
 
         // ==================== 体力系统 ====================
 
+        // 获取当前体力
         function getStamina() {
             const playerData = Storage.getPlayerData();
             return playerData.stamina?.current || 100;
         }
 
+        // 获取最大体力
         function getMaxStamina() {
             const playerData = Storage.getPlayerData();
             const level = playerData.level || 1;
+            // 基础体力100，每升1级增加20点
             return 100 + (level - 1) * 20;
         }
 
+        // 获取体力消耗（根据技能等级减少）
         function getStaminaCost(skillType) {
             const baseCost = 5;
             const level = getSkillLevel(skillType);
@@ -1817,9 +1439,11 @@
             return Math.max(1, baseCost - reduction);
         }
 
+        // 消耗体力
         function consumeStamina(skillType) {
             const playerData = Storage.getPlayerData();
             
+            // 确保体力数据存在
             if (!playerData.stamina) {
                 playerData.stamina = {
                     current: 100,
@@ -1839,9 +1463,11 @@
             return false;
         }
 
+        // 恢复体力
         function restoreStamina(amount) {
             const playerData = Storage.getPlayerData();
             
+            // 确保体力数据存在
             if (!playerData.stamina) {
                 playerData.stamina = {
                     current: 100,
@@ -1855,6 +1481,7 @@
             updateStaminaDisplay();
         }
 
+        // 更新体力显示
         function updateStaminaDisplay() {
             const staminaBar = document.getElementById('staminaBar');
             const staminaText = document.getElementById('staminaText');
@@ -1869,32 +1496,49 @@
 
         // ==================== 稀有度系统 ====================
 
+        // 稀有度配置
         const rarityConfig = {
             common: { name: '普通', multiplier: 1, color: '#9E9E9E', bgColor: '#F5F5F5' },
             rare: { name: '稀有', multiplier: 3, color: '#4CAF50', bgColor: '#E8F5E9' },
             epic: { name: '罕见', multiplier: 10, color: '#9C27B0', bgColor: '#F3E5F5' }
         };
 
+        // 获取随机稀有度
         function getRandomRarity() {
             const rand = Math.random() * 100;
-            if (rand < 70) return 'common';
-            if (rand < 90) return 'rare';
-            return 'epic';
+            if (rand < 70) return 'common';    // 70% 普通
+            if (rand < 90) return 'rare';      // 20% 稀有
+            return 'epic';                      // 10% 罕见
         }
 
+        // 获取食物补充的体力值（考虑稀有度）
         function getFoodStaminaValue(foodId, rarity) {
             const foodConfig = {
-                carrot: 10, tomato: 15, lettuce: 8, corn: 12,
-                potato: 10, eggplant: 15, apple: 12, orange: 14,
-                grape: 13, peach: 15, egg: 8, milk: 20
+                carrot: 10,
+                tomato: 15,
+                lettuce: 8,
+                corn: 12,
+                potato: 10,
+                eggplant: 15,
+                apple: 12,
+                orange: 14,
+                grape: 13,
+                peach: 15,
+                egg: 8,
+                milk: 20
             };
             const baseValue = foodConfig[foodId] || 10;
-            const rarityMultiplier = { common: 1, rare: 3, epic: 5 };
+            const rarityMultiplier = {
+                common: 1,
+                rare: 3,
+                epic: 5
+            };
             return baseValue * (rarityMultiplier[rarity] || 1);
         }
 
         // ==================== 技能系统 ====================
         
+        // 获取技能等级（确保兼容性）
         function getSkillLevel(skillType) {
             const farmData = getFarmData();
             if (!farmData.skills) {
@@ -1912,19 +1556,23 @@
             return farmData.skills[skillType]?.level || 1;
         }
 
+        // 获取技能加成倍率（等级1=1.0, 等级10=2.0）
         function getSkillBonus(skillType) {
             const level = getSkillLevel(skillType);
-            return 1.0 + (level - 1) * 0.1;
+            return 1.0 + (level - 1) * 0.1; // 每级增加10%
         }
 
+        // 获取钓鱼稀有度加成（等级越高，稀有鱼概率越大）
         function getFishingRarityBonus() {
             const level = getSkillLevel('fishing');
-            return (level - 1) * 0.02;
+            return (level - 1) * 0.02; // 每级增加2%稀有度权重
         }
 
+        // 更新技能经验值
         function updateSkillExp(skillType) {
             const farmData = getFarmData();
             
+            // 初始化技能数据（兼容旧数据）
             if (!farmData.skills) {
                 farmData.skills = {
                     watering: { level: 1, exp: 0 },
@@ -1936,11 +1584,14 @@
                 farmData.actionCounts = { watering: 0, feeding: 0, fishing: 0 };
             }
             
+            // 增加操作次数
             farmData.actionCounts[skillType] = (farmData.actionCounts[skillType] || 0) + 1;
             
+            // 增加经验值
             const skill = farmData.skills[skillType];
-            skill.exp += 10;
+            skill.exp += 10; // 每次操作获得10经验
             
+            // 检查是否升级（每100经验升一级，最高10级）
             const expNeeded = skill.level * 100;
             if (skill.exp >= expNeeded && skill.level < 10) {
                 skill.exp -= expNeeded;
@@ -1951,6 +1602,7 @@
             saveFarmData(farmData);
         }
 
+        // 获取技能名称
         function getSkillName(skillType) {
             const names = {
                 watering: '浇水技能',
@@ -1960,6 +1612,7 @@
             return names[skillType] || skillType;
         }
 
+        // 获取技能等级进度（百分比）
         function getSkillProgress(skillType) {
             const farmData = getFarmData();
             const skill = farmData.skills?.[skillType];
@@ -1970,34 +1623,40 @@
 
         // ==================== 技能系统结束 ====================
 
+        // 获取当前解锁的菜园数量
         function getGardenSlotCount() {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
-            let count = 1;
-            for (let i = 2; i <= 9; i++) {
+            let count = 1; // 第一块免费
+            for (let i = 2; i <= 6; i++) {
                 if (items[`garden_slot_${i}`]) count++;
             }
             return count;
         }
 
+        // 获取当前解锁的果园数量
         function getOrchardSlotCount() {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
-            let count = 1;
-            for (let i = 2; i <= 9; i++) {
+            let count = 1; // 第一块免费
+            for (let i = 2; i <= 6; i++) {
                 if (items[`orchard_slot_${i}`]) count++;
             }
             return count;
         }
 
+        // 保存农场数据
         function saveFarmData(farmData) {
+            // 直接读取并更新 localStorage，避免缓存问题
             const playerDataStr = localStorage.getItem('sudoku_player_data');
             const playerData = playerDataStr ? JSON.parse(playerDataStr) : Storage.getPlayerData();
             playerData.farm = farmData;
             localStorage.setItem('sudoku_player_data', JSON.stringify(playerData));
         }
 
+        // 切换标签页
         function switchTab(tab) {
+            // 检查鱼塘权限
             if (tab === 'fishpond') {
                 const playerData = Storage.getPlayerData();
                 const items = playerData.items || {};
@@ -2007,6 +1666,7 @@
                 }
             }
             
+            // 检查海洋权限
             if (tab === 'ocean') {
                 const playerData = Storage.getPlayerData();
                 const items = playerData.items || {};
@@ -2022,166 +1682,180 @@
             document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
             document.getElementById(`${tab}Tab`).style.display = 'block';
             
-            if (tab === 'collection') renderCollection();
-            if (tab === 'fishpond') renderFishpond();
-            if (tab === 'ocean') renderOcean();
-        }
-
-        // ==================== 渲染菜园（3x3新样式）====================
-
-        function renderGarden() {
-            const playerData = Storage.getPlayerData();
-            const farmData = getFarmData();
-            const garden = farmData.garden;
-            const gardenCount = getGardenSlotCount();
-            const grid = document.getElementById('gardenGrid');
-            const today = new Date().toDateString();
-            let html = '';
-
-            // 渲染9个槽位
-            for (let index = 0; index < 9; index++) {
-                if (index < gardenCount) {
-                    const plant = garden[index];
-                    if (plant) {
-                        const config = farmConfig.vegetables.find(v => v.id === plant.type);
-                        const growthPercent = (plant.growth / config.maxGrowth) * 100;
-                        const stage = getGrowthStage(plant.growth, config.maxGrowth);
-                        const canHarvest = plant.growth >= config.maxGrowth;
-                        const isWatered = plant.lastWater === today;
-                        const isFertilized = plant.lastFertilize === today;
-
-                        let iconSVG = '';
-                        if (stage === 'harvest') {
-                            iconSVG = getVegetableHarvestIcon(plant.type);
-                        } else {
-                            iconSVG = getVegetableSVG(stage);
-                        }
-
-                        let plotClasses = 'farm-plot';
-                        if (isWatered) plotClasses += ' watered';
-                        if (isFertilized) plotClasses += ' fertilized';
-                        if (canHarvest) plotClasses += ' harvest-ready';
-
-                        html += `
-                            <div class="${plotClasses}" onclick="openPlotActionModal('garden', ${index})">
-                                <div class="plot-icon ${canHarvest ? 'harvest-ready' : ''}">${iconSVG}</div>
-                                <div class="plot-name">${config.name}</div>
-                                <div class="plot-progress-bar">
-                                    <div class="plot-progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
-                                </div>
-                                <div class="plot-progress-text">${plant.growth}/${config.maxGrowth}</div>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div class="farm-plot empty" onclick="openSeedModal('vegetable', 'garden', ${index})">
-                                <div class="plot-icon">
-                                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                                        <line x1="32" y1="20" x2="32" y2="44" stroke="#B0A080" stroke-width="3" stroke-linecap="round"/>
-                                        <line x1="20" y1="32" x2="44" y2="32" stroke="#B0A080" stroke-width="3" stroke-linecap="round"/>
-                                    </svg>
-                                </div>
-                                <div class="plot-name">空地${index + 1}号</div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    const slotPrice = itemConfig.find(i => i.id === `garden_slot_${index + 1}`)?.price || 10;
-                    const playerScore = (playerData && playerData.availableScore) || 0;
-                    const canAfford = playerScore >= slotPrice;
-                    
-                    html += `
-                        <div class="farm-plot locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('garden_slot_${index + 1}')">
-                            <div class="plot-locked-icon">🔒</div>
-                            <div class="plot-name">${index + 1}号</div>
-                            <div class="plot-price">${canAfford ? `💰 ${slotPrice}` : `💰 ${playerScore}/${slotPrice}`}</div>
-                        </div>
-                    `;
-                }
+            // 如果切换到图鉴页面，渲染图鉴
+            if (tab === 'collection') {
+                renderCollection();
             }
-
-            grid.innerHTML = html;
-            renderSkillDisplay('gardenSkill', 'watering', '💧', '浇水技能');
-        }
-
-        // ==================== 渲染果园（3x3新样式）====================
-
-        function renderOrchard() {
-            const playerData = Storage.getPlayerData();
-            const farmData = getFarmData();
-            const orchard = farmData.orchard;
-            const orchardCount = getOrchardSlotCount();
-            const grid = document.getElementById('orchardGrid');
-            const today = new Date().toDateString();
-            let html = '';
-
-            for (let index = 0; index < 9; index++) {
-                if (index < orchardCount) {
-                    const tree = orchard[index];
-                    if (tree) {
-                        const config = farmConfig.fruits.find(f => f.id === tree.type);
-                        const growthPercent = (tree.growth / config.maxGrowth) * 100;
-                        const stage = getGrowthStage(tree.growth, config.maxGrowth);
-                        const canHarvest = tree.growth >= config.maxGrowth;
-                        const isWatered = tree.lastWater === today;
-                        const isFertilized = tree.lastFertilize === today;
-
-                        let iconSVG = '';
-                        if (stage === 'harvest') {
-                            iconSVG = getTreeHarvestWithFruit(tree.type);
-                        } else {
-                            iconSVG = getTreeSVG(stage);
-                        }
-
-                        let plotClasses = 'farm-plot';
-                        if (isWatered) plotClasses += ' watered';
-                        if (isFertilized) plotClasses += ' fertilized';
-                        if (canHarvest) plotClasses += ' harvest-ready';
-
-                        html += `
-                            <div class="${plotClasses}" onclick="openPlotActionModal('orchard', ${index})">
-                                <div class="plot-icon ${canHarvest ? 'harvest-ready' : ''}">${iconSVG}</div>
-                                <div class="plot-name">${config.name}</div>
-                                <div class="plot-progress-bar">
-                                    <div class="plot-progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
-                                </div>
-                                <div class="plot-progress-text">${tree.growth}/${config.maxGrowth}</div>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div class="farm-plot empty" onclick="openSeedModal('fruit', 'orchard', ${index})">
-                                <div class="plot-icon">
-                                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                                        <line x1="32" y1="20" x2="32" y2="44" stroke="#B0A080" stroke-width="3" stroke-linecap="round"/>
-                                        <line x1="20" y1="32" x2="44" y2="32" stroke="#B0A080" stroke-width="3" stroke-linecap="round"/>
-                                    </svg>
-                                </div>
-                                <div class="plot-name">空地${index + 1}号</div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    const slotPrice = itemConfig.find(i => i.id === `orchard_slot_${index + 1}`)?.price || 15;
-                    const playerScore = (playerData && playerData.availableScore) || 0;
-                    const canAfford = playerScore >= slotPrice;
-                    
-                    html += `
-                        <div class="farm-plot locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('orchard_slot_${index + 1}')">
-                            <div class="plot-locked-icon">🔒</div>
-                            <div class="plot-name">${index + 1}号</div>
-                            <div class="plot-price">${canAfford ? `💰 ${slotPrice}` : `💰 ${playerScore}/${slotPrice}`}</div>
-                        </div>
-                    `;
-                }
+            // 如果切换到鱼塘页面，渲染鱼塘
+            if (tab === 'fishpond') {
+                renderFishpond();
             }
-
-            grid.innerHTML = html;
-            renderSkillDisplay('orchardSkill', 'watering', '💧', '浇水技能');
+            // 如果切换到海洋页面，渲染海洋
+            if (tab === 'ocean') {
+                renderOcean();
+            }
+            // 如果切换到礼盒页面，渲染礼盒
+            if (tab === 'gifts') {
+                renderGiftBoxes();
+            }
         }
 
-        // ==================== 渲染技能显示 ====================
+        // 渲染礼盒页面
+        function renderGiftBoxes() {
+            const container = document.getElementById('giftBoxesContainer');
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            
+            const boxTypes = [
+                { type: 'bronze', name: '青铜礼盒', icon: '📦', color: '#cd7f32' },
+                { type: 'silver', name: '白银礼盒', icon: '🎁', color: '#c0c0c0' },
+                { type: 'gold', name: '黄金礼盒', icon: '✨', color: '#ffd700' }
+            ];
+            
+            container.innerHTML = '';
+            
+            let hasBoxes = false;
+            boxTypes.forEach(box => {
+                const count = giftBoxes[box.type] || 0;
+                if (count > 0) hasBoxes = true;
+                
+                const item = document.createElement('div');
+                item.className = 'gift-box-item';
+                item.innerHTML = `
+                    <div class="gift-box-icon" style="color: ${box.color}">${box.icon}</div>
+                    <div class="gift-box-info">
+                        <div class="gift-box-name">${box.name}</div>
+                        <div class="gift-box-count">数量：${count} 个</div>
+                    </div>
+                    <button class="gift-box-open-btn" ${count > 0 ? '' : 'disabled'} onclick="openGiftBox('${box.type}')">
+                        开启
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+            
+            if (!hasBoxes) {
+                container.innerHTML = '<div class="empty-hint">🎁 暂无礼盒，快去完成数独获得吧！</div>';
+            }
+        }
 
+        // 开礼盒
+        function openGiftBox(boxType) {
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            
+            if (giftBoxes[boxType] <= 0) return;
+            
+            // 减少礼盒数量
+            giftBoxes[boxType]--;
+            playerData.giftBoxes = giftBoxes;
+            
+            // 随机获得奖励
+            const reward = getRandomGiftReward(boxType);
+            
+            // 应用奖励
+            applyGiftReward(reward);
+            
+            // 保存数据
+            Storage.savePlayerData(playerData);
+            
+            // 显示奖励弹窗
+            showGiftRewardModal(boxType, reward);
+            
+            // 重新渲染礼盒页面
+            renderGiftBoxes();
+        }
+
+        // 获取随机礼盒奖励
+        function getRandomGiftReward(boxType) {
+            const rewards = {
+                bronze: [
+                    { type: 'score', value: 50, name: '积分', icon: '💰' },
+                    { type: 'score', value: 80, name: '积分', icon: '💰' },
+                    { type: 'stamina', value: 20, name: '体力', icon: '⚡' },
+                    { type: 'stamina', value: 30, name: '体力', icon: '⚡' },
+                    { type: 'item', value: 'water', name: '浇水道具', icon: '💧', count: 1 },
+                    { type: 'item', value: 'fertilizer', name: '施肥道具', icon: '🌿', count: 1 }
+                ],
+                silver: [
+                    { type: 'score', value: 100, name: '积分', icon: '💰' },
+                    { type: 'score', value: 150, name: '积分', icon: '💰' },
+                    { type: 'stamina', value: 50, name: '体力', icon: '⚡' },
+                    { type: 'stamina', value: 80, name: '体力', icon: '⚡' },
+                    { type: 'item', value: 'water', name: '浇水道具', icon: '💧', count: 3 },
+                    { type: 'item', value: 'fertilizer', name: '施肥道具', icon: '🌿', count: 3 },
+                    { type: 'item', value: 'luck_potion', name: '幸运药水', icon: '🍀', count: 1 }
+                ],
+                gold: [
+                    { type: 'score', value: 200, name: '积分', icon: '💰' },
+                    { type: 'score', value: 300, name: '积分', icon: '💰' },
+                    { type: 'stamina', value: 100, name: '体力', icon: '⚡' },
+                    { type: 'stamina', value: 150, name: '体力', icon: '⚡' },
+                    { type: 'item', value: 'water', name: '浇水道具', icon: '💧', count: 5 },
+                    { type: 'item', value: 'fertilizer', name: '施肥道具', icon: '🌿', count: 5 },
+                    { type: 'item', value: 'luck_potion', name: '幸运药水', icon: '🍀', count: 2 },
+                    { type: 'item', value: 'speed_growth', name: '加速生长', icon: '⏰', count: 2 }
+                ]
+            };
+            
+            const pool = rewards[boxType];
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // 应用礼盒奖励
+        function applyGiftReward(reward) {
+            const playerData = Storage.getPlayerData();
+            
+            if (reward.type === 'score') {
+                playerData.availableScore = (playerData.availableScore || 0) + reward.value;
+            } else if (reward.type === 'stamina') {
+                playerData.stamina = Math.min(100, (playerData.stamina || 100) + reward.value);
+            } else if (reward.type === 'item') {
+                playerData.items = playerData.items || {};
+                playerData.items[reward.value] = (playerData.items[reward.value] || 0) + (reward.count || 1);
+            }
+            
+            Storage.savePlayerData(playerData);
+        }
+
+        // 显示礼盒奖励弹窗
+        function showGiftRewardModal(boxType, reward) {
+            const modal = document.getElementById('giftRewardModal');
+            const iconEl = document.getElementById('giftRewardIcon');
+            const titleEl = document.getElementById('giftRewardTitle');
+            const descEl = document.getElementById('giftRewardDesc');
+            
+            const boxNames = { bronze: '青铜礼盒', silver: '白银礼盒', gold: '黄金礼盒' };
+            
+            iconEl.textContent = reward.icon;
+            titleEl.textContent = `🎁 开启${boxNames[boxType]}！`;
+            
+            if (reward.type === 'score') {
+                descEl.textContent = `恭喜获得 ${reward.value} 积分！`;
+            } else if (reward.type === 'stamina') {
+                descEl.textContent = `恭喜获得 ${reward.value} 体力！`;
+            } else if (reward.type === 'item') {
+                descEl.textContent = `恭喜获得 ${reward.name} x${reward.count || 1}！`;
+            }
+            
+            modal.classList.add('show');
+        }
+
+        // 关闭礼盒奖励弹窗
+        function closeGiftRewardModal() {
+            document.getElementById('giftRewardModal').classList.remove('show');
+        }
+
+        // 获取成长值对应的图标大小
+        function getGrowthSize(growth, maxGrowth) {
+            const ratio = growth / maxGrowth;
+            if (ratio < 0.25) return 'small';
+            if (ratio < 0.5) return 'medium';
+            if (ratio < 0.75) return 'large';
+            return 'full';
+        }
+
+        // 渲染技能显示
         function renderSkillDisplay(elementId, skillType, icon, skillName) {
             const element = document.getElementById(elementId);
             if (element) {
@@ -2196,8 +1870,153 @@
             }
         }
 
-        // ==================== 鸡小屋和动物屋 ====================
+        // 渲染菜园
+        function renderGarden() {
+            const playerData = Storage.getPlayerData();
+            const farmData = getFarmData();
+            const garden = farmData.garden;
+            const gardenCount = getGardenSlotCount();
+            const grid = document.getElementById('gardenGrid');
+            let html = '';
 
+            // 渲染所有6个槽位
+            for (let index = 0; index < 6; index++) {
+                if (index < gardenCount) {
+                    // 已解锁的槽位
+                    const plant = garden[index];
+                    if (plant) {
+                        const config = farmConfig.vegetables.find(v => v.id === plant.type);
+                        const growthPercent = (plant.growth / config.maxGrowth) * 100;
+                        const sizeClass = getGrowthSize(plant.growth, config.maxGrowth);
+                        const canHarvest = plant.growth >= config.maxGrowth;
+                        const today = new Date().toDateString();
+                        const canWater = plant.lastWater !== today;
+                        const canFertilize = plant.lastFertilize !== today;
+
+                        html += `
+                            <div class="farm-item">
+                                <div class="item-icon ${sizeClass}">${config.icon}</div>
+                                <div class="item-name">${config.name}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
+                                </div>
+                                <div class="progress-text">${plant.growth}/${config.maxGrowth}</div>
+                                <div class="action-buttons">
+                                    <button class="action-btn primary" onclick="water('garden', ${index})" ${!canWater ? 'disabled' : ''}>
+                                        💧
+                                    </button>
+                                    <button class="action-btn secondary" onclick="fertilize('garden', ${index})" ${!canFertilize ? 'disabled' : ''}>
+                                        🧪
+                                    </button>
+                                    <button class="action-btn harvest-btn" onclick="harvest('garden', ${index})" ${!canHarvest ? 'disabled' : ''}>
+                                        🌾
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="farm-item empty" onclick="openSeedModal('vegetable', 'garden', ${index})">
+                                <div class="item-icon">➕</div>
+                                <div class="item-name">空地块${index + 1}号</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 未解锁的槽位
+                    const slotPrice = itemConfig.find(i => i.id === `garden_slot_${index + 1}`)?.price || 10;
+                    const playerScore = (playerData && playerData.availableScore) || 0;
+                    const canAfford = playerScore >= slotPrice;
+                    
+                    html += `
+                        <div class="farm-item locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('garden_slot_${index + 1}')">
+                            <div class="item-icon locked-icon">🔒</div>
+                            <div class="item-name">${index + 1}号菜地</div>
+                            <div class="slot-price">${canAfford ? `💰 ${slotPrice}积分解锁` : `💰 积分不足(${playerScore}/${slotPrice})`}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            grid.innerHTML = html;
+            // 渲染技能显示
+            renderSkillDisplay('gardenSkill', 'watering', '💧', '浇水技能');
+        }
+
+        // 渲染果园
+        function renderOrchard() {
+            const playerData = Storage.getPlayerData();
+            const farmData = getFarmData();
+            const orchard = farmData.orchard;
+            const orchardCount = getOrchardSlotCount();
+            const grid = document.getElementById('orchardGrid');
+            let html = '';
+
+            // 渲染所有6个槽位
+            for (let index = 0; index < 6; index++) {
+                if (index < orchardCount) {
+                    // 已解锁的槽位
+                    const tree = orchard[index];
+                    if (tree) {
+                        const config = farmConfig.fruits.find(f => f.id === tree.type);
+                        const growthPercent = (tree.growth / config.maxGrowth) * 100;
+                        const sizeClass = getGrowthSize(tree.growth, config.maxGrowth);
+                        const canHarvest = tree.growth >= config.maxGrowth;
+                        const today = new Date().toDateString();
+                        const canWater = tree.lastWater !== today;
+                        const canFertilize = tree.lastFertilize !== today;
+
+                        html += `
+                            <div class="farm-item">
+                                <div class="item-icon ${sizeClass}">${config.icon}</div>
+                                <div class="item-name">${config.name}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(growthPercent, 100)}%"></div>
+                                </div>
+                                <div class="progress-text">${tree.growth}/${config.maxGrowth}</div>
+                                <div class="action-buttons">
+                                    <button class="action-btn primary" onclick="water('orchard', ${index})" ${!canWater ? 'disabled' : ''}>
+                                        💧
+                                    </button>
+                                    <button class="action-btn secondary" onclick="fertilize('orchard', ${index})" ${!canFertilize ? 'disabled' : ''}>
+                                        🧪
+                                    </button>
+                                    <button class="action-btn harvest-btn" onclick="harvest('orchard', ${index})" ${!canHarvest ? 'disabled' : ''}>
+                                        🌾
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="farm-item empty" onclick="openSeedModal('fruit', 'orchard', ${index})">
+                                <div class="item-icon">➕</div>
+                                <div class="item-name">空地${index + 1}号</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 未解锁的槽位
+                    const slotPrice = itemConfig.find(i => i.id === `orchard_slot_${index + 1}`)?.price || 15;
+                    const playerScore = (playerData && playerData.availableScore) || 0;
+                    const canAfford = playerScore >= slotPrice;
+                    
+                    html += `
+                        <div class="farm-item locked ${!canAfford ? 'cannot-afford' : ''}" onclick="goToShopToBuy('orchard_slot_${index + 1}')">
+                            <div class="item-icon locked-icon">🔒</div>
+                            <div class="item-name">${index + 1}号果园</div>
+                            <div class="slot-price">${canAfford ? `💰 ${slotPrice}积分解锁` : `💰 积分不足(${playerScore}/${slotPrice})`}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            grid.innerHTML = html;
+            // 渲染技能显示
+            renderSkillDisplay('orchardSkill', 'watering', '💧', '浇水技能');
+        }
+
+        // 渲染鸡小屋
         function renderChicken() {
             const farmData = getFarmData();
             const chicken = farmData.chicken;
@@ -2207,13 +2026,15 @@
                 const config = farmConfig.animals.chicken;
                 const isAdult = chicken.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
+                // 成年前：可以喂食和加餐；成年后：只能喂食（每天一次，喂食后才能收获）
                 const canFeed = chicken.lastFeed !== today;
                 const canSnack = !isAdult && chicken.lastSnack !== today;
+                // 成年后需要当天喂食才能收获
                 const canHarvest = isAdult && chicken.lastFeed === today && chicken.lastHarvest !== today;
 
                 grid.innerHTML = `
                     <div class="farm-item">
-                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(chicken.growth, config.maxGrowth)}">${isAdult ? '🐔' : '🐣'}</div>
+                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(chicken.growth, config.maxGrowth)}">${isAdult ? '🐔' : config.icon}</div>
                         <div class="item-name">${config.name}</div>
                         ${!isAdult ? `
                             <div class="progress-bar">
@@ -2223,13 +2044,13 @@
                         ` : ''}
                         <div class="action-buttons">
                             <button class="action-btn primary" onclick="feed('chicken')" ${!canFeed ? 'disabled' : ''}>
-                                🌾 喂食
+                                🌾
                             </button>
                             <button class="action-btn secondary" onclick="snack('chicken')" ${!canSnack ? 'disabled' : ''}>
-                                🍖 加餐
+                                🍖
                             </button>
                             <button class="action-btn harvest-btn" onclick="harvestAnimal('chicken')" ${!canHarvest ? 'disabled' : ''}>
-                                🥚 收获
+                                🥚
                             </button>
                         </div>
                         ${isAdult && chicken.lastFeed !== today ? '<div class="hint-text">💡 请先喂食再收获</div>' : ''}
@@ -2243,9 +2064,11 @@
                     </div>
                 `;
             }
+            // 渲染技能显示
             renderSkillDisplay('chickenSkill', 'feeding', '🍽️', '喂食技能');
         }
 
+        // 渲染动物屋（牛）
         function renderCow() {
             const farmData = getFarmData();
             const cow = farmData.cow;
@@ -2255,13 +2078,15 @@
                 const config = farmConfig.animals.cow;
                 const isAdult = cow.growth >= config.maxGrowth;
                 const today = new Date().toDateString();
+                // 成年前：可以喂食和加餐；成年后：只能喂食（每天一次，喂食后才能收获）
                 const canFeed = cow.lastFeed !== today;
                 const canSnack = !isAdult && cow.lastSnack !== today;
+                // 成年后需要当天喂食才能收获
                 const canHarvest = isAdult && cow.lastFeed === today && cow.lastHarvest !== today;
 
                 grid.innerHTML = `
                     <div class="farm-item">
-                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(cow.growth, config.maxGrowth)}">${isAdult ? '🐄' : '🐮'}</div>
+                        <div class="item-icon ${isAdult ? 'full' : getGrowthSize(cow.growth, config.maxGrowth)}">${isAdult ? '🐄' : config.icon}</div>
                         <div class="item-name">${config.name}</div>
                         ${!isAdult ? `
                             <div class="progress-bar">
@@ -2271,13 +2096,13 @@
                         ` : ''}
                         <div class="action-buttons">
                             <button class="action-btn primary" onclick="feed('cow')" ${!canFeed ? 'disabled' : ''}>
-                                🌾 喂食
+                                🌾
                             </button>
                             <button class="action-btn secondary" onclick="snack('cow')" ${!canSnack ? 'disabled' : ''}>
-                                🍖 加餐
+                                🍖
                             </button>
                             <button class="action-btn harvest-btn" onclick="harvestAnimal('cow')" ${!canHarvest ? 'disabled' : ''}>
-                                🥛 收获
+                                🥛
                             </button>
                         </div>
                         ${isAdult && cow.lastFeed !== today ? '<div class="hint-text">💡 请先喂食再收获</div>' : ''}
@@ -2291,23 +2116,16 @@
                     </div>
                 `;
             }
+            // 渲染技能显示
             renderSkillDisplay('cowSkill', 'feeding', '🍽️', '喂食技能');
         }
 
-        function getGrowthSize(growth, maxGrowth) {
-            const ratio = growth / maxGrowth;
-            if (ratio < 0.25) return 'small';
-            if (ratio < 0.5) return 'medium';
-            if (ratio < 0.75) return 'large';
-            return 'full';
-        }
-
-        // ==================== 钓鱼相关功能 ====================
-
+        // 获取合并的鱼获库存（合并池塘、浅海、深海）
         function getCombinedFishInventory() {
             const farmData = getFarmData();
             const combined = {};
             
+            // 合并池塘鱼获（支持稀有度格式）
             const pondFish = farmData.fishInventory || {};
             for (const [fishId, rarityData] of Object.entries(pondFish)) {
                 if (typeof rarityData === 'object') {
@@ -2316,11 +2134,13 @@
                         combined[fishId][rarity] = (combined[fishId][rarity] || 0) + count;
                     }
                 } else {
+                    // 兼容旧格式
                     if (!combined[fishId]) combined[fishId] = {};
                     combined[fishId]['common'] = (combined[fishId]['common'] || 0) + rarityData;
                 }
             }
             
+            // 合并浅海鱼获（支持稀有度格式）
             const shallowFish = farmData.shallowSeaInventory || {};
             for (const [fishId, rarityData] of Object.entries(shallowFish)) {
                 if (typeof rarityData === 'object') {
@@ -2334,6 +2154,7 @@
                 }
             }
             
+            // 合并深海鱼获（支持稀有度格式）
             const deepFish = farmData.deepSeaInventory || {};
             for (const [fishId, rarityData] of Object.entries(deepFish)) {
                 if (typeof rarityData === 'object') {
@@ -2350,25 +2171,37 @@
             return combined;
         }
 
+        // 获取鱼的配置信息（从所有配置中查找）
         function getFishConfig(fishId) {
+            // 先从池塘鱼类配置查找
             let fish = farmConfig.fishes.find(f => f.id === fishId);
-            if (!fish) fish = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
-            if (!fish) fish = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            if (!fish) {
+                // 再从浅海鱼类配置查找
+                fish = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            }
+            if (!fish) {
+                // 最后从深海鱼类配置查找
+                fish = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            }
             return fish;
         }
 
+        // 从合并库存中兑换鱼（自动从各个库存中扣除）
         function exchangeFromCombinedInventory(fishId, rarity = 'common') {
             const farmData = getFarmData();
             const pondFish = farmData.fishInventory || {};
             const shallowFish = farmData.shallowSeaInventory || {};
             const deepFish = farmData.deepSeaInventory || {};
             
+            // 查找鱼的配置
             const fish = getFishConfig(fishId);
             if (!fish) return null;
             
+            // 获取稀有度加成
             const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
             const actualScore = Math.floor(fish.exchangeScore * rarityMultiplier);
             
+            // 优先从池塘扣除，然后浅海，然后深海（支持稀有度格式）
             const inventories = [pondFish, shallowFish, deepFish];
             const invKeys = ['fishInventory', 'shallowSeaInventory', 'deepSeaInventory'];
             let found = false;
@@ -2384,6 +2217,7 @@
                         found = true;
                         break;
                     } else if (typeof inv[fishId] === 'number' && inv[fishId] > 0) {
+                        // 兼容旧格式
                         inv[fishId]--;
                         farmData[invKeys[i]] = inv;
                         found = true;
@@ -2398,6 +2232,7 @@
             return { ...fish, exchangeScore: actualScore };
         }
 
+        // 渲染鱼塘
         function renderFishpond() {
             const farmData = getFarmData();
             const grid = document.getElementById('fishpondGrid');
@@ -2405,6 +2240,7 @@
             const items = Storage.getPlayerData().items || {};
             const baitCount = items.bait || 0;
             
+            // 渲染鱼塘操作区域（移除兑换全部按钮）
             grid.innerHTML = `
                 <div class="farm-item">
                     <div class="item-icon fishpond-icon">🐟</div>
@@ -2419,6 +2255,7 @@
                 </div>
             `;
             
+            // 渲染鱼库存（合并池塘、浅海、深海）
             const fishInventory = getCombinedFishInventory();
             let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
             let hasFish = false;
@@ -2446,6 +2283,7 @@
                         }
                     }
                 } else if (rarityData > 0) {
+                    // 兼容旧格式
                     hasFish = true;
                     const fish = getFishConfig(fishId);
                     if (fish) {
@@ -2468,10 +2306,13 @@
             
             inventoryHtml += '</div>';
             stats.innerHTML = inventoryHtml;
+            // 渲染技能显示
             renderSkillDisplay('fishpondSkill', 'fishing', '🎣', '钓鱼技能');
         }
 
+        // 钓鱼功能
         function fish() {
+            // 检查体力
             if (!consumeStamina('fishing')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -2486,25 +2327,32 @@
                 return;
             }
             
+            // 消耗鱼饵
             items.bait = baitCount - 1;
             playerData.items = items;
+            
+            // 先保存玩家数据（包含物品消耗）
             Storage.savePlayerData(playerData);
             
+            // 随机钓鱼（考虑技能等级加成）
             const random = Math.random() * 100;
             let cumulative = 0;
             let caughtFish = null;
             
+            // 获取钓鱼技能加成（等级越高，稀有鱼概率越大）
             const rarityBonus = getFishingRarityBonus();
             
+            // 重新计算概率：稀有度越高，加成越多
             for (const fish of farmConfig.fishes) {
                 let adjustedProbability = fish.probability;
                 
+                // 根据稀有度增加概率（无价值物品减少，稀有物品增加）
                 if (fish.rarity === 'trash') {
-                    adjustedProbability *= (1 - rarityBonus * 2);
+                    adjustedProbability *= (1 - rarityBonus * 2); // 减少垃圾概率
                 } else if (fish.rarity === 'rare') {
-                    adjustedProbability *= (1 + rarityBonus * 3);
+                    adjustedProbability *= (1 + rarityBonus * 3); // 增加稀有鱼概率
                 } else if (fish.rarity === 'legendary') {
-                    adjustedProbability *= (1 + rarityBonus * 5);
+                    adjustedProbability *= (1 + rarityBonus * 5); // 大幅增加传说鱼概率
                 }
                 
                 cumulative += adjustedProbability;
@@ -2514,24 +2362,30 @@
                 }
             }
             
+            // 如果没找到（概率和超过100），重新随机
             if (!caughtFish) {
                 const fallbackRandom = Math.random() * farmConfig.fishes.length;
                 caughtFish = farmConfig.fishes[Math.floor(fallbackRandom)];
             }
             
+            // 更新钓鱼技能经验
             updateSkillExp('fishing');
             
+            // 添加到鱼库存（只有有价值的鱼才入库）
             const farmData = getFarmData();
             if (!farmData.fishInventory) farmData.fishInventory = {};
             
             if (caughtFish.exchangeScore > 0) {
+                // 随机决定稀有度（同一种鱼可以有不同稀有度）
                 const rarityBonus = getFishingRarityBonus();
                 const rarityRandom = Math.random() * 100;
                 
-                let commonProb = 70 - rarityBonus * 5;
-                let rareProb = 25 + rarityBonus * 3;
-                let legendaryProb = 5 + rarityBonus * 2;
+                // 基础稀有度概率
+                let commonProb = 70 - rarityBonus * 5;      // 普通：70%（技能越高概率越低）
+                let rareProb = 25 + rarityBonus * 3;        // 稀有：25%（技能越高概率越高）
+                let legendaryProb = 5 + rarityBonus * 2;    // 传说：5%（技能越高概率越高）
                 
+                // 确保概率在合理范围内
                 commonProb = Math.max(40, Math.min(85, commonProb));
                 rareProb = Math.max(10, Math.min(40, rareProb));
                 legendaryProb = Math.max(1, Math.min(20, legendaryProb));
@@ -2543,6 +2397,7 @@
                     finalRarity = 'rare';
                 }
                 
+                // 使用稀有度格式存储鱼获
                 const fishRarity = finalRarity === 'legendary' ? 'epic' : (finalRarity === 'rare' ? 'rare' : 'common');
                 if (!farmData.fishInventory[caughtFish.id]) {
                     farmData.fishInventory[caughtFish.id] = {};
@@ -2551,17 +2406,21 @@
                     farmData.fishInventory[caughtFish.id][fishRarity] = 0;
                 }
                 farmData.fishInventory[caughtFish.id][fishRarity]++;
-                
+                // 更新图鉴
                 if (!farmData.collection.includes(caughtFish.id)) {
                     farmData.collection.push(caughtFish.id);
                 }
                 
+                // 保存最终稀有度用于显示
                 caughtFish.finalRarity = finalRarity;
             }
             
             farmData.lastFishingTime = new Date().toDateString();
+            
+            // 保存农场数据（saveFarmData内部会保存playerData）
             saveFarmData(farmData);
             
+            // 显示结果
             const displayRarity = caughtFish.finalRarity || caughtFish.rarity;
             const rarityInfo = rarityConfig[displayRarity];
             const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0', legendary: '#9C27B0' };
@@ -2570,25 +2429,32 @@
             if (caughtFish.exchangeScore > 0) {
                 const rarityMultiplier = rarityConfig[displayRarity]?.multiplier || 1;
                 const actualScore = Math.floor(caughtFish.exchangeScore * rarityMultiplier);
-                message = `🎣 恭喜钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
+                message = `\ud83c\udfa3 恭喜钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
             } else {
                 message = `😅 钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }
             
             customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning', null, { allowHtml: true });
             
+            // 刷新界面
             renderFishpond();
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
+        // 兑换鱼为积分
         function exchangeFish(fishId, rarity = 'common') {
+            // 从合并库存中兑换鱼
             const fish = exchangeFromCombinedInventory(fishId, rarity);
-            if (!fish) return;
+            if (!fish) {
+                return;
+            }
             
+            // 只更新可用积分，不更新等级统计积分
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + fish.exchangeScore;
             Storage.savePlayerData(playerData);
             
+            // 保存积分记录
             Storage.saveScoreRecord({
                 type: 'fish_exchange',
                 name: fish.name,
@@ -2596,18 +2462,24 @@
                 score: fish.exchangeScore
             });
             
-            customAlert(`💰 成功兑换 ${fish.icon} ${fish.name}，获得 ${fish.exchangeScore} 积分！`, 'success');
+            // 显示结果
+            customAlert(`\ud83d\udcb0 成功兑换 ${fish.icon} ${fish.name}，获得 ${fish.exchangeScore} 积分！`, 'success');
             
-            if (currentTab === 'fishpond') renderFishpond();
-            else if (currentTab === 'ocean') renderOcean();
-            
+            // 刷新界面（根据当前标签页刷新）
+            if (currentTab === 'fishpond') {
+                renderFishpond();
+            } else if (currentTab === 'ocean') {
+                renderOcean();
+            }
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
+        // 批量兑换所有鱼（合并池塘、浅海、深海）
         function exchangeAllFish() {
             const farmData = getFarmData();
             const fishInventory = getCombinedFishInventory();
             
+            // 检查是否有鱼
             let hasFish = false;
             for (const rarityData of Object.values(fishInventory)) {
                 if (typeof rarityData === 'object') {
@@ -2625,6 +2497,7 @@
                 return;
             }
             
+            // 计算总积分
             let totalScore = 0;
             let exchangeList = [];
             
@@ -2642,6 +2515,7 @@
                         }
                     }
                 } else if (rarityData > 0) {
+                    // 兼容旧格式
                     const fish = getFishConfig(fishId);
                     if (fish) {
                         totalScore += fish.exchangeScore * rarityData;
@@ -2650,14 +2524,17 @@
                 }
             }
             
+            // 清空所有鱼库存
             farmData.fishInventory = {};
             farmData.shallowSeaInventory = {};
             farmData.deepSeaInventory = {};
             
+            // 只更新可用积分，不更新等级统计积分
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + totalScore;
             Storage.savePlayerData(playerData);
             
+            // 保存积分记录（为每种鱼单独记录）
             for (const [fishId, rarityData] of Object.entries(fishInventory)) {
                 if (typeof rarityData === 'object') {
                     for (const [rarity, count] of Object.entries(rarityData)) {
@@ -2676,6 +2553,7 @@
                         }
                     }
                 } else if (rarityData > 0) {
+                    // 兼容旧格式
                     const fish = getFishConfig(fishId);
                     if (fish) {
                         Storage.saveScoreRecord({
@@ -2688,16 +2566,22 @@
                 }
             }
             
+            // 保存数据
             saveFarmData(farmData);
             
-            customAlert(`💰 成功兑换所有鱼！\n\n${exchangeList.join('\n')}\n\n共获得 ${totalScore} 积分！`, 'success');
+            // 显示结果
+            customAlert(`\ud83d\udcb0 成功兑换所有鱼！\n\n${exchangeList.join('\n')}\n\n共获得 ${totalScore} 积分！`, 'success');
             
-            if (currentTab === 'fishpond') renderFishpond();
-            else if (currentTab === 'ocean') renderOcean();
-            
+            // 刷新界面（根据当前标签页刷新）
+            if (currentTab === 'fishpond') {
+                renderFishpond();
+            } else if (currentTab === 'ocean') {
+                renderOcean();
+            }
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
+        // 渲染海洋
         function renderOcean() {
             const farmData = getFarmData();
             const grid = document.getElementById('oceanGrid');
@@ -2705,6 +2589,7 @@
             const items = Storage.getPlayerData().items || {};
             const baitCount = items.bait || 0;
             
+            // 渲染浅海和深海操作区域（移除兑换全部按钮）
             grid.innerHTML = `
                 <div class="farm-item">
                     <div class="item-icon fishpond-icon">🌊</div>
@@ -2730,6 +2615,7 @@
                 </div>
             `;
             
+            // 渲染合并的鱼获库存（包含池塘、浅海、深海）
             const fishInventory = getCombinedFishInventory();
             let inventoryHtml = '<div class="section-title-container"><div class="section-title">🐟 我的鱼获</div><button class="exchange-all-btn" onclick="exchangeAllFish()">💰 兑换全部</button></div><div class="fish-inventory">';
             let hasFish = false;
@@ -2757,6 +2643,7 @@
                         }
                     }
                 } else if (rarityData > 0) {
+                    // 兼容旧格式
                     hasFish = true;
                     const fish = getFishConfig(fishId);
                     if (fish) {
@@ -2779,10 +2666,13 @@
             
             inventoryHtml += '</div>';
             stats.innerHTML = inventoryHtml;
+            // 渲染技能显示
             renderSkillDisplay('oceanSkill', 'fishing', '🎣', '钓鱼技能');
         }
 
+        // 海洋钓鱼功能
         function oceanFish(seaType) {
+            // 检查体力
             if (!consumeStamina('fishing')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -2797,28 +2687,36 @@
                 return;
             }
             
+            // 消耗鱼饵
             items.bait = baitCount - 1;
             playerData.items = items;
+            
+            // 先保存玩家数据（包含物品消耗）
             Storage.savePlayerData(playerData);
             
+            // 根据海域类型选择鱼类配置
             const fishConfig = seaType === 'shallow' ? farmConfig.shallowSeaFishes : farmConfig.deepSeaFishes;
             const inventoryKey = seaType === 'shallow' ? 'shallowSeaInventory' : 'deepSeaInventory';
             
+            // 随机钓鱼（考虑技能等级加成）
             const random = Math.random() * 100;
             let cumulative = 0;
             let caughtFish = null;
             
+            // 获取钓鱼技能加成（等级越高，稀有鱼概率越大）
             const rarityBonus = getFishingRarityBonus();
             
+            // 重新计算概率：稀有度越高，加成越多
             for (const fish of fishConfig) {
                 let adjustedProbability = fish.probability;
                 
+                // 根据稀有度增加概率（无价值物品减少，稀有物品增加）
                 if (fish.rarity === 'trash') {
-                    adjustedProbability *= (1 - rarityBonus * 2);
+                    adjustedProbability *= (1 - rarityBonus * 2); // 减少垃圾概率
                 } else if (fish.rarity === 'rare') {
-                    adjustedProbability *= (1 + rarityBonus * 3);
+                    adjustedProbability *= (1 + rarityBonus * 3); // 增加稀有鱼概率
                 } else if (fish.rarity === 'legendary') {
-                    adjustedProbability *= (1 + rarityBonus * 5);
+                    adjustedProbability *= (1 + rarityBonus * 5); // 大幅增加传说鱼概率
                 }
                 
                 cumulative += adjustedProbability;
@@ -2828,24 +2726,30 @@
                 }
             }
             
+            // 如果没找到（概率和超过100），重新随机
             if (!caughtFish) {
                 const fallbackRandom = Math.random() * fishConfig.length;
                 caughtFish = fishConfig[Math.floor(fallbackRandom)];
             }
             
+            // 更新钓鱼技能经验
             updateSkillExp('fishing');
             
+            // 添加到对应海域库存（只有有价值的鱼才入库）
             const farmData = getFarmData();
             if (!farmData[inventoryKey]) farmData[inventoryKey] = {};
             
             if (caughtFish.exchangeScore > 0) {
+                // 随机决定稀有度（同一种鱼可以有不同稀有度）
                 const rarityBonus = getFishingRarityBonus();
                 const rarityRandom = Math.random() * 100;
                 
-                let commonProb = 70 - rarityBonus * 5;
-                let rareProb = 25 + rarityBonus * 3;
-                let legendaryProb = 5 + rarityBonus * 2;
+                // 基础稀有度概率
+                let commonProb = 70 - rarityBonus * 5;      // 普通：70%（技能越高概率越低）
+                let rareProb = 25 + rarityBonus * 3;        // 稀有：25%（技能越高概率越高）
+                let legendaryProb = 5 + rarityBonus * 2;    // 传说：5%（技能越高概率越高）
                 
+                // 确保概率在合理范围内
                 commonProb = Math.max(40, Math.min(85, commonProb));
                 rareProb = Math.max(10, Math.min(40, rareProb));
                 legendaryProb = Math.max(1, Math.min(20, legendaryProb));
@@ -2857,6 +2761,7 @@
                     finalRarity = 'rare';
                 }
                 
+                // 使用稀有度格式存储鱼获
                 const fishRarity = finalRarity === 'legendary' ? 'epic' : (finalRarity === 'rare' ? 'rare' : 'common');
                 if (!farmData[inventoryKey][caughtFish.id]) {
                     farmData[inventoryKey][caughtFish.id] = {};
@@ -2865,17 +2770,21 @@
                     farmData[inventoryKey][caughtFish.id][fishRarity] = 0;
                 }
                 farmData[inventoryKey][caughtFish.id][fishRarity]++;
-                
+                // 更新图鉴
                 if (!farmData.collection.includes(caughtFish.id)) {
                     farmData.collection.push(caughtFish.id);
                 }
                 
+                // 保存最终稀有度用于显示
                 caughtFish.finalRarity = finalRarity;
             }
             
             farmData.lastFishingTime = new Date().toDateString();
+            
+            // 保存农场数据（saveFarmData内部会保存playerData）
             saveFarmData(farmData);
             
+            // 显示结果
             const displayRarity = caughtFish.finalRarity || caughtFish.rarity;
             const rarityInfo = rarityConfig[displayRarity];
             const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0', legendary: '#9C27B0' };
@@ -2885,19 +2794,19 @@
             if (caughtFish.exchangeScore > 0) {
                 const rarityMultiplier = rarityConfig[displayRarity]?.multiplier || 1;
                 const actualScore = Math.floor(caughtFish.exchangeScore * rarityMultiplier);
-                message = `🎣 恭喜在${seaName}钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
+                message = `\ud83c\udfa3 恭喜在${seaName}钓到了 <span style="color:${rarityColors[displayRarity]}">${rarityInfo.name}</span>${caughtFish.icon} ${caughtFish.name}！\n\n价值 ${actualScore} 积分`;
             } else {
                 message = `😅 在${seaName}钓到了 ${caughtFish.icon} ${caughtFish.name}，没什么价值...`;
             }
             
             customAlert(message, caughtFish.exchangeScore > 0 ? 'success' : 'warning', null, { allowHtml: true });
             
+            // 刷新界面
             renderOcean();
             document.getElementById('playerScore').textContent = Storage.getPlayerData().availableScore || 0;
         }
 
-        // ==================== 背包 ====================
-
+        // 渲染背包（改成鱼获样式）
         function renderInventory() {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
@@ -2906,18 +2815,18 @@
             let hasItem = false;
 
             const items = [
-                { id: 'carrot', name: '胡萝卜', icon: '🥕' },
-                { id: 'tomato', name: '西红柿', icon: '🍅' },
-                { id: 'lettuce', name: '生菜', icon: '🥬' },
-                { id: 'corn', name: '玉米', icon: '🌽' },
-                { id: 'potato', name: '土豆', icon: '🥔' },
-                { id: 'eggplant', name: '茄子', icon: '🍆' },
-                { id: 'apple', name: '苹果', icon: '🍎' },
-                { id: 'orange', name: '橙子', icon: '🍊' },
-                { id: 'grape', name: '葡萄', icon: '🍇' },
-                { id: 'peach', name: '桃子', icon: '🍑' },
-                { id: 'egg', name: '鸡蛋', icon: '🥚' },
-                { id: 'milk', name: '牛奶', icon: '🥛' },
+                { id: 'carrot', icon: '🥕', name: '胡萝卜' },
+                { id: 'tomato', icon: '🍅', name: '西红柿' },
+                { id: 'lettuce', icon: '🥬', name: '生菜' },
+                { id: 'corn', icon: '🌽', name: '玉米' },
+                { id: 'potato', icon: '🥔', name: '土豆' },
+                { id: 'eggplant', icon: '🍆', name: '茄子' },
+                { id: 'apple', icon: '🍎', name: '苹果' },
+                { id: 'orange', icon: '🍊', name: '橙子' },
+                { id: 'grape', icon: '🍇', name: '葡萄' },
+                { id: 'peach', icon: '🍑', name: '桃子' },
+                { id: 'egg', icon: '🥚', name: '鸡蛋' },
+                { id: 'milk', icon: '🥛', name: '牛奶' },
             ];
 
             items.forEach(item => {
@@ -2966,6 +2875,7 @@
             grid.innerHTML = html;
         }
 
+        // 渲染兑换列表（已移除，保留空函数避免报错）
         function renderExchange() {
             const list = document.getElementById('exchangeList');
             if (list) {
@@ -2973,38 +2883,77 @@
             }
         }
 
-        // ==================== 图鉴 ====================
-
+        // 渲染图鉴
         function renderCollection() {
             const farmData = getFarmData();
             const collection = farmData.collection || [];
             const grid = document.getElementById('collectionGrid');
             let html = '';
 
+            // 定义所有可收集的物品
             const allCollectibles = [
+                // 蔬菜
                 ...farmConfig.vegetables.map(v => ({
-                    id: v.id, name: v.name, category: 'vegetable', categoryName: '蔬菜'
+                    id: v.id,
+                    name: v.name,
+                    icon: v.icon,
+                    category: 'vegetable',
+                    categoryName: '蔬菜'
                 })),
+                // 水果
                 ...farmConfig.fruits.map(f => ({
-                    id: f.id, name: f.name, category: 'fruit', categoryName: '水果'
+                    id: f.id,
+                    name: f.name,
+                    icon: f.icon,
+                    category: 'fruit',
+                    categoryName: '水果'
                 })),
-                { id: 'egg', name: '鸡蛋', category: 'animal', categoryName: '动物产品' },
-                { id: 'milk', name: '牛奶', category: 'animal', categoryName: '动物产品' },
+                // 动物产品
+                {
+                    id: 'egg',
+                    name: '鸡蛋',
+                    icon: '🥚',
+                    category: 'animal',
+                    categoryName: '动物产品'
+                },
+                {
+                    id: 'milk',
+                    name: '牛奶',
+                    icon: '🥛',
+                    category: 'animal',
+                    categoryName: '动物产品'
+                },
+                // 鱼类（只显示有价值的鱼）
                 ...farmConfig.fishes.filter(f => f.exchangeScore > 0).map(f => ({
-                    id: f.id, name: f.name, category: 'fish', categoryName: '鱼类'
+                    id: f.id,
+                    name: f.name,
+                    icon: f.icon,
+                    category: 'fish',
+                    categoryName: '鱼类'
                 })),
+                // 浅海鱼类（排除池塘已有的鱼）
                 ...farmConfig.shallowSeaFishes
                     .filter(f => f.exchangeScore > 0 && !farmConfig.fishes.find(pf => pf.id === f.id))
                     .map(f => ({
-                        id: f.id, name: f.name, category: 'fish', categoryName: '鱼类'
+                        id: f.id,
+                        name: f.name,
+                        icon: f.icon,
+                        category: 'fish',
+                        categoryName: '鱼类'
                     })),
+                // 深海鱼类（排除浅海已有的鱼）
                 ...farmConfig.deepSeaFishes
                     .filter(f => f.exchangeScore > 0 && !farmConfig.shallowSeaFishes.find(sf => sf.id === f.id))
                     .map(f => ({
-                        id: f.id, name: f.name, category: 'fish', categoryName: '鱼类'
+                        id: f.id,
+                        name: f.name,
+                        icon: f.icon,
+                        category: 'fish',
+                        categoryName: '鱼类'
                     }))
             ];
 
+            // 按类别分组
             const categories = {};
             allCollectibles.forEach(item => {
                 if (!categories[item.category]) {
@@ -3014,9 +2963,13 @@
                     };
                 }
                 const isCollected = collection.includes(item.id);
-                categories[item.category].items.push({ ...item, isCollected });
+                categories[item.category].items.push({
+                    ...item,
+                    isCollected
+                });
             });
 
+            // 渲染每个类别
             Object.keys(categories).forEach(categoryKey => {
                 const category = categories[categoryKey];
                 html += `<div class="collection-category">
@@ -3026,7 +2979,7 @@
                 category.items.forEach(item => {
                     html += `
                         <div class="collection-item ${item.isCollected ? 'collected' : 'locked'}">
-                            <div class="collection-icon">${item.isCollected ? '✓' : '❓'}</div>
+                            <div class="collection-icon">${item.isCollected ? item.icon : '❓'}</div>
                             <div class="collection-name">${item.isCollected ? item.name : '???'}</div>
                             ${item.isCollected ? '<div class="collection-badge">✓</div>' : ''}
                         </div>
@@ -3036,6 +2989,7 @@
                 html += `</div></div>`;
             });
 
+            // 如果没有收集任何物品
             if (collection.length === 0) {
                 html = `
                     <div class="empty-hint">
@@ -3049,8 +3003,7 @@
             grid.innerHTML = html;
         }
 
-        // ==================== 种子弹窗 ====================
-
+        // 打开购买种子弹窗
         function openSeedModal(type, area, index) {
             const title = type === 'vegetable' ? '🥬 选择种子' : 
                          type === 'fruit' ? '🌳 选择树苗' :
@@ -3073,12 +3026,18 @@
                 }));
             } else if (type === 'chicken') {
                 items = [{
-                    id: 'chicken', name: '小鸡', seedId: 'chicken_baby',
+                    id: 'chicken',
+                    name: '小鸡',
+                    icon: '🐣',
+                    seedId: 'chicken_baby',
                     price: farmConfig.items.chicken_baby.price
                 }];
             } else if (type === 'cow') {
                 items = [{
-                    id: 'cow', name: '小牛', seedId: 'cow_baby',
+                    id: 'cow',
+                    name: '小牛',
+                    icon: '🐮',
+                    seedId: 'cow_baby',
                     price: farmConfig.items.cow_baby.price
                 }];
             }
@@ -3117,7 +3076,7 @@
                 html += `
                     <div class="seed-item">
                         <div class="seed-info">
-                            <div class="seed-icon">${type === 'vegetable' ? '🌱' : type === 'fruit' ? '🌳' : item.id === 'chicken' ? '🐣' : '🐮'}</div>
+                            <div class="seed-icon">${item.icon}</div>
                             <div class="seed-details">
                                 <div class="seed-name">${item.name}${ownedCount > 0 ? ` (${ownedCount})` : ''}</div>
                                 <div class="seed-price">💰 ${item.price} 积分</div>
@@ -3134,22 +3093,27 @@
             document.getElementById('seedModal').classList.add('show');
         }
 
+        // 关闭弹窗
         function closeSeedModal() {
             document.getElementById('seedModal').classList.remove('show');
         }
 
+        // 从库存播种/饲养
         function plantSeedFromInventory(itemId, seedId, area, index) {
             const playerData = Storage.getPlayerData();
             const playerItems = playerData.items || {};
             
+            // 检查库存
             if (!playerItems[seedId] || playerItems[seedId] <= 0) {
                 customAlert('库存不足！', 'warning');
                 return;
             }
 
+            // 扣除库存
             playerData.items[seedId]--;
             Storage.savePlayerData(playerData);
 
+            // 更新农场数据
             const farmData = getFarmData();
             const today = new Date().toDateString();
 
@@ -3193,10 +3157,13 @@
             closeSeedModal();
             refreshPage();
             
+            // 播放庆祝特效
             playHarvestCelebration();
+            
             customAlert('播种成功！', 'success');
         }
 
+        // 购买种子/动物
         function buySeed(itemId, seedId, price, area, index) {
             const playerData = Storage.getPlayerData();
             const score = playerData.availableScore || 0;
@@ -3206,9 +3173,11 @@
                 return;
             }
 
+            // 扣除积分
             playerData.availableScore = score - price;
             Storage.savePlayerData(playerData);
 
+            // 更新农场数据
             const farmData = getFarmData();
             const today = new Date().toDateString();
 
@@ -3252,8 +3221,10 @@
             closeSeedModal();
             refreshPage();
             
+            // 保存积分消费记录
             const item = farmConfig.vegetables.find(v => v.id === itemId) || 
-                        farmConfig.fruits.find(f => f.id === itemId);
+                        farmConfig.fruits.find(f => f.id === itemId) ||
+                        farmConfig.animals.find(a => a.id === itemId);
             if (item) {
                 Storage.saveScoreRecord({
                     type: 'purchase',
@@ -3263,12 +3234,13 @@
                 });
             }
             
+            // 播放庆祝特效
             playHarvestCelebration();
+            
             customAlert('购买成功！', 'success');
         }
 
-        // ==================== 特效 ====================
-
+        // 播放浇水特效
         function playWaterEffect(element) {
             const effect = document.createElement('div');
             effect.className = 'water-effect';
@@ -3278,6 +3250,7 @@
             setTimeout(() => effect.remove(), 800);
         }
         
+        // 播放施肥特效
         function playFertilizerEffect(element) {
             const effect = document.createElement('div');
             effect.className = 'fertilizer-effect';
@@ -3287,6 +3260,7 @@
             setTimeout(() => effect.remove(), 1000);
         }
         
+        // 播放喂养特效
         function playFeedEffect(element, type) {
             const effect = document.createElement('div');
             effect.className = 'water-effect';
@@ -3296,6 +3270,7 @@
             setTimeout(() => effect.remove(), 800);
         }
         
+        // 播放收获庆祝特效
         function playHarvestCelebration() {
             const celebration = document.createElement('div');
             celebration.className = 'harvest-celebration';
@@ -3321,13 +3296,12 @@
             }
             
             document.body.appendChild(celebration);
-            celebration.style.display = 'block';
             setTimeout(() => celebration.remove(), 1500);
         }
-
-        // ==================== 浇水、施肥、收获 ====================
-
+        
+        // 浇水
         function water(area, index) {
+            // 检查体力
             if (!consumeStamina('watering')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -3338,15 +3312,19 @@
 
             let plant;
             let config;
+            let gridId;
 
             if (area === 'garden') {
                 plant = farmData.garden[index];
                 config = farmConfig.vegetables.find(v => v.id === plant.type);
+                gridId = 'gardenGrid';
             } else if (area === 'orchard') {
                 plant = farmData.orchard[index];
                 config = farmConfig.fruits.find(f => f.id === plant.type);
+                gridId = 'orchardGrid';
             }
 
+            // 计算技能加成后的成长值
             const bonus = getSkillBonus('watering');
             const waterGain = Math.floor(config.waterGain * bonus);
             
@@ -3355,12 +3333,14 @@
 
             saveFarmData(farmData);
             
+            // 更新浇水技能经验
             updateSkillExp('watering');
             
             refreshPage();
             customAlert(`浇水成功！成长值 +${waterGain}`, 'success');
         }
 
+        // 施肥
         function fertilize(area, index) {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
@@ -3371,11 +3351,13 @@
                 return;
             }
 
+            // 检查体力
             if (!consumeStamina('watering')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
             }
 
+            // 使用肥料
             playerData.items.fertilizer = fertilizerCount - 1;
             Storage.savePlayerData(playerData);
 
@@ -3384,13 +3366,16 @@
 
             let plant;
             let config;
+            let gridId;
 
             if (area === 'garden') {
                 plant = farmData.garden[index];
                 config = farmConfig.vegetables.find(v => v.id === plant.type);
+                gridId = 'gardenGrid';
             } else if (area === 'orchard') {
                 plant = farmData.orchard[index];
                 config = farmConfig.fruits.find(f => f.id === plant.type);
+                gridId = 'orchardGrid';
             }
 
             plant.growth = Math.min(plant.growth + config.fertilizerGain, config.maxGrowth);
@@ -3398,11 +3383,25 @@
 
             saveFarmData(farmData);
             
+            // 播放特效
+            const grid = document.getElementById(gridId);
+            const farmItem = grid.children[index];
+            if (farmItem) {
+                playFertilizerEffect(farmItem);
+                const icon = farmItem.querySelector('.item-icon');
+                if (icon) {
+                    icon.classList.add('bounce');
+                    setTimeout(() => icon.classList.remove('bounce'), 600);
+                }
+            }
+            
             refreshPage();
             customAlert(`施肥成功！成长值 +${config.fertilizerGain}`, 'success');
         }
 
+        // 喂养动物
         function feed(animalType) {
+            // 检查体力
             if (!consumeStamina('feeding')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -3413,6 +3412,7 @@
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
             const config = farmConfig.animals[animalType];
 
+            // 计算技能加成后的成长值
             const bonus = getSkillBonus('feeding');
             const feedGain = Math.floor(config.feedGain * bonus);
             
@@ -3421,12 +3421,14 @@
 
             saveFarmData(farmData);
             
+            // 更新喂养技能经验
             updateSkillExp('feeding');
             
             refreshPage();
             customAlert(`喂养成功！成长值 +${feedGain}`, 'success');
         }
 
+        // 给动物加餐
         function snack(animalType) {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
@@ -3437,11 +3439,13 @@
                 return;
             }
 
+            // 检查体力
             if (!consumeStamina('feeding')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
             }
 
+            // 使用饲料
             playerData.items.feed = feedCount - 1;
             Storage.savePlayerData(playerData);
 
@@ -3450,6 +3454,7 @@
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
             const config = farmConfig.animals[animalType];
 
+            // 计算技能加成后的成长值
             const bonus = getSkillBonus('feeding');
             const snackGain = Math.floor(config.snackGain * bonus);
             
@@ -3458,12 +3463,14 @@
 
             saveFarmData(farmData);
             
+            // 更新喂养技能经验
             updateSkillExp('feeding');
             
             refreshPage();
             customAlert(`加餐成功！成长值 +${snackGain}`, 'success');
         }
 
+        // 收获作物
         function harvest(area, index) {
             const farmData = getFarmData();
 
@@ -3478,9 +3485,11 @@
                 config = farmConfig.fruits.find(f => f.id === plant.type);
             }
 
+            // 获取随机稀有度
             const rarity = getRandomRarity();
             const rarityInfo = rarityConfig[rarity];
             
+            // 添加到背包（支持稀有度格式）
             if (!farmData.inventory[plant.type]) {
                 farmData.inventory[plant.type] = {};
             }
@@ -3489,36 +3498,42 @@
             }
             farmData.inventory[plant.type][rarity]++;
 
+            // 检查是否首次获得（解锁图鉴）
             const isFirstTime = !farmData.collection.includes(plant.type);
             if (isFirstTime) {
                 farmData.collection.push(plant.type);
             }
 
+            // 重新种植
             farmData[area][index] = null;
 
             saveFarmData(farmData);
             
+            // 播放庆祝特效
             playHarvestCelebration();
             
             refreshPage();
             
             const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0' };
             if (isFirstTime) {
-                customAlert(`🎉 恭喜！首次获得${config.name}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
+                customAlert(`🎉 恭喜！首次获得${config.name}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.icon} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
             } else {
-                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
+                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.icon} ${config.name}</span> x1`, 'success', null, { allowHtml: true });
             }
         }
 
+        // 收获动物产品
         function harvestAnimal(animalType) {
             const farmData = getFarmData();
             const animal = animalType === 'chicken' ? farmData.chicken : farmData.cow;
             const config = farmConfig.animals[animalType];
             const today = new Date().toDateString();
 
+            // 获取随机稀有度
             const rarity = getRandomRarity();
             const rarityInfo = rarityConfig[rarity];
             
+            // 添加到背包（支持稀有度格式）
             if (!farmData.inventory[config.product]) {
                 farmData.inventory[config.product] = {};
             }
@@ -3527,6 +3542,7 @@
             }
             farmData.inventory[config.product][rarity]++;
 
+            // 检查是否首次获得（解锁图鉴）
             const isFirstTime = !farmData.collection.includes(config.product);
             if (isFirstTime) {
                 farmData.collection.push(config.product);
@@ -3536,43 +3552,48 @@
 
             saveFarmData(farmData);
             
+            // 播放庆祝特效
             playHarvestCelebration();
             
             refreshPage();
             
             const rarityColors = { common: '#9E9E9E', rare: '#4CAF50', epic: '#9C27B0' };
             if (isFirstTime) {
-                customAlert(`🎉 恭喜！首次获得${config.productName}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
+                customAlert(`🎉 恭喜！首次获得${config.productName}，已解锁图鉴！\n\n🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.productIcon} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
             } else {
-                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
+                customAlert(`🌾 收获成功！获得 <span style="color:${rarityColors[rarity]}">${rarityInfo.name}${config.productIcon} ${config.productName}</span> x1`, 'success', null, { allowHtml: true });
             }
         }
 
-        // ==================== 兑换 ====================
-
+        // 兑换积分（支持稀有度）
         function exchange(itemId, rarity) {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
 
+            // 检查物品是否存在
             if (!inventory[itemId] || !inventory[itemId][rarity] || inventory[itemId][rarity] <= 0) {
                 customAlert('物品不足！', 'warning');
                 return;
             }
 
+            // 查找物品信息
             let item = farmConfig.vegetables.find(v => v.id === itemId);
             if (!item) item = farmConfig.fruits.find(f => f.id === itemId);
             if (!item) {
                 const animal = farmConfig.animals.find(a => a.product === itemId);
                 if (animal) {
-                    item = { name: animal.productName, exchangeScore: animal.exchangeScore };
+                    item = { name: animal.productName, icon: animal.productIcon, exchangeScore: animal.exchangeScore };
                 }
             }
             
+            // 获取稀有度加成
             const rarityMultiplier = rarityConfig[rarity]?.multiplier || 1;
             
+            // 计算兑换积分
             const baseRate = item?.exchangeScore || 10;
             const rate = Math.floor(baseRate * rarityMultiplier);
 
+            // 扣除物品
             farmData.inventory[itemId][rarity]--;
             if (farmData.inventory[itemId][rarity] <= 0) {
                 delete farmData.inventory[itemId][rarity];
@@ -3582,10 +3603,12 @@
             }
             saveFarmData(farmData);
 
+            // 添加积分
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + rate;
             Storage.savePlayerData(playerData);
             
+            // 保存积分记录
             if (item) {
                 Storage.saveScoreRecord({
                     type: 'farm_exchange',
@@ -3599,19 +3622,25 @@
             customAlert(`兑换成功！获得 ${rate} 积分`, 'success');
         }
 
+        // 获取物品的兑换积分
         function getItemExchangeScore(itemId) {
+            // 查找蔬菜
             let item = farmConfig.vegetables.find(v => v.id === itemId);
             if (item) return item.exchangeScore;
             
+            // 查找水果（使用 harvestIcon 匹配）
             item = farmConfig.fruits.find(f => f.id === itemId);
             if (item) return item.exchangeScore;
             
+            // 查找动物产品
             const animal = Object.values(farmConfig.animals).find(a => a.product === itemId);
             if (animal) return animal.exchangeScore;
             
+            // 默认值
             return 10;
         }
 
+        // 兑换全部物品
         function exchangeAllItems() {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
@@ -3628,13 +3657,16 @@
                             totalScore += actualScore * itemCount;
                             count += itemCount;
                             
+                            // 扣除物品
                             delete farmData.inventory[itemId][rarity];
                         }
                     }
+                    // 清理空的物品对象
                     if (Object.keys(farmData.inventory[itemId]).length === 0) {
                         delete farmData.inventory[itemId];
                     }
                 } else if (rarityData > 0) {
+                    // 旧格式
                     const itemScore = getItemExchangeScore(itemId);
                     totalScore += itemScore * rarityData;
                     count += rarityData;
@@ -3649,6 +3681,7 @@
             
             saveFarmData(farmData);
             
+            // 添加积分
             const playerData = Storage.getPlayerData();
             playerData.availableScore = (playerData.availableScore || 0) + totalScore;
             Storage.savePlayerData(playerData);
@@ -3664,12 +3697,12 @@
             customAlert(`💰 兑换成功！\n\n共兑换 ${count} 个物品\n获得 ${totalScore} 积分`, 'success');
         }
 
-        // ==================== 食用恢复体力 ====================
-
+        // 显示食用确认弹窗
         function showEatConfirm(itemId, rarity, icon, name) {
             const currentStamina = getStamina();
             const maxStamina = getMaxStamina();
             
+            // 检查体力是否已满
             if (currentStamina >= maxStamina) {
                 customAlert('体力已满，无需食用！', 'info');
                 return;
@@ -3683,30 +3716,36 @@
             });
         }
 
+        // 食用食物恢复体力
         function eatFood(itemId, rarity) {
             const farmData = getFarmData();
             const inventory = farmData.inventory;
 
+            // 检查物品是否存在（兼容新旧格式）
             const itemData = inventory[itemId];
             if (!itemData) {
                 customAlert('物品不足！', 'warning');
                 return;
             }
             
+            // 判断是新格式（对象）还是旧格式（数字）
             const isNewFormat = typeof itemData === 'object';
             
+            // 新格式：检查对应稀有度的数量
             if (isNewFormat) {
                 if (!itemData[rarity] || itemData[rarity] <= 0) {
                     customAlert('物品不足！', 'warning');
                     return;
                 }
             } else {
+                // 旧格式：只有普通稀有度，且 rarity 必须是 common
                 if (rarity !== 'common' || itemData <= 0) {
                     customAlert('物品不足！', 'warning');
                     return;
                 }
             }
 
+            // 检查体力是否已满
             const currentStamina = getStamina();
             const maxStamina = getMaxStamina();
             if (currentStamina >= maxStamina) {
@@ -3714,8 +3753,10 @@
                 return;
             }
 
+            // 获取恢复的体力值
             const staminaValue = getFoodStaminaValue(itemId, rarity);
             
+            // 扣除物品（兼容新旧格式）
             if (isNewFormat) {
                 farmData.inventory[itemId][rarity]--;
                 if (farmData.inventory[itemId][rarity] <= 0) {
@@ -3725,6 +3766,7 @@
                     delete farmData.inventory[itemId];
                 }
             } else {
+                // 旧格式：直接减1
                 farmData.inventory[itemId]--;
                 if (farmData.inventory[itemId] <= 0) {
                     delete farmData.inventory[itemId];
@@ -3732,31 +3774,46 @@
             }
             saveFarmData(farmData);
 
+            // 恢复体力
             restoreStamina(staminaValue);
 
+            // 查找物品信息
+            let itemName = itemId;
+            let itemIcon = '🍽️';
+            const veg = farmConfig.vegetables.find(v => v.id === itemId);
+            if (veg) { itemName = veg.name; itemIcon = veg.icon; }
+            const fruit = farmConfig.fruits.find(f => f.id === itemId);
+            if (fruit) { itemName = fruit.name; itemIcon = fruit.icon; }
+            const animal = farmConfig.animals.find(a => a.product === itemId);
+            if (animal) { itemName = animal.productName; itemIcon = animal.productIcon; }
+
             refreshPage();
-            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力`, 'success');
+            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力\n\n${rarityConfig[rarity]?.name || '普通'}${itemIcon} ${itemName}`, 'success');
         }
 
+        // 显示鱼获食用确认弹窗
         function showFishEatConfirm(fishId, icon, name, count, rarity = 'common') {
             const currentStamina = getStamina();
             const maxStamina = getMaxStamina();
             
+            // 检查体力是否已满
             if (currentStamina >= maxStamina) {
                 customAlert('体力已满，无需食用！', 'info');
                 return;
             }
             
-            let fishCfg = farmConfig.fishes.find(f => f.id === fishId);
-            if (!fishCfg) fishCfg = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
-            if (!fishCfg) fishCfg = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            // 获取鱼获配置
+            let fishConfig = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.deepSeaFishes.find(f => f.id === fishId);
             
-            if (!fishCfg) {
+            if (!fishConfig) {
                 customAlert('未知的鱼获！', 'warning');
                 return;
             }
             
-            let baseValue = Math.ceil(fishCfg.exchangeScore / 2);
+            // 计算体力恢复值（根据鱼的价值计算，稀有度加成）
+            let baseValue = Math.ceil(fishConfig.exchangeScore / 2);
             baseValue = Math.max(5, Math.min(500, baseValue));
             const rarityMultiplier = { common: 1, rare: 2, epic: 3 };
             const staminaValue = Math.ceil(baseValue * (rarityMultiplier[rarity] || 1));
@@ -3768,9 +3825,11 @@
             });
         }
 
+        // 食用鱼获恢复体力
         function eatFish(fishId, rarity) {
             const farmData = getFarmData();
             
+            // 检查体力是否已满
             const currentStamina = getStamina();
             const maxStamina = getMaxStamina();
             if (currentStamina >= maxStamina) {
@@ -3778,17 +3837,20 @@
                 return;
             }
 
-            let fishCfg = farmConfig.fishes.find(f => f.id === fishId);
-            if (!fishCfg) fishCfg = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
-            if (!fishCfg) fishCfg = farmConfig.deepSeaFishes.find(f => f.id === fishId);
+            // 获取鱼获配置
+            let fishConfig = farmConfig.fishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.shallowSeaFishes.find(f => f.id === fishId);
+            if (!fishConfig) fishConfig = farmConfig.deepSeaFishes.find(f => f.id === fishId);
             
-            if (!fishCfg) {
+            if (!fishConfig) {
                 customAlert('未知的鱼获！', 'warning');
                 return;
             }
             
+            // 获取鱼获库存
             const fishInventory = getCombinedFishInventory();
             
+            // 检查鱼获是否存在（兼容新旧格式）
             const fishData = fishInventory[fishId];
             if (!fishData) {
                 customAlert('鱼获不足！', 'warning');
@@ -3802,24 +3864,30 @@
                     return;
                 }
             } else {
+                // 旧格式：只有普通稀有度
                 if (rarity !== 'common' || fishData <= 0) {
                     customAlert('鱼获不足！', 'warning');
                     return;
                 }
             }
             
-            let baseValue = Math.ceil(fishCfg.exchangeScore / 2);
+            // 计算恢复的体力值（根据鱼的价值计算，稀有度加成）
+            // 基础体力 = 鱼的兑换积分 / 2，最低5点，最高50点
+            let baseValue = Math.ceil(fishConfig.exchangeScore / 2);
             baseValue = Math.max(5, Math.min(100, baseValue));
             
+            // 稀有度倍数
             const rarityMultiplier = { common: 1, rare: 2, epic: 3 };
             const staminaValue = Math.ceil(baseValue * (rarityMultiplier[rarity] || 1));
             
+            // 扣除鱼获（兼容新旧格式）
             const inventories = ['fishInventory', 'shallowSeaInventory', 'deepSeaInventory'];
             let found = false;
             for (const invKey of inventories) {
                 if (farmData[invKey] && farmData[invKey][fishId]) {
                     const invData = farmData[invKey][fishId];
                     if (typeof invData === 'object' && invData[rarity] && invData[rarity] > 0) {
+                        // 新格式
                         farmData[invKey][fishId][rarity]--;
                         if (farmData[invKey][fishId][rarity] <= 0) {
                             delete farmData[invKey][fishId][rarity];
@@ -3830,6 +3898,7 @@
                         found = true;
                         break;
                     } else if (typeof invData === 'number' && invData > 0 && rarity === 'common') {
+                        // 旧格式
                         farmData[invKey][fishId]--;
                         if (farmData[invKey][fishId] <= 0) {
                             delete farmData[invKey][fishId];
@@ -3850,11 +3919,10 @@
             
             refreshPage();
             const rarityInfo = rarityConfig[rarity];
-            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力\n\n${rarityInfo.name}${fishCfg.icon} ${fishCfg.name}`, 'success');
+            customAlert(`🍽️ 食用成功！获得 ${staminaValue} 体力\n\n${rarityInfo.name}${fishConfig.icon} ${fishConfig.name}`, 'success');
         }
 
-        // ==================== 页面刷新和导航 ====================
-
+        // 刷新页面
         function refreshPage() {
             const playerData = Storage.getPlayerData();
             document.getElementById('playerScore').textContent = playerData.availableScore || 0;
@@ -3867,6 +3935,7 @@
             renderExchange();
         }
 
+        // 跳转到首页商城购买指定道具
         function goToShopToBuy(itemId) {
             const slotPrice = itemConfig.find(i => i.id === itemId)?.price || 0;
             const playerScore = Storage.getPlayerData().availableScore || 0;
@@ -3881,13 +3950,14 @@
             }, null, { title: '解锁空地', type: 'question', confirmText: '前往购买' });
         }
 
+        // 返回首页
         function goBack() {
             window.location.href = 'index.html';
         }
 
-        // ==================== 初始化 ====================
-
+        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查农场是否已开通（购买农场经营权道具）
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             if (!items['farm_right'] || items['farm_right'] <= 0) {
@@ -3897,16 +3967,23 @@
                 return;
             }
             
+            // 检查钓竿权限，未购买则隐藏鱼塘导航
             if (!items['fishing_rod'] || items['fishing_rod'] <= 0) {
                 const fishpondNav = document.getElementById('fishpondNav');
-                if (fishpondNav) fishpondNav.style.display = 'none';
+                if (fishpondNav) {
+                    fishpondNav.style.display = 'none';
+                }
             }
             
+            // 检查船权限，未购买则隐藏海洋导航
             if (!items['boat'] || items['boat'] <= 0) {
                 const oceanNav = document.getElementById('oceanNav');
-                if (oceanNav) oceanNav.style.display = 'none';
+                if (oceanNav) {
+                    oceanNav.style.display = 'none';
+                }
             }
             
+            // 更新体力显示
             updateStaminaDisplay();
             
             refreshPage();

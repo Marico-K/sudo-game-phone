@@ -587,7 +587,7 @@
         <div class="result-page" id="resultPage">
             <div class="result-icon" id="resultIcon">🎉</div>
             <h2 class="result-title" id="resultTitle">恭喜完成！</h2>
-            <div class="result-score" id="resultScore">20/20</div>
+            <div class="result-score" id="resultScore">16/16</div>
             <p class="result-text" id="resultText"></p>
             <div class="result-message" id="resultMessage"></div>
             <button class="result-btn" onclick="restartQuiz()">🆕 新题目</button>
@@ -606,7 +606,7 @@
             const [min, max] = range.split('-').map(Number);
             const usedQuestions = new Set();
             
-            while (questions.length < 20) {
+            while (questions.length < 16) {
                 let num1, num2, answer;
                 
                 switch (operation) {
@@ -819,7 +819,7 @@
             
             renderQuizGrid();
             
-            if (correctCount === 20) {
+            if (correctCount === 16) {
                 addPoints(10);
             }
             
@@ -828,8 +828,8 @@
 
         // 显示结果
         function showResult(correctCount) {
-            document.getElementById('quizTitle').textContent = `✅ 答题完成 ${correctCount}/20`;
-            document.getElementById('quizSubtitle').textContent = `答对了 ${correctCount} 题，继续努力！�`;
+            document.getElementById('quizTitle').textContent = `✅ 答题完成 ${correctCount}/16`;
+            document.getElementById('quizSubtitle').textContent = `答对了 ${correctCount} 题，继续努力！✊`;
             
             document.getElementById('doneBtn').style.display = 'none';
             document.getElementById('newQuizBtn').style.display = 'block';

@@ -16,6 +16,10 @@ let iconMode = 'numbers';          // 图标模式: 'numbers', 'weather', 'anima
 let inputMode = 'exact';           // 输入模式: 'exact'（确定模式）, 'candidate'（草稿模式）
 let lives = 3;                     // 剩余爱心数量
 let undoStack = [];                // 撤销栈，记录操作历史
+let currentGameScore = 0;          // 本局游戏积分
+let totalScoreForGame = 0;         // 本局游戏总分（根据难度和空格数计算）
+let filledCells = 0;               // 已填对的空格数
+let totalEmptyCells = 0;           // 总空格数
 
 // 图标映射表
 const iconMaps = {
@@ -105,14 +109,135 @@ function updateHintBadge(count) {
 }
 
 /**
- * 更新积分显示
+ * 更新积分显示（改为显示本局游戏积分）
  */
 function updateCoinDisplay() {
     const coinEl = document.getElementById('coinValue');
     if (coinEl) {
-        const playerData = Storage.getPlayerData();
-        coinEl.textContent = playerData.totalScore || 0;
+        coinEl.textContent = currentGameScore || 0;
     }
+}
+
+/**
+ * 更新本局游戏积分显示
+ */
+function updateGameScoreDisplay() {
+    updateCoinDisplay();
+}
+
+/**
+ * 更新进度条显示
+ */
+function updateProgressBar() {
+    const progressBar = document.getElementById('gameProgressBar');
+    const progressText = document.getElementById('gameProgressText');
+    if (!progressBar || !progressText) return;
+    
+    const progress = totalEmptyCells > 0 ? (filledCells / totalEmptyCells) * 100 : 100;
+    progressBar.style.width = `${progress}%`;
+    progressText.textContent = `${filledCells}/${totalEmptyCells} (${Math.round(progress)}%)`;
+    
+    // 更新礼盒显示
+    updateGiftBoxes(progress);
+}
+
+/**
+ * 更新礼盒显示状态
+ */
+function updateGiftBoxes(progress) {
+    const bronzeBox = document.getElementById('giftBoxBronze');
+    const silverBox = document.getElementById('giftBoxSilver');
+    const goldBox = document.getElementById('giftBoxGold');
+    
+    if (bronzeBox) {
+        bronzeBox.className = `gift-box ${progress >= 30 ? 'unlocked' : 'locked'}`;
+        bronzeBox.innerHTML = progress >= 30 ? '🎁' : '🔒';
+    }
+    if (silverBox) {
+        silverBox.className = `gift-box ${progress >= 70 ? 'unlocked' : 'locked'}`;
+        silverBox.innerHTML = progress >= 70 ? '🎁' : '🔒';
+    }
+    if (goldBox) {
+        goldBox.className = `gift-box ${progress >= 100 ? 'unlocked' : 'locked'}`;
+        goldBox.innerHTML = progress >= 100 ? '🎁' : '🔒';
+    }
+}
+
+/**
+ * 计算获得的礼盒
+ */
+function calculateEarnedGiftBoxes() {
+    const earnedBoxes = [];
+    const progress = totalEmptyCells > 0 ? (filledCells / totalEmptyCells) * 100 : 100;
+    
+    if (progress >= 30) {
+        earnedBoxes.push('bronze');
+    }
+    if (progress >= 70) {
+        earnedBoxes.push('silver');
+    }
+    if (progress >= 100) {
+        earnedBoxes.push('gold');
+    }
+    
+    // 将礼盒添加到玩家背包
+    const playerData = Storage.getPlayerData();
+    if (!playerData.giftBoxes) {
+        playerData.giftBoxes = { bronze: 0, silver: 0, gold: 0 };
+    }
+    
+    earnedBoxes.forEach(boxType => {
+        playerData.giftBoxes[boxType] = (playerData.giftBoxes[boxType] || 0) + 1;
+    });
+    
+    Storage.savePlayerData(playerData);
+    
+    return earnedBoxes;
+}
+
+/**
+ * 答对时增加积分
+ */
+function addScoreForCorrectAnswer() {
+    // 根据难度计算每格得分
+    let pointsPerCell = 10;
+    if (currentPuzzle.difficultyType === 'MEDIUM') {
+        pointsPerCell = 12;
+    } else if (currentPuzzle.difficultyType === 'HARD') {
+        pointsPerCell = 15;
+    }
+    
+    currentGameScore += pointsPerCell;
+    filledCells++;
+    
+    // 更新显示
+    updateGameScoreDisplay();
+    updateProgressBar();
+    
+    // 显示动态分数动画
+    showScorePopup(pointsPerCell);
+}
+
+/**
+ * 显示分数增加动画
+ */
+function showScorePopup(points) {
+    const coinDisplay = document.querySelector('.coin-display');
+    if (!coinDisplay) return;
+    
+    const popup = document.createElement('span');
+    popup.className = 'score-popup';
+    popup.textContent = `+${points}`;
+    
+    const rect = coinDisplay.getBoundingClientRect();
+    popup.style.left = `${rect.left + rect.width / 2}px`;
+    popup.style.top = `${rect.top}px`;
+    
+    document.body.appendChild(popup);
+    
+    setTimeout(() => {
+        popup.remove();
+    }, 800);
 }
 
 /**
@@ -3369,6 +3494,36 @@ const itemConfig = window.itemConfig = [
         effect: 'farm_slot',
         requires: 'farm_right'
     },
+    {
+        id: 'garden_slot_7',
+        name: '菜园7号地',
+        description: '解锁第七块菜地',
+        price: 3500,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_8',
+        name: '菜园8号地',
+        description: '解锁第八块菜地',
+        price: 4500,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'garden_slot_9',
+        name: '菜园9号地',
+        description: '解锁第九块菜地',
+        price: 5500,
+        icon: '🥬',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
     // 果园空地
     {
         id: 'orchard_slot_2',
@@ -3416,6 +3571,36 @@ const itemConfig = window.itemConfig = [
         description: '解锁第六块果园',
         price: 3000,
         icon: '🍐',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_7',
+        name: '果园7号地',
+        description: '解锁第七块果园',
+        price: 4000,
+        icon: '🍒',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_8',
+        name: '果园8号地',
+        description: '解锁第八块果园',
+        price: 5200,
+        icon: '🍋',
+        type: 'permanent',
+        effect: 'farm_slot',
+        requires: 'farm_right'
+    },
+    {
+        id: 'orchard_slot_9',
+        name: '果园9号地',
+        description: '解锁第九块果园',
+        price: 6500,
+        icon: '🍌',
         type: 'permanent',
         effect: 'farm_slot',
         requires: 'farm_right'
@@ -8374,9 +8559,38 @@ function generateNewPuzzle(gameType, difficultyType = "EASY") {
         lives = 3;
         updateLivesDisplay();
         
+        // 初始化本局游戏积分
+        initGameScore(gameType);
+        
         // 清空撤销栈
         undoStack = [];
     }, 50);
+}
+
+/**
+ * 初始化本局游戏积分
+ */
+function initGameScore(gameType) {
+    currentGameScore = 0;
+    filledCells = 0;
+    
+    // 计算空格数：使用全局变量 originalPuzzle
+    totalEmptyCells = originalPuzzle.split('').filter(c => c === '0').length;
+    
+    // 根据难度计算每格得分
+    let pointsPerCell = 10;
+    if (gameType === 'MEDIUM') {
+        pointsPerCell = 12;
+    } else if (gameType === 'HARD') {
+        pointsPerCell = 15;
+    }
+    
+    // 计算总分
+    totalScoreForGame = totalEmptyCells * pointsPerCell;
+    
+    // 更新显示
+    updateGameScoreDisplay();
+    updateProgressBar();
 }
 
 /**
@@ -8430,6 +8644,14 @@ function undoLastAction() {
     
     // 恢复输入模式
     inputMode = lastAction.previousInputMode;
+    
+    // 恢复积分和进度
+    currentGameScore = lastAction.previousScore || 0;
+    filledCells = lastAction.previousFilledCells || 0;
+    
+    // 更新显示
+    updateGameScoreDisplay();
+    updateProgressBar();
     
     // 重新渲染整个棋盘
     renderBoard();
@@ -8492,6 +8714,9 @@ function gameOver() {
         record.completedTime = Date.now();
         Storage.saveRecord(record);
     }
+    
+    // 计算获得的礼盒（即使失败也能获得）
+    calculateEarnedGiftBoxes();
     
     // 清除继续游戏的记录ID
     localStorage.removeItem("continuePuzzleId");
@@ -8733,6 +8958,8 @@ function saveGameProgress() {
         record.currentBoard = JSON.stringify(currentBoard);
         record.elapsedTime = seconds;
         record.lives = lives;
+        record.currentGameScore = currentGameScore;
+        record.filledCells = filledCells;
         Storage.saveRecord(record);
     }
 }
@@ -9852,7 +10079,9 @@ function placeNumber(num) {
     const lastAction = {
         index: index,
         previousBoard: boardSnapshot,
-        previousInputMode: inputMode
+        previousInputMode: inputMode,
+        previousScore: currentGameScore,
+        previousFilledCells: filledCells
     };
 
     // 根据输入模式执行不同操作
@@ -9860,6 +10089,26 @@ function placeNumber(num) {
         // 确定模式：设置确定值
         if (num === 0) {
             // 清除
+            // 检查当前格子是否有正确答案，如果有则减去积分
+            const currentValue = currentBoard[index];
+            if (typeof currentValue === 'number' && currentValue !== 0) {
+                const correctAnswer = parseInt(currentPuzzle.solution[index]);
+                if (currentValue === correctAnswer) {
+                    // 减去相应分数
+                    let pointsPerCell = 10;
+                    if (currentPuzzle.gameType === 'MEDIUM') {
+                        pointsPerCell = 12;
+                    } else if (currentPuzzle.gameType === 'HARD') {
+                        pointsPerCell = 15;
+                    }
+                    currentGameScore = Math.max(0, currentGameScore - pointsPerCell);
+                    filledCells = Math.max(0, filledCells - 1);
+                    
+                    // 更新显示
+                    updateGameScoreDisplay();
+                    updateProgressBar();
+                }
+            }
             currentBoard[index] = [];
         } else {
             // 检查答案是否正确
@@ -9873,6 +10122,9 @@ function placeNumber(num) {
                 // 答案错误，扣除一颗心
                 loseLife();
             } else {
+                // 答案正确，增加积分
+                addScoreForCorrectAnswer();
+                
                 // 删除同行、同列、同宫中的重复候选数字
                 let affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
                 // 如果是对角线数独，还需要删除对角线上的候选数
@@ -10167,6 +10419,9 @@ function checkSolution() {
         // 标记已胜利
         hasWon = true;
 
+        // 计算获得的礼盒
+        const earnedGiftBoxes = calculateEarnedGiftBoxes();
+        
         // 显示胜利弹窗
         const completionTime = document.getElementById('completionTime');
         if (completionTime) {
@@ -11292,6 +11547,24 @@ function restoreGameState(record) {
     // 恢复爱心数量
     lives = record.lives !== undefined ? record.lives : 3;
     updateLivesDisplay();
+    
+    // 恢复本局游戏积分和进度
+    currentGameScore = record.currentGameScore || 0;
+    filledCells = record.filledCells || 0;
+    totalEmptyCells = originalPuzzle.split('').filter(c => c === '0').length;
+    
+    // 根据难度计算每格得分和总分
+    let pointsPerCell = 10;
+    if (record.difficultyType === 'MEDIUM') {
+        pointsPerCell = 12;
+    } else if (record.difficultyType === 'HARD') {
+        pointsPerCell = 15;
+    }
+    totalScoreForGame = totalEmptyCells * pointsPerCell;
+    
+    // 更新积分和进度显示
+    updateGameScoreDisplay();
+    updateProgressBar();
 }
 
 // ==================== 弹窗函数 ====================

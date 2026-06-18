@@ -105,9 +105,9 @@
                     </div>
                 </div>
                 <!-- 测试按钮：增加 1000 积分 -->
-                <!-- <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
+                <button class="test-add-score-btn" onclick="addTestScore()" title="测试专用：增加 1000 积分">
                      +1000 积分
-                </button> -->
+                </button>
                 <div class="shop-items-grid" id="shopItemsGrid">
                 </div>
             </div>
@@ -193,7 +193,6 @@
                 <div class="home-buttons-area">
                     <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
                     <button class="home-btn secondary" id="farmBtnDefault" onclick="goToFarm()">🌾 数独农场</button>
-                    <button class="home-btn secondary" onclick="goToHundredsBoard()">🔢 百数乐园</button>
                     <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
@@ -206,6 +205,23 @@
         <footer>
             <p>💡 数据存储在本地浏览器中，清除浏览器数据会丢失记录</p>
         </footer>
+        
+        <!-- 背包浮标 -->
+        <div class="backpack-float-btn" onclick="showBackpackModal()">
+            <span class="backpack-icon">🎒</span>
+            <span class="backpack-badge" id="backpackBadge"></span>
+        </div>
+    </div>
+
+    <!-- 背包弹窗 -->
+    <div class="modal" id="backpackModal" style="display: none;">
+        <div class="modal-content backpack-content">
+            <div class="modal-header">
+                <h2>🎒 我的背包</h2>
+                <span class="close" onclick="closeModal('backpackModal')">&times;</span>
+            </div>
+            <div class="backpack-body" id="backpackBody"></div>
+        </div>
     </div>
 
     <!-- 只引入JS，不要执行游戏逻辑 -->
@@ -292,6 +308,51 @@
             
             // 加载每日任务
             loadDailyTasks();
+            
+            // 更新背包徽章
+            updateBackpackBadge();
+        }
+        
+        // 更新背包徽章显示
+        function updateBackpackBadge() {
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            const badge = document.getElementById('backpackBadge');
+            if (!badge) return;
+            
+            const totalCount = (giftBoxes.bronze || 0) + (giftBoxes.silver || 0) + (giftBoxes.gold || 0);
+            badge.textContent = totalCount > 0 ? totalCount : '';
+        }
+        
+        // 显示背包弹窗
+        function showBackpackModal() {
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            const body = document.getElementById('backpackBody');
+            
+            const totalCount = (giftBoxes.bronze || 0) + (giftBoxes.silver || 0) + (giftBoxes.gold || 0);
+            
+            if (totalCount === 0) {
+                body.innerHTML = '<div class="backpack-empty"><div class="backpack-empty-icon">🎁</div><div>礼盒是空的</div><div style="font-size: 0.85em; margin-top: 5px;">完成数独游戏可获得礼盒奖励！</div></div>';
+            } else {
+                let html = '<div class="backpack-title" style="text-align: center; margin-bottom: 15px; color: #666; font-size: 0.9em;">点击礼盒可前往数独农场打开</div>';
+                
+                if (giftBoxes.gold > 0) {
+                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%); border-left: 4px solid #FFC107;"><div class="backpack-item-icon">🏆</div><div class="backpack-item-info"><div class="backpack-item-name">黄金礼盒</div><div class="backpack-item-desc">稀有道具概率更高</div></div><div class="backpack-item-count">×' + giftBoxes.gold + '</div></div>';
+                }
+                
+                if (giftBoxes.silver > 0) {
+                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%); border-left: 4px solid #90A4AE;"><div class="backpack-item-icon">🥈</div><div class="backpack-item-info"><div class="backpack-item-name">白银礼盒</div><div class="backpack-item-desc">中等道具概率</div></div><div class="backpack-item-count">×' + giftBoxes.silver + '</div></div>';
+                }
+                
+                if (giftBoxes.bronze > 0) {
+                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #EFEBE9 0%, #D7CCC8 100%); border-left: 4px solid #A1887F;"><div class="backpack-item-icon">🥉</div><div class="backpack-item-info"><div class="backpack-item-name">青铜礼盒</div><div class="backpack-item-desc">基础道具奖励</div></div><div class="backpack-item-count">×' + giftBoxes.bronze + '</div></div>';
+                }
+                
+                body.innerHTML = html;
+            }
+            
+            document.getElementById('backpackModal').style.display = 'block';
         }
         
         // 显示连续打卡弹窗
