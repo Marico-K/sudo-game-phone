@@ -12263,15 +12263,15 @@ function togglePaintMode() {
 
     if (paintMode) {
         if (paintBtn) paintBtn.classList.add('active');
-        paintControls.style.display = 'block';
-        paintBackBtn.style.display = 'block';
+        if (paintControls) paintControls.style.display = 'block';
+        if (paintBackBtn) paintBackBtn.style.display = 'block';
         if (actionButtonsBar) actionButtonsBar.style.display = 'none';
         if (numberKeyPad) numberKeyPad.style.display = 'none';
         if (gameControls) gameControls.style.display = 'none';
     } else {
         if (paintBtn) paintBtn.classList.remove('active');
-        paintControls.style.display = 'none';
-        paintBackBtn.style.display = 'none';
+        if (paintControls) paintControls.style.display = 'none';
+        if (paintBackBtn) paintBackBtn.style.display = 'none';
         if (actionButtonsBar) actionButtonsBar.style.display = 'grid';
         if (numberKeyPad) numberKeyPad.style.display = 'grid';
         if (gameControls) gameControls.style.display = 'flex';

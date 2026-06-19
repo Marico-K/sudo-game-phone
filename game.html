@@ -86,14 +86,6 @@
                 <div class="progress-text" id="gameProgressText">0/0 (0%)</div>
             </div>
 
-            <!-- 画图模式返回按钮 -->
-            <div id="paintBackBtn" class="paint-back-btn" style="display: none;">
-                <button class="action-icon-btn" onclick="togglePaintMode()">
-                    <span class="action-icon">←</span>
-                    <span class="action-label">返回</span>
-                </button>
-            </div>
-
             <!-- 数独棋盘 -->
             <div class="sudoku-board" id="sudokuBoard"></div>
 
@@ -121,6 +113,10 @@
             <!-- 画图控制区 -->
             <div id="paintControls" class="paint-controls" style="display: none;">
                 <div class="paint-tabs">
+                    <button class="action-icon-btn" onclick="togglePaintMode()">
+                        <span class="action-icon">←</span>
+                        <span class="action-label">返回</span>
+                    </button>
                     <button class="paint-tab active" data-tab="cell" onclick="setPaintTab('cell')">
                         <span class="tab-icon">▣</span>
                         <span class="tab-label">格子</span>

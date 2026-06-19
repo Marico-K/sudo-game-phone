@@ -3468,7 +3468,6 @@ header p {
 /* 笔记涂色 */
 .cell-candidates .candidate-num.paint-note {
     background: rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
 }
 
 /* 划线样式 */
