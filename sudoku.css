@@ -3285,21 +3285,10 @@ header p {
     border: 3px solid #e74c3c !important;
 }
 
-/* 正确答案样式 */
-.cell.correct {
-    background: #d4edda !important;
-    color: #27ae60 !important;
-    cursor: default;
-}
-
-.cell.correct.selected {
-    background: #c3e6cb !important;
-    border-color: #27ae60 !important;
-}
-
 /* ==================== 数字选择弹框样式 ==================== */
 .number-picker,
-.candidate-picker {
+.candidate-picker,
+.note-picker {
     position: fixed;
     z-index: 1000;
     background: white;
@@ -3336,19 +3325,20 @@ header p {
 }
 
 .number-picker.visible,
-.candidate-picker.visible {
+.candidate-picker.visible,
+.note-picker.visible {
     opacity: 1;
     transform: scale(1) translate(-50%, -50%);
     pointer-events: auto;
 }
 
 .picker-btn {
-    width: 64px;
-    height: 64px;
+    width: 44px;
+    height: 44px;
     border: none;
     background: transparent;
     color: #666;
-    font-size: 1.6em;
+    font-size: 1.1em;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -3370,6 +3360,124 @@ header p {
 
 .picker-btn.selected:hover {
     background: #2980b9;
+}
+
+/* ==================== 画图控制区样式 ==================== */
+.paint-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 12px;
+}
+
+.paint-back-btn {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.paint-back-btn .action-icon-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border-color: #11998e;
+}
+
+.paint-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.paint-tab {
+    background: #f5f5f5;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.paint-tab:hover {
+    background: #e8e8e8;
+}
+
+.paint-tab.active {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.tab-icon {
+    font-size: 1.2em;
+}
+
+.tab-label {
+    font-size: 0.75em;
+}
+
+.paint-colors {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.paint-colors::-webkit-scrollbar {
+    display: none;
+}
+
+.color-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+    border-color: #999;
+}
+
+.color-btn.active {
+    border-color: #333;
+    transform: scale(1.15);
+}
+
+.color-btn[data-color="none"] {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* 格子涂色 */
+.cell.paint-cell {
+    opacity: 0.7;
+}
+
+/* 笔记涂色 */
+.cell-candidates .candidate-num.paint-note {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+}
+
+/* 划线样式 */
+.cell.paint-line-h {
+    background: linear-gradient(to bottom, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+}
+
+.cell.paint-line-v {
+    background: linear-gradient(to right, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
 }
 
 /* ==================== 草稿模式样式 ==================== */
@@ -3414,12 +3522,9 @@ header p {
     background: transparent;
     line-height: 1;
     overflow: hidden;
-    border-radius: 50%;
     width: 55%;
     max-width: 12px;
     min-width: 7px;
-    aspect-ratio: 1;
-    font-weight: bold;
     flex-shrink: 0;
 }
 

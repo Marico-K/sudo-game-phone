@@ -86,14 +86,22 @@
                 <div class="progress-text" id="gameProgressText">0/0 (0%)</div>
             </div>
 
+            <!-- 画图模式返回按钮 -->
+            <div id="paintBackBtn" class="paint-back-btn" style="display: none;">
+                <button class="action-icon-btn" onclick="togglePaintMode()">
+                    <span class="action-icon">←</span>
+                    <span class="action-label">返回</span>
+                </button>
+            </div>
+
             <!-- 数独棋盘 -->
             <div class="sudoku-board" id="sudokuBoard"></div>
 
-            <!-- 功能按钮区：撤销、删除、笔记、提示 -->
+            <!-- 功能按钮区：画图、删除、笔记、提示 -->
             <div class="action-buttons-bar">
-                <button class="action-icon-btn" id="undoBtn" onclick="undoLastAction()">
-                    <span class="action-icon">↩️</span>
-                    <span class="action-label">撤销</span>
+                <button class="action-icon-btn" id="paintBtn" onclick="togglePaintMode()">
+                    <span class="action-icon">🎨</span>
+                    <span class="action-label">画图</span>
                 </button>
                 <button class="action-icon-btn" onclick="clearSelectedCell()">
                     <span class="action-icon">🗑️</span>
@@ -108,6 +116,44 @@
                     <span class="action-label">提示</span>
                     <span class="hint-badge" id="hintBadge" style="display: none;">0</span>
                 </button>
+            </div>
+
+            <!-- 画图控制区 -->
+            <div id="paintControls" class="paint-controls" style="display: none;">
+                <div class="paint-tabs">
+                    <button class="paint-tab active" data-tab="cell" onclick="setPaintTab('cell')">
+                        <span class="tab-icon">▣</span>
+                        <span class="tab-label">格子</span>
+                    </button>
+                    <button class="paint-tab" data-tab="note" onclick="setPaintTab('note')">
+                        <span class="tab-icon">✏️</span>
+                        <span class="tab-label">笔记</span>
+                    </button>
+                    <button class="paint-tab" data-tab="line" onclick="setPaintTab('line')">
+                        <span class="tab-icon">➖</span>
+                        <span class="tab-label">划线</span>
+                    </button>
+                    <button class="paint-tab" data-tab="undo" onclick="undoPaint()">
+                        <span class="tab-icon">↩️</span>
+                        <span class="tab-label">撤销</span>
+                    </button>
+                    <button class="paint-tab" data-tab="clear" onclick="clearAllPaint()">
+                        <span class="tab-icon">🗑️</span>
+                        <span class="tab-label">清空</span>
+                    </button>
+                </div>
+                <div class="paint-colors">
+                    <button class="color-btn active" data-color="none" style="background-color: transparent; border: 2px solid #ccc;">✓</button>
+                    <button class="color-btn" data-color="#FFD700" style="background-color: #FFD700;"></button>
+                    <button class="color-btn" data-color="#3498DB" style="background-color: #3498DB;"></button>
+                    <button class="color-btn" data-color="#2ECC71" style="background-color: #2ECC71;"></button>
+                    <button class="color-btn" data-color="#E67E22" style="background-color: #E67E22;"></button>
+                    <button class="color-btn" data-color="#E74C3C" style="background-color: #E74C3C;"></button>
+                    <button class="color-btn" data-color="#9B59B6" style="background-color: #9B59B6;"></button>
+                    <button class="color-btn" data-color="#F39C12" style="background-color: #F39C12;"></button>
+                    <button class="color-btn" data-color="#1ABC9C" style="background-color: #1ABC9C;"></button>
+                    <button class="color-btn" data-color="#7F8C8D" style="background-color: #7F8C8D;"></button>
+                </div>
             </div>
 
             <!-- 数字键盘 -->
@@ -302,7 +348,7 @@
 
             currentGameType = gameType;
             currentDifficulty = difficultyType;
-            document.getElementById("gameTypeTitle").innerHTML = `数独游戏 - <span>${getGameTypeName(gameType)}</span>【${getDifficultyTypeName(difficultyType)}】`;
+            document.getElementById("gameTypeTitle").innerHTML = `<span>${getGameTypeName(gameType)}</span>【${getDifficultyTypeName(difficultyType)}】`;
             resetGameControls();
 
             // ==================== 自动判断：继续游戏 OR 新游戏 ====================

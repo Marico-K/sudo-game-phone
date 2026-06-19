@@ -14,6 +14,13 @@ let puzzleIdCounter = 0;           // 题目ID计数器
 let cellsCache = null;             // 单元格DOM缓存
 let iconMode = 'numbers';          // 图标模式: 'numbers', 'weather', 'animals'
 let inputMode = 'exact';           // 输入模式: 'exact'（确定模式）, 'candidate'（草稿模式）
+let paintMode = false;              // 画图模式
+let currentPaintTab = 'cell';       // 当前画图tab: 'cell', 'note', 'line'
+let currentPaintColor = 'none';     // 当前选中的画图颜色
+let paintHistory = [];              // 画图撤销历史
+let cellPaintData = [];             // 格子涂色数据
+let notePaintData = [];             // 笔记涂色数据
+let linePaintData = [];             // 划线数据
 let lives = 3;                     // 剩余爱心数量
 let undoStack = [];                // 撤销栈，记录操作历史
 let currentGameScore = 0;          // 本局游戏积分
@@ -9231,7 +9238,13 @@ function renderBoard() {
             }
 
             if (!hasWon) {
-                cell.addEventListener('click', () => selectCell(i, j, cell));
+                cell.addEventListener('click', () => {
+                    if (paintMode) {
+                        handlePaintCell(i, j);
+                    } else {
+                        selectCell(i, j, cell);
+                    }
+                });
                 if (isMobileDevice) {
                     // 手机端：绑定触摸事件，处理双击和长按
                     cell.addEventListener('touchstart', (e) => handleTouchStart(e, i, j, cell), { passive: false });
@@ -9421,7 +9434,13 @@ function renderSkyscraperBoard(container, size, boxRows, boxCols, skyscraperClue
             }
 
             if (!hasWon) {
-                cell.addEventListener('click', () => selectCell(i, j, cell));
+                cell.addEventListener('click', () => {
+                    if (paintMode) {
+                        handlePaintCell(i, j);
+                    } else {
+                        selectCell(i, j, cell);
+                    }
+                });
             }
             board.appendChild(cell);
             cellsCache.push(cell);
@@ -9559,7 +9578,13 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
             }
 
             if (!hasWon) {
-                cell.addEventListener('click', () => selectCell(i, j, cell));
+                cell.addEventListener('click', () => {
+                    if (paintMode) {
+                        handlePaintCell(i, j);
+                    } else {
+                        selectCell(i, j, cell);
+                    }
+                });
             }
             board.appendChild(cell);
             cellsCache.push(cell);
@@ -12225,3 +12250,310 @@ function unlockFarmIfNeeded() {
         unlockFarm();
     }
 }
+
+/* ==================== 画图功能 ==================== */
+function togglePaintMode() {
+    paintMode = !paintMode;
+    const paintBtn = document.getElementById('paintBtn');
+    const paintControls = document.getElementById('paintControls');
+    const paintBackBtn = document.getElementById('paintBackBtn');
+    const actionButtonsBar = document.querySelector('.action-buttons-bar');
+    const numberKeyPad = document.getElementById('numberKeyPad');
+    const gameControls = document.getElementById('gameControls');
+
+    if (paintMode) {
+        if (paintBtn) paintBtn.classList.add('active');
+        paintControls.style.display = 'block';
+        paintBackBtn.style.display = 'block';
+        if (actionButtonsBar) actionButtonsBar.style.display = 'none';
+        if (numberKeyPad) numberKeyPad.style.display = 'none';
+        if (gameControls) gameControls.style.display = 'none';
+    } else {
+        if (paintBtn) paintBtn.classList.remove('active');
+        paintControls.style.display = 'none';
+        paintBackBtn.style.display = 'none';
+        if (actionButtonsBar) actionButtonsBar.style.display = 'grid';
+        if (numberKeyPad) numberKeyPad.style.display = 'grid';
+        if (gameControls) gameControls.style.display = 'flex';
+    }
+}
+
+function setPaintTab(tab) {
+    if (tab === 'undo') {
+        undoPaint();
+        return;
+    }
+    if (tab === 'clear') {
+        clearAllPaint();
+        return;
+    }
+    
+    currentPaintTab = tab;
+    document.querySelectorAll('.paint-tab').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tab) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function setPaintColor(color) {
+    currentPaintColor = color;
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.color === color) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function handlePaintCell(row, col) {
+    if (!paintMode) return;
+    
+    const size = currentPuzzle.size || 9;
+    const index = row * size + col;
+
+    switch (currentPaintTab) {
+        case 'cell':
+            paintCell(index, currentPaintColor);
+            break;
+        case 'note':
+            showNotePicker(row, col, index);
+            break;
+        case 'line':
+            paintLine(index, currentPaintColor);
+            break;
+    }
+}
+
+function paintCell(index, color) {
+    paintHistory.push({ type: 'cell', index: index, oldColor: cellPaintData[index] });
+    
+    if (color === 'none') {
+        delete cellPaintData[index];
+    } else {
+        cellPaintData[index] = color;
+    }
+    
+    updateCellPaint(index);
+}
+
+function paintNote(index, color) {
+    const value = currentBoard[index];
+    if (!Array.isArray(value)) return;
+    
+    paintHistory.push({ type: 'note', index: index, oldColor: notePaintData[index] });
+    
+    if (color === 'none') {
+        delete notePaintData[index];
+    } else {
+        notePaintData[index] = color;
+    }
+    
+    updateCellPaint(index);
+}
+
+function paintLine(index, color) {
+    paintHistory.push({ type: 'line', index: index, oldColor: linePaintData[index] });
+    
+    if (color === 'none') {
+        delete linePaintData[index];
+    } else {
+        linePaintData[index] = color;
+    }
+    
+    updateCellPaint(index);
+}
+
+function updateCellPaint(index) {
+    const board = document.getElementById('sudokuBoard');
+    if (!board) return;
+    
+    const cells = board.querySelectorAll('.cell');
+    if (!cells[index]) return;
+    
+    const cell = cells[index];
+    
+    cell.style.backgroundColor = cellPaintData[index] || '';
+    
+    const candidateNums = cell.querySelectorAll('.candidate-num');
+    candidateNums.forEach(candidate => {
+        const num = parseInt(candidate.textContent);
+        if (notePaintData[index] && notePaintData[index][num]) {
+            candidate.style.backgroundColor = notePaintData[index][num];
+            candidate.style.borderRadius = '50%';
+        } else {
+            candidate.style.backgroundColor = '';
+            candidate.style.borderRadius = '';
+        }
+    });
+    
+    if (linePaintData[index]) {
+        cell.style.borderColor = linePaintData[index];
+        cell.style.borderWidth = '2px';
+    } else {
+        cell.style.borderColor = '';
+        cell.style.borderWidth = '';
+    }
+}
+
+function showNotePicker(row, col, index) {
+    const value = currentBoard[index];
+    if (!Array.isArray(value) || value.length === 0) return;
+
+    const board = document.getElementById('sudokuBoard');
+    if (!board) return;
+
+    const cells = board.querySelectorAll('.cell');
+    if (!cells[index]) return;
+
+    const cell = cells[index];
+    const rect = cell.getBoundingClientRect();
+    
+    const picker = document.createElement('div');
+    picker.className = 'note-picker';
+    
+    const size = currentPuzzle.size || 9;
+    picker.style.gridTemplateColumns = size === 4 ? 'repeat(2, 1fr)' : 
+                                      size === 6 ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)';
+
+    for (let num = 1; num <= size; num++) {
+        if (!value.includes(num)) continue;
+        
+        const btn = document.createElement('button');
+        btn.className = 'picker-btn';
+        btn.textContent = getIcon(num);
+        
+        if (notePaintData[index] && notePaintData[index][num]) {
+            btn.style.backgroundColor = notePaintData[index][num];
+            btn.style.color = 'white';
+        }
+        
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            paintNoteNumber(index, num);
+            if (notePaintData[index] && notePaintData[index][num]) {
+                btn.style.backgroundColor = notePaintData[index][num];
+                btn.style.color = 'white';
+            } else {
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+            }
+        });
+        
+        picker.appendChild(btn);
+    }
+
+    picker.style.left = `${rect.left + rect.width / 2}px`;
+    picker.style.top = `${rect.top + rect.height / 2}px`;
+    
+    document.body.appendChild(picker);
+    
+    setTimeout(() => {
+        picker.classList.add('visible');
+        adjustPickerPosition(picker, rect.left + rect.width / 2, rect.top + rect.height / 2);
+        // 延迟绑定关闭事件，避免当前 click 事件立即关闭弹框
+        setTimeout(() => {
+            document.addEventListener('click', closeNotePickerHandler);
+        }, 100);
+    }, 10);
+    
+    function closeNotePickerHandler(e) {
+        if (!picker.contains(e.target)) {
+            picker.classList.remove('visible');
+            setTimeout(() => {
+                picker.remove();
+            }, 200);
+            document.removeEventListener('click', closeNotePickerHandler);
+        }
+    }
+}
+
+function paintNoteNumber(index, num) {
+    if (!notePaintData[index]) {
+        notePaintData[index] = {};
+    }
+    
+    const oldColor = notePaintData[index][num];
+    
+    paintHistory.push({ type: 'note', index: index, num: num, oldColor: oldColor });
+    
+    if (oldColor === currentPaintColor || currentPaintColor === 'none') {
+        delete notePaintData[index][num];
+    } else {
+        notePaintData[index][num] = currentPaintColor;
+    }
+    
+    updateCellPaint(index);
+}
+
+function undoPaint() {
+    if (paintHistory.length === 0) return;
+    
+    const lastAction = paintHistory.pop();
+    
+    switch (lastAction.type) {
+        case 'cell':
+            if (lastAction.oldColor === undefined) {
+                delete cellPaintData[lastAction.index];
+            } else {
+                cellPaintData[lastAction.index] = lastAction.oldColor;
+            }
+            break;
+        case 'note':
+            if (!notePaintData[lastAction.index]) {
+                notePaintData[lastAction.index] = {};
+            }
+            if (lastAction.num !== undefined) {
+                if (lastAction.oldColor === undefined) {
+                    delete notePaintData[lastAction.index][lastAction.num];
+                } else {
+                    notePaintData[lastAction.index][lastAction.num] = lastAction.oldColor;
+                }
+            } else {
+                if (lastAction.oldColor === undefined) {
+                    delete notePaintData[lastAction.index];
+                } else {
+                    notePaintData[lastAction.index] = lastAction.oldColor;
+                }
+            }
+            break;
+        case 'line':
+            if (lastAction.oldColor === undefined) {
+                delete linePaintData[lastAction.index];
+            } else {
+                linePaintData[lastAction.index] = lastAction.oldColor;
+            }
+            break;
+    }
+    
+    updateCellPaint(lastAction.index);
+}
+
+function clearAllPaint() {
+    paintHistory = [];
+    cellPaintData = [];
+    notePaintData = [];
+    linePaintData = [];
+    
+    const board = document.getElementById('sudokuBoard');
+    if (board) {
+        const cells = board.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            cell.style.backgroundColor = '';
+            cell.style.opacity = '';
+            cell.style.borderColor = '';
+            cell.style.borderWidth = '';
+        });
+    }
+}
+
+function initPaintColors() {
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setPaintColor(btn.dataset.color);
+        });
+    });
+}
+
+window.addEventListener('load', initPaintColors);
