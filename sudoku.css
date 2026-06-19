@@ -3285,6 +3285,93 @@ header p {
     border: 3px solid #e74c3c !important;
 }
 
+/* 正确答案样式 */
+.cell.correct {
+    background: #d4edda !important;
+    color: #27ae60 !important;
+    cursor: default;
+}
+
+.cell.correct.selected {
+    background: #c3e6cb !important;
+    border-color: #27ae60 !important;
+}
+
+/* ==================== 数字选择弹框样式 ==================== */
+.number-picker,
+.candidate-picker {
+    position: fixed;
+    z-index: 1000;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    
+    opacity: 0;
+    transform: scale(0.9) translate(-50%, -50%);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    overflow: hidden;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.number-picker.size-4x4,
+.candidate-picker.size-4x4 {
+    grid-template-columns: repeat(2, 1fr);
+    width: 142px;
+}
+
+.number-picker.size-6x6,
+.candidate-picker.size-6x6 {
+    grid-template-columns: repeat(3, 1fr);
+    width: 210px;
+}
+
+.number-picker.visible,
+.candidate-picker.visible {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.picker-btn {
+    width: 64px;
+    height: 64px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 1.6em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.picker-btn:hover {
+    background: #f0f4f8;
+    color: #333;
+}
+
+.picker-btn.selected {
+    background: #3498db;
+    color: white;
+}
+
+.picker-btn.selected:hover {
+    background: #2980b9;
+}
+
 /* ==================== 草稿模式样式 ==================== */
 /* 候选数字容器 */
 .cell-candidates {
