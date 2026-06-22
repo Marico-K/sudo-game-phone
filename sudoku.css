@@ -3315,13 +3315,11 @@ header p {
 .number-picker.size-4x4,
 .candidate-picker.size-4x4 {
     grid-template-columns: repeat(2, 1fr);
-    width: 142px;
 }
 
 .number-picker.size-6x6,
 .candidate-picker.size-6x6 {
     grid-template-columns: repeat(3, 1fr);
-    width: 210px;
 }
 
 .number-picker.visible,
@@ -3360,6 +3358,17 @@ header p {
 
 .picker-btn.selected:hover {
     background: #2980b9;
+}
+
+.picker-btn.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.picker-btn.disabled:hover {
+    background: transparent;
+    color: #ccc;
 }
 
 /* ==================== 画图控制区样式 ==================== */
@@ -4985,12 +4994,26 @@ header p {
 }
 
 .modal-btn.color-btn {
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    border: none;
+    padding: 13px 26px;
+    font-size: 0.95em;
+    font-weight: 600;
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
     box-shadow: 0 4px 14px rgba(17, 153, 142, 0.4);
 }
 
 .modal-btn.color-btn:hover {
+    transform: translateY(-3px);
     box-shadow: 0 7px 20px rgba(17, 153, 142, 0.5);
+}
+
+.modal-btn.color-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(17, 153, 142, 0.4);
 }
 
 /* ==================== 电脑端按钮文字控制在一行 ==================== */

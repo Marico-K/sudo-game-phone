@@ -155,18 +155,98 @@ function updateGiftBoxes(progress) {
     const bronzeBox = document.getElementById('giftBoxBronze');
     const silverBox = document.getElementById('giftBoxSilver');
     const goldBox = document.getElementById('giftBoxGold');
+    const bronzeWrapper = bronzeBox ? bronzeBox.parentElement : null;
+    const silverWrapper = silverBox ? silverBox.parentElement : null;
+    const goldWrapper = goldBox ? goldBox.parentElement : null;
+    const bronzeLabel = bronzeWrapper ? bronzeWrapper.querySelector('.gift-label') : null;
+    const silverLabel = silverWrapper ? silverWrapper.querySelector('.gift-label') : null;
+    const goldLabel = goldWrapper ? goldWrapper.querySelector('.gift-label') : null;
+    const size = currentPuzzle.size || 9;
     
-    if (bronzeBox) {
-        bronzeBox.className = `gift-box ${progress >= 30 ? 'unlocked' : 'locked'}`;
-        bronzeBox.innerHTML = progress >= 30 ? '🎁' : '🔒';
-    }
-    if (silverBox) {
-        silverBox.className = `gift-box ${progress >= 70 ? 'unlocked' : 'locked'}`;
-        silverBox.innerHTML = progress >= 70 ? '🎁' : '🔒';
-    }
-    if (goldBox) {
-        goldBox.className = `gift-box ${progress >= 100 ? 'unlocked' : 'locked'}`;
-        goldBox.innerHTML = progress >= 100 ? '🎁' : '🔒';
+    if (size === 4) {
+        if (bronzeWrapper) {
+            bronzeWrapper.style.display = 'block';
+            bronzeWrapper.style.left = '100%';
+        }
+        if (bronzeBox) {
+            bronzeBox.style.display = 'flex';
+            bronzeBox.className = `gift-box ${progress >= 100 ? 'unlocked' : 'locked'}`;
+            bronzeBox.innerHTML = progress >= 100 ? '🎁' : '🔒';
+        }
+        if (bronzeLabel) {
+            bronzeLabel.textContent = '100%';
+        }
+        if (silverWrapper) {
+            silverWrapper.style.display = 'none';
+        }
+        if (goldWrapper) {
+            goldWrapper.style.display = 'none';
+        }
+    } else if (size === 6) {
+        if (bronzeWrapper) {
+            bronzeWrapper.style.display = 'block';
+            bronzeWrapper.style.left = '70%';
+        }
+        if (bronzeBox) {
+            bronzeBox.style.display = 'flex';
+            bronzeBox.className = `gift-box ${progress >= 70 ? 'unlocked' : 'locked'}`;
+            bronzeBox.innerHTML = progress >= 70 ? '🎁' : '🔒';
+        }
+        if (bronzeLabel) {
+            bronzeLabel.textContent = '70%';
+        }
+        if (silverWrapper) {
+            silverWrapper.style.display = 'block';
+            silverWrapper.style.left = '100%';
+        }
+        if (silverBox) {
+            silverBox.style.display = 'flex';
+            silverBox.className = `gift-box ${progress >= 100 ? 'unlocked' : 'locked'}`;
+            silverBox.innerHTML = progress >= 100 ? '🎁' : '🔒';
+        }
+        if (silverLabel) {
+            silverLabel.textContent = '100%';
+        }
+        if (goldWrapper) {
+            goldWrapper.style.display = 'none';
+        }
+    } else {
+        if (bronzeWrapper) {
+            bronzeWrapper.style.display = 'block';
+            bronzeWrapper.style.left = '30%';
+        }
+        if (bronzeBox) {
+            bronzeBox.style.display = 'flex';
+            bronzeBox.className = `gift-box ${progress >= 30 ? 'unlocked' : 'locked'}`;
+            bronzeBox.innerHTML = progress >= 30 ? '🎁' : '🔒';
+        }
+        if (bronzeLabel) {
+            bronzeLabel.textContent = '30%';
+        }
+        if (silverWrapper) {
+            silverWrapper.style.display = 'block';
+            silverWrapper.style.left = '70%';
+        }
+        if (silverBox) {
+            silverBox.style.display = 'flex';
+            silverBox.className = `gift-box ${progress >= 70 ? 'unlocked' : 'locked'}`;
+            silverBox.innerHTML = progress >= 70 ? '🎁' : '🔒';
+        }
+        if (silverLabel) {
+            silverLabel.textContent = '70%';
+        }
+        if (goldWrapper) {
+            goldWrapper.style.display = 'block';
+            goldWrapper.style.left = '100%';
+        }
+        if (goldBox) {
+            goldBox.style.display = 'flex';
+            goldBox.className = `gift-box ${progress >= 100 ? 'unlocked' : 'locked'}`;
+            goldBox.innerHTML = progress >= 100 ? '🎁' : '🔒';
+        }
+        if (goldLabel) {
+            goldLabel.textContent = '100%';
+        }
     }
 }
 
@@ -176,15 +256,29 @@ function updateGiftBoxes(progress) {
 function calculateEarnedGiftBoxes() {
     const earnedBoxes = [];
     const progress = totalEmptyCells > 0 ? (filledCells / totalEmptyCells) * 100 : 100;
+    const size = currentPuzzle.size || 9;
     
-    if (progress >= 30) {
-        earnedBoxes.push('bronze');
-    }
-    if (progress >= 70) {
-        earnedBoxes.push('silver');
-    }
-    if (progress >= 100) {
-        earnedBoxes.push('gold');
+    if (size === 4) {
+        if (progress >= 100) {
+            earnedBoxes.push('bronze');
+        }
+    } else if (size === 6) {
+        if (progress >= 70) {
+            earnedBoxes.push('bronze');
+        }
+        if (progress >= 100) {
+            earnedBoxes.push('silver');
+        }
+    } else {
+        if (progress >= 30) {
+            earnedBoxes.push('bronze');
+        }
+        if (progress >= 70) {
+            earnedBoxes.push('silver');
+        }
+        if (progress >= 100) {
+            earnedBoxes.push('gold');
+        }
     }
     
     // 将礼盒添加到玩家背包
@@ -9896,27 +9990,35 @@ function handleDoubleClick(e, row, col, cell) {
     const size = currentPuzzle.size || 9;
     const index = row * size + col;
     const value = currentBoard[index];
+    const isFixed = originalPuzzle[index] !== '0';
 
-    // 如果是数字（正确或错误）
-    if (typeof value === 'number') {
+    if (isFixed) {
+        return;
+    }
+
+    // 如果是错误数字，先清除它
+    if (typeof value === 'number' && value !== 0) {
         const correctAnswer = parseInt(currentPuzzle.solution[index]);
-        // 如果有错误数字（不是正确答案），清除它
-        if (value !== 0 && value !== correctAnswer) {
+        if (value !== correctAnswer) {
             selectCell(row, col, cell);
             placeNumber(0);
-            renderBoard();
         }
+    }
+
+    // 获取候选数
+    const candidates = getCandidates(row, col);
+
+    // 如果只有一个候选数，直接填写
+    if (candidates.length === 1) {
+        selectCell(row, col, cell);
+        inputMode = 'exact';
+        selectNumber(candidates[0]);
         return;
     }
 
-    // 如果有候选数，不处理
-    if (Array.isArray(value) && value.length > 0) {
-        return;
-    }
-
-    // 空的格子，显示数字选择框
+    // 显示候选数字选择框（显示所有数字，候选数字可点击）
     selectCell(row, col, cell);
-    showNumberPicker(e.clientX, e.clientY);
+    showCandidatesOnlyPicker(e.clientX, e.clientY, row, col);
 }
 
 function handleMouseDown(e, row, col, cell) {
@@ -9965,11 +10067,34 @@ function handleTouchStart(e, row, col, cell) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
         }
-        if (!(typeof value === 'number' && value !== 0)) {
-            selectCell(row, col, cell);
-            const touch = e.touches[0];
-            showNumberPicker(touch.clientX, touch.clientY);
+
+        const isFixed = originalPuzzle[index] !== '0';
+        if (!isFixed) {
+            // 如果是错误数字，先清除它
+            if (typeof value === 'number' && value !== 0) {
+                const correctAnswer = parseInt(currentPuzzle.solution[index]);
+                if (value !== correctAnswer) {
+                    selectCell(row, col, cell);
+                    placeNumber(0);
+                }
+            }
+
+            // 获取候选数
+            const candidates = getCandidates(row, col);
+
+            // 如果只有一个候选数，直接填写
+            if (candidates.length === 1) {
+                selectCell(row, col, cell);
+                inputMode = 'exact';
+                selectNumber(candidates[0]);
+            } else {
+                // 显示候选数字选择框（显示所有数字，候选数字可点击）
+                selectCell(row, col, cell);
+                const touch = e.touches[0];
+                showCandidatesOnlyPicker(touch.clientX, touch.clientY, row, col);
+            }
         }
+
         lastTouchTime = 0;
         lastTouchCell = null;
         touchStartCell = null;
@@ -10129,9 +10254,68 @@ function showCandidatePicker(x, y) {
     document.addEventListener('click', closePickersHandler);
 }
 
+function showCandidatesOnlyPicker(x, y, row, col) {
+    closePickers();
+
+    const picker = document.createElement('div');
+    picker.className = 'number-picker candidates-only';
+    picker.id = 'candidatesOnlyPicker';
+
+    const size = currentPuzzle.size || 9;
+    if (size === 4) {
+        picker.classList.add('size-4x4');
+    } else if (size === 6) {
+        picker.classList.add('size-6x6');
+    }
+
+    const candidates = getCandidates(row, col);
+
+    for (let num = 1; num <= size; num++) {
+        const btn = document.createElement('button');
+        const isCandidate = candidates.includes(num);
+        btn.className = 'picker-btn' + (isCandidate ? '' : ' disabled');
+        btn.textContent = getIcon(num);
+        if (isCandidate) {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                inputMode = 'exact';
+                selectNumber(num);
+                closePickers();
+            };
+        } else {
+            btn.disabled = true;
+        }
+        picker.appendChild(btn);
+    }
+
+    document.body.appendChild(picker);
+    adjustPickerPosition(picker, x, y);
+
+    setTimeout(() => {
+        picker.classList.add('visible');
+    }, 0);
+
+    document.addEventListener('click', closeCandidatesOnlyPickerHandler);
+}
+
+function closeCandidatesOnlyPickerHandler(e) {
+    if (ignoreNextClick) {
+        ignoreNextClick = false;
+        return;
+    }
+
+    const picker = document.getElementById('candidatesOnlyPicker');
+    if (picker && !picker.contains(e.target)) {
+        picker.classList.remove('visible');
+        setTimeout(() => picker.remove(), 200);
+        document.removeEventListener('click', closeCandidatesOnlyPickerHandler);
+    }
+}
+
 function closePickers() {
     const numberPicker = document.getElementById('numberPicker');
     const candidatePicker = document.getElementById('candidatePicker');
+    const candidatesOnlyPicker = document.getElementById('candidatesOnlyPicker');
 
     if (numberPicker) {
         numberPicker.classList.remove('visible');
@@ -10143,6 +10327,11 @@ function closePickers() {
         if (inputMode === 'candidate') {
             toggleInputMode();
         }
+    }
+    if (candidatesOnlyPicker) {
+        candidatesOnlyPicker.classList.remove('visible');
+        setTimeout(() => candidatesOnlyPicker.remove(), 200);
+        document.removeEventListener('click', closeCandidatesOnlyPickerHandler);
     }
 
     document.removeEventListener('click', closePickersHandler);
@@ -12381,10 +12570,8 @@ function updateCellPaint(index) {
         const num = parseInt(candidate.textContent);
         if (notePaintData[index] && notePaintData[index][num]) {
             candidate.style.backgroundColor = notePaintData[index][num];
-            candidate.style.borderRadius = '50%';
         } else {
             candidate.style.backgroundColor = '';
-            candidate.style.borderRadius = '';
         }
     });
     
@@ -12544,6 +12731,11 @@ function clearAllPaint() {
             cell.style.opacity = '';
             cell.style.borderColor = '';
             cell.style.borderWidth = '';
+            
+            const candidateNums = cell.querySelectorAll('.candidate-num');
+            candidateNums.forEach(candidate => {
+                candidate.style.backgroundColor = '';
+            });
         });
     }
 }
