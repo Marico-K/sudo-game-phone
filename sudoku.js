@@ -9535,6 +9535,18 @@ function renderSkyscraperBoard(container, size, boxRows, boxCols, skyscraperClue
                         selectCell(i, j, cell);
                     }
                 });
+                
+                if (isMobileDevice) {
+                    // 手机端：绑定触摸事件，处理双击和长按
+                    cell.addEventListener('touchstart', (e) => handleTouchStart(e, i, j, cell), { passive: false });
+                    cell.addEventListener('touchend', handleTouchEnd);
+                } else {
+                    // 电脑端：绑定鼠标事件，处理双击和长按
+                    cell.addEventListener('dblclick', (e) => handleDoubleClick(e, i, j, cell));
+                    cell.addEventListener('mousedown', (e) => handleMouseDown(e, i, j, cell));
+                    cell.addEventListener('mouseup', handleMouseUp);
+                    cell.addEventListener('mouseleave', handleMouseUp);
+                }
             }
             board.appendChild(cell);
             cellsCache.push(cell);
@@ -9679,6 +9691,18 @@ function renderSandwichBoard(container, size, boxRows, boxCols, sandwichClues) {
                         selectCell(i, j, cell);
                     }
                 });
+                
+                if (isMobileDevice) {
+                    // 手机端：绑定触摸事件，处理双击和长按
+                    cell.addEventListener('touchstart', (e) => handleTouchStart(e, i, j, cell), { passive: false });
+                    cell.addEventListener('touchend', handleTouchEnd);
+                } else {
+                    // 电脑端：绑定鼠标事件，处理双击和长按
+                    cell.addEventListener('dblclick', (e) => handleDoubleClick(e, i, j, cell));
+                    cell.addEventListener('mousedown', (e) => handleMouseDown(e, i, j, cell));
+                    cell.addEventListener('mouseup', handleMouseUp);
+                    cell.addEventListener('mouseleave', handleMouseUp);
+                }
             }
             board.appendChild(cell);
             cellsCache.push(cell);

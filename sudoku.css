@@ -6232,6 +6232,70 @@ footer {
         font-size: 1.1em;
     }
 
+    .sandwich-layout {
+        max-width: 350px;
+        padding: 2px;
+    }
+
+    .sandwich-clue {
+        font-size: 0.6em;
+    }
+
+    .sandwich-clues-top {
+        grid-template-columns: repeat(9, 1fr);
+        padding: 0.5px;
+        gap: 0.5px;
+    }
+
+    .sandwich-clues-left {
+        grid-template-rows: repeat(9, 1fr);
+        padding: 0.5px;
+        gap: 0.5px;
+    }
+
+    .sudoku-board.game-type-sandwich {
+        max-width: none !important;
+    }
+
+    .sudoku-board.game-type-sandwich .cell {
+        font-size: 0.9em !important;
+    }
+
+    .skyscraper-layout {
+        max-width: 350px;
+        padding: 0.5px;
+    }
+
+    .skyscraper-clues-top {
+        flex: 0.4;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .skyscraper-clues-left,
+    .skyscraper-clues-right {
+        flex: 0.4;
+    }
+
+    .skyscraper-clues-bottom {
+        flex: 0.4;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .skyscraper-clue {
+        font-size: 0.6em;
+    }
+
+    .sudoku-board.game-type-skyscraper {
+        flex: 9;
+        max-width: none !important;
+    }
+
+    .sudoku-board.game-type-skyscraper .cell {
+        font-size: 0.9em !important;
+    }
+
     .cell-candidates {
         padding: 2%;
     }
