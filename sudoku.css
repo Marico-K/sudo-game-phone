@@ -3285,6 +3285,209 @@ header p {
     border: 3px solid #e74c3c !important;
 }
 
+/* ==================== 数字选择弹框样式 ==================== */
+.number-picker,
+.candidate-picker,
+.note-picker {
+    position: fixed;
+    z-index: 1000;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    
+    opacity: 0;
+    transform: scale(0.9) translate(-50%, -50%);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    overflow: hidden;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.number-picker.size-4x4,
+.candidate-picker.size-4x4 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.number-picker.size-6x6,
+.candidate-picker.size-6x6 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.number-picker.visible,
+.candidate-picker.visible,
+.note-picker.visible {
+    opacity: 1;
+    transform: scale(1) translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.picker-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.picker-btn:hover {
+    background: #f0f4f8;
+    color: #333;
+}
+
+.picker-btn.selected {
+    background: #3498db;
+    color: white;
+}
+
+.picker-btn.selected:hover {
+    background: #2980b9;
+}
+
+.picker-btn.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.picker-btn.disabled:hover {
+    background: transparent;
+    color: #ccc;
+}
+
+/* ==================== 画图控制区样式 ==================== */
+.paint-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 12px;
+}
+
+.paint-back-btn {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.paint-back-btn .action-icon-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border-color: #11998e;
+}
+
+.paint-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.paint-tab {
+    background: #f5f5f5;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.paint-tab:hover {
+    background: #e8e8e8;
+}
+
+.paint-tab.active {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.tab-icon {
+    font-size: 1.2em;
+}
+
+.tab-label {
+    font-size: 0.75em;
+}
+
+.paint-colors {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.paint-colors::-webkit-scrollbar {
+    display: none;
+}
+
+.color-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+    border-color: #999;
+}
+
+.color-btn.active {
+    border-color: #333;
+    transform: scale(1.15);
+}
+
+.color-btn[data-color="none"] {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* 格子涂色 */
+.cell.paint-cell {
+    opacity: 0.7;
+}
+
+/* 笔记涂色 */
+.cell-candidates .candidate-num.paint-note {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* 划线样式 */
+.cell.paint-line-h {
+    background: linear-gradient(to bottom, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+}
+
+.cell.paint-line-v {
+    background: linear-gradient(to right, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+}
+
 /* ==================== 草稿模式样式 ==================== */
 /* 候选数字容器 */
 .cell-candidates {
@@ -3327,12 +3530,9 @@ header p {
     background: transparent;
     line-height: 1;
     overflow: hidden;
-    border-radius: 50%;
     width: 55%;
     max-width: 12px;
     min-width: 7px;
-    aspect-ratio: 1;
-    font-weight: bold;
     flex-shrink: 0;
 }
 
@@ -4794,12 +4994,26 @@ header p {
 }
 
 .modal-btn.color-btn {
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    border: none;
+    padding: 13px 26px;
+    font-size: 0.95em;
+    font-weight: 600;
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
     box-shadow: 0 4px 14px rgba(17, 153, 142, 0.4);
 }
 
 .modal-btn.color-btn:hover {
+    transform: translateY(-3px);
     box-shadow: 0 7px 20px rgba(17, 153, 142, 0.5);
+}
+
+.modal-btn.color-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(17, 153, 142, 0.4);
 }
 
 /* ==================== 电脑端按钮文字控制在一行 ==================== */
@@ -6016,6 +6230,70 @@ footer {
 
     .cell {
         font-size: 1.1em;
+    }
+
+    .sandwich-layout {
+        max-width: 350px;
+        padding: 2px;
+    }
+
+    .sandwich-clue {
+        font-size: 0.6em;
+    }
+
+    .sandwich-clues-top {
+        grid-template-columns: repeat(9, 1fr);
+        padding: 0.5px;
+        gap: 0.5px;
+    }
+
+    .sandwich-clues-left {
+        grid-template-rows: repeat(9, 1fr);
+        padding: 0.5px;
+        gap: 0.5px;
+    }
+
+    .sudoku-board.game-type-sandwich {
+        max-width: none !important;
+    }
+
+    .sudoku-board.game-type-sandwich .cell {
+        font-size: 0.9em !important;
+    }
+
+    .skyscraper-layout {
+        max-width: 350px;
+        padding: 0.5px;
+    }
+
+    .skyscraper-clues-top {
+        flex: 0.4;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .skyscraper-clues-left,
+    .skyscraper-clues-right {
+        flex: 0.4;
+    }
+
+    .skyscraper-clues-bottom {
+        flex: 0.4;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .skyscraper-clue {
+        font-size: 0.6em;
+    }
+
+    .sudoku-board.game-type-skyscraper {
+        flex: 9;
+        max-width: none !important;
+    }
+
+    .sudoku-board.game-type-skyscraper .cell {
+        font-size: 0.9em !important;
     }
 
     .cell-candidates {
