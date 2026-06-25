@@ -3369,6 +3369,16 @@ const itemConfig = window.itemConfig = [
         type: 'permanent',
         effect: 'farm_right'
     },
+    {
+        id: 'farm_robot',
+        name: '农场机器人',
+        description: '一键给所有作物浇水、施肥，给所有动物喂养、加餐（保持每日限制）',
+        price: 30000,
+        icon: '🤖',
+        type: 'permanent',
+        effect: 'farm_robot',
+        requires: 'farm_right'
+    },
     // 农场道具
     {
         id: 'fertilizer',
@@ -4665,6 +4675,14 @@ function fillUniqueCandidates() {
     const size = currentPuzzle.size || 9;
     let filledCount = 0;
 
+    // 根据难度计算每格得分
+    let pointsPerCell = 10;
+    if (currentPuzzle.difficultyType === 'MEDIUM') {
+        pointsPerCell = 12;
+    } else if (currentPuzzle.difficultyType === 'HARD') {
+        pointsPerCell = 15;
+    }
+
     for (let row = 0; row < size; row++) {
         for (let col = 0; col < size; col++) {
             const index = row * size + col;
@@ -4679,6 +4697,10 @@ function fillUniqueCandidates() {
                 const num = currentBoard[index][0];
                 currentBoard[index] = num;
                 filledCount++;
+                
+                // 计算积分
+                currentGameScore += pointsPerCell;
+                filledCells++;
 
                 // 删除同行、同列、同宫中的重复候选数字
                 const affectedIndices = [...getRows(row, col), ...getCols(row, col), ...getBoxes(row, col)];
@@ -4697,13 +4719,16 @@ function fillUniqueCandidates() {
     // 更新显示
     renderBoard();
     updateNumberButtons();
+    updateGameScoreDisplay();
+    updateProgressBar();
     scheduleSaveProgress();
 
     // 提示用户填写了多少个格子
     if (filledCount > 0) {
-        console.log(`已自动填写 ${filledCount} 个格子！`);
+        const totalPoints = filledCount * pointsPerCell;
+        customAlert(`已自动填写 ${filledCount} 个格子！获得 ${totalPoints} 积分！`, 'success');
     } else {
-        console.log('没有找到候选数唯一的格子！');
+        customAlert('没有找到候选数唯一的格子！', 'info');
     }
 }
 
