@@ -780,6 +780,39 @@
             const itemsGrid = document.getElementById('shopItemsGrid');
             let itemsHtml = '';
             
+            // 碎片合成区域（仅农场机器人显示）
+            const farmRobotFragment = items.robot_fragment || 0;
+            const hasFarmRobot = items.farm_robot && items.farm_robot > 0;
+            
+            itemsHtml += `
+                <div class="fragment-section">
+                    <div class="fragment-header">
+                        <span class="fragment-icon">🔧</span>
+                        <span class="fragment-title">碎片合成</span>
+                    </div>
+                    <div class="fragment-content">
+                        <div class="fragment-item ${hasFarmRobot ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">🤖</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">农场机器人碎片</div>
+                                <div class="fragment-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${(farmRobotFragment / 500) * 100}%"></div>
+                                    </div>
+                                    <div class="progress-text">${farmRobotFragment} / 500</div>
+                                </div>
+                            </div>
+                            ${hasFarmRobot ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (farmRobotFragment >= 500 ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeFarmRobot()">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (500 - farmRobotFragment) + ' 个</button>')
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            
             itemConfig.forEach(item => {
                 // 检查是否需要特定道具
                 if (item.requires) {
@@ -824,6 +857,33 @@
             
             itemsGrid.innerHTML = itemsHtml;
             document.getElementById('shopModal').style.display = 'block';
+        }
+        
+        // 合成农场机器人
+        function composeFarmRobot() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            
+            if ((items.robot_fragment || 0) < 500) {
+                customAlert('碎片不足！需要 500 个碎片才能合成。', 'warning');
+                return;
+            }
+            
+            if (items.farm_robot && items.farm_robot > 0) {
+                customAlert('您已经拥有农场机器人了！', 'info');
+                return;
+            }
+            
+            // 扣除碎片，添加农场机器人
+            items.robot_fragment = 0;
+            items.farm_robot = 1;
+            playerData.items = items;
+            Storage.savePlayerData(playerData);
+            
+            customAlert('🎉 恭喜合成农场机器人！\n\n农场机器人已添加到您的背包中。', 'success');
+            
+            // 关闭弹窗并刷新
+            closeModal('shopModal');
         }
         
         // 显示购买弹窗（支持批量购买）

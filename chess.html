@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国象棋</title>
+<link rel="stylesheet" href="chess-game.css">
+<style>
+body {
+  background: linear-gradient(135deg, #1a0800 0%, #3d1a00 50%, #1a0800 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+  color: #fff;
+}
+
+.lobby-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+  text-align: center;
+}
+
+.lobby-title {
+  font-size: 3.5rem;
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255,200,0,0.7), 0 4px 12px rgba(0,0,0,0.5);
+  letter-spacing: 8px;
+  margin-bottom: 8px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 20px rgba(255,200,0,0.5), 0 4px 12px rgba(0,0,0,0.5); }
+  to   { text-shadow: 0 0 40px rgba(255,200,0,0.9), 0 4px 12px rgba(0,0,0,0.5); }
+}
+
+.lobby-subtitle {
+  color: #c0a070;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  margin-bottom: 50px;
+}
+
+/* 棋盘装饰 */
+.chess-deco {
+  font-size: 5rem;
+  margin-bottom: 30px;
+  filter: drop-shadow(0 0 20px rgba(255,200,0,0.4));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* 菜单按钮 */
+.lobby-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.menu-btn {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-family: 'KaiTi', '楷体', serif;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+
+.menu-btn:hover::after { transform: translateX(100%); }
+
+.menu-btn:hover { transform: translateY(-3px); }
+
+.btn-play {
+  background: linear-gradient(135deg, #8b1000, #cc2200, #ff4400);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(200,30,0,0.5);
+}
+
+.btn-play:hover { box-shadow: 0 10px 30px rgba(200,30,0,0.7); }
+
+.btn-store {
+  background: linear-gradient(135deg, #5010a0, #8030ff);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(100,30,200,0.5);
+}
+
+.btn-store:hover { box-shadow: 0 10px 30px rgba(100,30,200,0.7); }
+
+.btn-back {
+  background: rgba(255,255,255,0.08);
+  color: #c0a070;
+  border: 1px solid rgba(200,160,80,0.3);
+}
+
+.btn-back:hover { background: rgba(255,255,255,0.14); }
+
+/* 权限状态卡 */
+.perm-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,200,80,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.perm-title {
+  color: #ffd700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.perm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #c0b090;
+  padding: 4px 0;
+}
+
+.perm-check { color: #00e080; }
+.perm-lock  { color: #ff6060; }
+
+/* 积分显示 */
+.score-show {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,200,0,0.1);
+  border: 1px solid rgba(255,200,0,0.3);
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: #ffd700;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* 锁定遮罩弹窗 */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal-box {
+  background: linear-gradient(135deg, #1a0a30, #2a1050);
+  border: 2px solid #8030ff;
+  border-radius: 20px;
+  padding: 36px 40px;
+  text-align: center;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 0 60px rgba(120,50,200,0.4);
+}
+
+.modal-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.modal-title { font-size: 1.5rem; color: #e0c0ff; margin-bottom: 10px; letter-spacing: 2px; }
+.modal-desc { font-size: 0.9rem; color: #9080b0; line-height: 1.7; margin-bottom: 24px; }
+
+.modal-buttons { display: flex; gap: 12px; justify-content: center; }
+
+.modal-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'KaiTi', '楷体', serif;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.modal-btn-go {
+  background: linear-gradient(135deg, #5010a0, #8030ff);
+  color: #fff;
+}
+
+.modal-btn-go:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(100,30,200,0.5); }
+
+.modal-btn-cancel {
+  background: rgba(255,255,255,0.1);
+  color: #a090c0;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.modal-btn-cancel:hover { background: rgba(255,255,255,0.18); }
+</style>
+</head>
+<body>
+
+<div class="lobby-container">
+  <div class="chess-deco">♟️</div>
+  <div class="lobby-title">中国象棋</div>
+  <div class="lobby-subtitle">运筹帷幄 · 决胜千里</div>
+
+  <!-- 积分 -->
+  <div class="score-show">🪙 积分：<strong id="score-display">0</strong></div>
+
+  <!-- 权限状态 -->
+  <div class="perm-card">
+    <div class="perm-title">🔐 我的游戏权限</div>
+    <div id="perm-list"></div>
+  </div>
+
+  <!-- 菜单 -->
+  <div class="lobby-menu">
+    <button class="menu-btn btn-play" onclick="tryEnterGame()">
+      ♟️ 开始对局
+    </button>
+    <button class="menu-btn btn-store" onclick="location.href='chess-store.html'">
+      🏪 积分商城
+    </button>
+    <button class="menu-btn btn-back" onclick="location.href='index.html'">
+      🔙 返回首页
+    </button>
+  </div>
+</div>
+
+<!-- 无权限弹窗 -->
+<div class="modal-overlay" id="lock-modal">
+  <div class="modal-box">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">需要游戏权限</div>
+    <div class="modal-desc">
+      您还没有对局权限。<br>
+      前往积分商城领取免费标准对局权限，或购买高级权限！
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-go" onclick="location.href='chess-store.html'">去商城</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeLockModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE_KEY  = 'chess_store';
+const SCORE_KEY  = 'chess_score';
+
+function getScore() { return parseInt(localStorage.getItem(SCORE_KEY) || '200'); }
+
+function getOwned() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '["chess_basic"]'); }
+  catch(e) { return ['chess_basic']; }
+}
+
+function isOwned(id) { return getOwned().includes(id); }
+
+const PERM_INFO = [
+  { id: 'chess_basic',     label: '标准对局权限' },
+  { id: 'chess_pro',       label: '高级AI难度' },
+  { id: 'chess_hint',      label: '走棋提示' },
+  { id: 'chess_theme_red', label: '红木棋盘主题' },
+  { id: 'chess_theme_jade',label: '翡翠棋盘主题' },
+  { id: 'chess_history',   label: '棋谱收藏册' },
+];
+
+function renderPerms() {
+  const list = document.getElementById('perm-list');
+  list.innerHTML = PERM_INFO.map(p => {
+    const have = isOwned(p.id);
+    return `<div class="perm-item">
+      <span class="${have ? 'perm-check' : 'perm-lock'}">${have ? '✅' : '🔒'}</span>
+      <span style="color:${have ? '#e0d0b0' : '#706060'}">${p.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function tryEnterGame() {
+  if (isOwned('chess_basic')) {
+    location.href = 'chess-game.html';
+  } else {
+    document.getElementById('lock-modal').classList.add('show');
+  }
+}
+
+function closeLockModal() {
+  document.getElementById('lock-modal').classList.remove('show');
+}
+
+document.getElementById('score-display').textContent = getScore().toLocaleString();
+
+// 确保chess_basic默认拥有
+const owned = getOwned();
+if (!owned.includes('chess_basic')) {
+  owned.push('chess_basic');
+  localStorage.setItem(STORE_KEY, JSON.stringify(owned));
+}
+// 初始积分200（新用户）
+if (!localStorage.getItem(SCORE_KEY)) {
+  localStorage.setItem(SCORE_KEY, '200');
+}
+
+renderPerms();
+document.getElementById('score-display').textContent = getScore().toLocaleString();
+</script>
+</body>
+</html>

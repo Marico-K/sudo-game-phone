@@ -1221,6 +1221,131 @@ header p {
     gap: 14px;
 }
 
+/* 碎片合成区域样式 */
+.fragment-section {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.fragment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.fragment-icon {
+    font-size: 1.4em;
+}
+
+.fragment-title {
+    color: white;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+.fragment-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.fragment-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.fragment-item.completed {
+    opacity: 0.7;
+}
+
+.fragment-icon-lg {
+    font-size: 2.5em;
+    flex-shrink: 0;
+}
+
+.fragment-info {
+    flex: 1;
+}
+
+.fragment-name {
+    color: #333;
+    font-size: 0.95em;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.fragment-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #666;
+    font-size: 0.85em;
+    font-weight: 600;
+    min-width: 70px;
+    text-align: right;
+}
+
+.fragment-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.fragment-badge.acquired {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+}
+
+.fragment-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.fragment-btn.compose-btn {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: white;
+}
+
+.fragment-btn.compose-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+.fragment-btn.disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
 /* 道具高亮效果 */
 .highlight-item {
     border-color: #ff9f43 !important;

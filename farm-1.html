@@ -1768,6 +1768,14 @@
 
         // 获取随机礼盒奖励
         function getRandomGiftReward(boxType) {
+            const playerData = Storage.getPlayerData();
+            const hasFarmRobot = playerData.items && playerData.items.farm_robot && playerData.items.farm_robot > 0;
+            
+            // 如果已有农场机器人，不再掉落碎片
+            let robotFragmentPool = hasFarmRobot ? [] : [
+                { type: 'robot_fragment', value: 1, name: '农场机器人碎片', icon: '🔧' }
+            ];
+            
             const rewards = {
                 bronze: [
                     { type: 'score', value: 50, name: '积分', icon: '💰' },
@@ -1798,6 +1806,17 @@
                 ]
             };
             
+            // 根据礼盒类型设置碎片数量
+            if (!hasFarmRobot) {
+                const fragmentCounts = { bronze: 1, silver: 3, gold: 5 };
+                rewards[boxType].push({
+                    type: 'robot_fragment',
+                    value: fragmentCounts[boxType],
+                    name: '农场机器人碎片',
+                    icon: '🔧'
+                });
+            }
+            
             const pool = rewards[boxType];
             return pool[Math.floor(Math.random() * pool.length)];
         }
@@ -1813,6 +1832,9 @@
             } else if (reward.type === 'item') {
                 playerData.items = playerData.items || {};
                 playerData.items[reward.value] = (playerData.items[reward.value] || 0) + (reward.count || 1);
+            } else if (reward.type === 'robot_fragment') {
+                playerData.items = playerData.items || {};
+                playerData.items.robot_fragment = (playerData.items.robot_fragment || 0) + reward.value;
             }
             
             Storage.savePlayerData(playerData);
@@ -1836,6 +1858,9 @@
                 descEl.textContent = `恭喜获得 ${reward.value} 体力！`;
             } else if (reward.type === 'item') {
                 descEl.textContent = `恭喜获得 ${reward.name} x${reward.count || 1}！`;
+            } else if (reward.type === 'robot_fragment') {
+                const total = playerData.items.robot_fragment || 0;
+                descEl.textContent = `恭喜获得 ${reward.name} x${reward.value}！\n当前拥有：${total}/500`;
             }
             
             modal.classList.add('show');

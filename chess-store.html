@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>积分商城 - 中国象棋</title>
+<link rel="stylesheet" href="chess-game.css">
+<style>
+body { background: linear-gradient(135deg, #0a0a2e 0%, #1a0050 50%, #0a0a2e 100%); }
+</style>
+</head>
+<body class="store-body">
+
+<div class="store-container">
+  <!-- 顶部标题 -->
+  <div class="store-header">
+    <h1>🏪 积分商城</h1>
+    <p>使用积分解锁游戏权限，享受棋局乐趣</p>
+  </div>
+
+  <!-- 用户积分栏 -->
+  <div class="user-score-bar">
+    <div>
+      <div class="user-score-label">我的积分</div>
+      <div class="user-score-value">🪙 <span id="user-score">0</span></div>
+    </div>
+    <div class="earn-hint">每日签到 / 完成挑战可获得积分</div>
+  </div>
+
+  <!-- 赚积分区域 -->
+  <div class="earn-section">
+    <h2>🎯 赚取积分</h2>
+    <div class="earn-grid">
+      <div class="earn-item">
+        <span class="earn-item-icon">📅</span>
+        <div class="earn-item-title">每日签到</div>
+        <div class="earn-item-reward">+50 积分</div>
+        <button class="btn-earn" id="btn-checkin" onclick="doCheckin()">签到</button>
+      </div>
+      <div class="earn-item">
+        <span class="earn-item-icon">♟️</span>
+        <div class="earn-item-title">对局奖励</div>
+        <div class="earn-item-reward">+20 积分/局</div>
+        <button class="btn-earn available" onclick="doPlayReward()">领取</button>
+      </div>
+      <div class="earn-item">
+        <span class="earn-item-icon">🏆</span>
+        <div class="earn-item-title">首胜奖励</div>
+        <div class="earn-item-reward">+100 积分</div>
+        <button class="btn-earn" id="btn-firstwin" onclick="doFirstWin()">领取</button>
+      </div>
+      <div class="earn-item">
+        <span class="earn-item-icon">🎰</span>
+        <div class="earn-item-title">幸运签</div>
+        <div class="earn-item-reward">随机 10~80 积分</div>
+        <button class="btn-earn" id="btn-lucky" onclick="doLucky()">抽签</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 商品列表 -->
+  <div class="products-grid" id="products-grid"></div>
+
+  <!-- 返回 -->
+  <div class="back-bar">
+    <button class="btn btn-gray" onclick="location.href='chess.html'">返回游戏大厅</button>
+    <button class="btn btn-gray" onclick="location.href='index.html'">返回首页</button>
+  </div>
+</div>
+
+<!-- Toast 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== 数据层 ======
+const STORE_KEY = 'chess_store';
+const SCORE_KEY = 'chess_score';
+const CHECKIN_KEY = 'chess_checkin_date';
+const LUCKY_KEY = 'chess_lucky_date';
+const FIRSTWIN_KEY = 'chess_firstwin';
+const PLAYREWARD_KEY = 'chess_playreward_count';
+
+const PRODUCTS = [
+  {
+    id: 'chess_basic',
+    icon: '♟️',
+    name: '标准对局权限',
+    desc: '解锁人机对战模式，支持基础象棋规则，含悔棋功能',
+    price: 0,
+    featured: false,
+    freeLabel: '免费'
+  },
+  {
+    id: 'chess_pro',
+    icon: '🏆',
+    name: '高级对战权限',
+    desc: '解锁高级AI难度（三档），含棋谱分析与复盘功能',
+    price: 200,
+    featured: true,
+  },
+  {
+    id: 'chess_theme_red',
+    icon: '🔴',
+    name: '经典红木棋盘',
+    desc: '深红色木质棋盘主题皮肤，豪华视觉效果',
+    price: 150,
+  },
+  {
+    id: 'chess_theme_jade',
+    icon: '🟢',
+    name: '翡翠棋盘主题',
+    desc: '清雅翡翠绿色棋盘，配套玉石棋子皮肤',
+    price: 150,
+  },
+  {
+    id: 'chess_hint',
+    icon: '💡',
+    name: '走棋提示功能',
+    desc: '开局建议与关键棋步智能提示，帮助新手快速入门',
+    price: 100,
+  },
+  {
+    id: 'chess_history',
+    icon: '📜',
+    name: '棋谱收藏册',
+    desc: '保存并回放历史棋局，收藏精彩对战记录',
+    price: 120,
+  }
+];
+
+function getScore() { return parseInt(localStorage.getItem(SCORE_KEY) || '200'); }
+function setScore(v) { localStorage.setItem(SCORE_KEY, v); }
+function addScore(v) { setScore(getScore() + v); renderScore(); }
+
+function getOwned() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '["chess_basic"]'); }
+  catch(e) { return ['chess_basic']; }
+}
+
+function setOwned(arr) { localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+function isOwned(id) { return getOwned().includes(id); }
+
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+// ====== 渲染 ======
+function renderScore() {
+  document.getElementById('user-score').textContent = getScore().toLocaleString();
+}
+
+function renderProducts() {
+  const grid = document.getElementById('products-grid');
+  const score = getScore();
+  grid.innerHTML = PRODUCTS.map(p => {
+    const owned = isOwned(p.id);
+    const free = p.price === 0;
+    const canBuy = !owned && score >= p.price;
+
+    let btnClass = owned ? 'owned' : (canBuy || free ? 'available' : 'unaffordable');
+    let btnText = owned ? '✅ 已拥有' : (free ? '免费领取' : `购买 ${p.price} 🪙`);
+    let btnDisabled = owned ? 'disabled' : '';
+
+    return `
+      <div class="product-card ${owned ? 'owned' : ''} ${p.featured ? 'featured' : ''}">
+        ${p.featured ? '<div style="position:absolute;top:10px;right:10px;background:#ffd700;color:#3d1a00;font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:bold;">推荐</div>' : ''}
+        <span class="product-icon">${p.icon}</span>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        ${free ? '<div class="product-price" style="color:#00e080">免费</div>' : `<div class="product-price"><span class="coin-icon">🪙</span>${p.price.toLocaleString()} 积分</div>`}
+        <button class="btn-purchase ${btnClass}" ${btnDisabled}
+          onclick="purchaseProduct('${p.id}', ${p.price}, ${free})">
+          ${btnText}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ====== 购买逻辑 ======
+function purchaseProduct(id, price, free) {
+  if (isOwned(id)) return;
+  const score = getScore();
+
+  if (!free && score < price) {
+    showToast('积分不足，请先赚取更多积分！');
+    return;
+  }
+
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!free) setScore(score - price);
+
+  const owned = getOwned();
+  owned.push(id);
+  setOwned(owned);
+
+  renderScore();
+  renderProducts();
+  showToast(`🎉 已成功获得「${product.name}」！`);
+}
+
+// ====== 赚积分 ======
+function doCheckin() {
+  const today = todayStr();
+  const last = localStorage.getItem(CHECKIN_KEY);
+  if (last === today) { showToast('今日已签到，明天再来！'); return; }
+  localStorage.setItem(CHECKIN_KEY, today);
+  addScore(50);
+  renderProducts();
+  showToast('📅 签到成功！获得 50 积分');
+  updateEarnButtons();
+}
+
+function doPlayReward() {
+  const count = parseInt(localStorage.getItem(PLAYREWARD_KEY) || '0');
+  const dailyKey = 'chess_playreward_date';
+  const today = todayStr();
+  const lastDate = localStorage.getItem(dailyKey);
+
+  let todayCount = 0;
+  if (lastDate === today) {
+    todayCount = count;
+  } else {
+    localStorage.setItem(dailyKey, today);
+    localStorage.setItem(PLAYREWARD_KEY, '0');
+  }
+
+  if (todayCount >= 5) { showToast('今日对局奖励已领满（5次）'); return; }
+  localStorage.setItem(PLAYREWARD_KEY, todayCount + 1);
+  addScore(20);
+  renderProducts();
+  showToast('♟️ 对局奖励 +20 积分');
+}
+
+function doFirstWin() {
+  if (localStorage.getItem(FIRSTWIN_KEY) === '1') {
+    showToast('首胜奖励已领取过了！');
+    return;
+  }
+  localStorage.setItem(FIRSTWIN_KEY, '1');
+  addScore(100);
+  renderProducts();
+  showToast('🏆 首胜奖励 +100 积分！');
+  updateEarnButtons();
+}
+
+function doLucky() {
+  const today = todayStr();
+  const last = localStorage.getItem(LUCKY_KEY);
+  if (last === today) { showToast('今日幸运签已抽取，明天再来！'); return; }
+  localStorage.setItem(LUCKY_KEY, today);
+  const reward = Math.floor(Math.random() * 71) + 10;
+  addScore(reward);
+  renderProducts();
+  showToast(`🎰 恭喜！幸运签获得 ${reward} 积分！`);
+  updateEarnButtons();
+}
+
+function updateEarnButtons() {
+  const today = todayStr();
+  const checkinBtn = document.getElementById('btn-checkin');
+  if (localStorage.getItem(CHECKIN_KEY) === today) {
+    checkinBtn.className = 'btn-earn done';
+    checkinBtn.textContent = '已签到';
+    checkinBtn.disabled = true;
+  }
+  const luckyBtn = document.getElementById('btn-lucky');
+  if (localStorage.getItem(LUCKY_KEY) === today) {
+    luckyBtn.className = 'btn-earn done';
+    luckyBtn.textContent = '已抽签';
+    luckyBtn.disabled = true;
+  }
+  const firstwinBtn = document.getElementById('btn-firstwin');
+  if (localStorage.getItem(FIRSTWIN_KEY) === '1') {
+    firstwinBtn.className = 'btn-earn done';
+    firstwinBtn.textContent = '已领取';
+    firstwinBtn.disabled = true;
+  }
+}
+
+// ====== Toast ======
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ====== 初始化 ======
+renderScore();
+renderProducts();
+updateEarnButtons();
+
+// 确保标准对局权限默认解锁
+const owned = getOwned();
+if (!owned.includes('chess_basic')) {
+  owned.push('chess_basic');
+  setOwned(owned);
+  renderProducts();
+}
+</script>
+</body>
+</html>
