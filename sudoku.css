@@ -1224,39 +1224,93 @@ header p {
 /* 碎片合成区域样式 */
 .fragment-section {
     grid-column: 1 / -1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: white;
     border-radius: 16px;
-    padding: 16px;
     margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
 
 .fragment-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.fragment-header:active {
+    opacity: 0.9;
+}
+
+.fragment-header h3 {
+    margin: 0;
+    font-size: 1em;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .fragment-icon {
     font-size: 1.4em;
 }
 
-.fragment-title {
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fragment-total {
     color: white;
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 0.85em;
+    background: rgba(255,255,255,0.2);
+    padding: 3px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+#fragmentExpandIcon {
+    font-size: 0.65em;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.fragment-header.expanded #fragmentExpandIcon {
+    transform: rotate(180deg);
 }
 
 .fragment-content {
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    padding: 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out;
+}
+
+.fragment-content.expanded {
+    max-height: 600px;
+    padding: 8px 16px;
 }
 
 .fragment-item {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    transition: background 0.2s;
+}
+
+.fragment-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.fragment-item:last-child {
+    border-bottom: none;
 }
 
 .fragment-item.completed {
@@ -1270,6 +1324,17 @@ header p {
 
 .fragment-info {
     flex: 1;
+}
+
+.fragment-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.fragment-cost {
+    color: #666;
+    font-size: 0.85em;
 }
 
 .fragment-name {
@@ -6125,6 +6190,20 @@ header p {
     padding: 12px;
     margin-bottom: 10px;
     gap: 12px;
+}
+
+.backpack-item.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.backpack-item.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.backpack-item.clickable:active {
+    transform: translateY(0);
 }
 
 .backpack-item-icon {

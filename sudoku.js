@@ -3341,44 +3341,6 @@ const itemConfig = window.itemConfig = [
         type: 'consumable',
         effect: 'makeup_checkin'
     },
-    {
-        id: 'auto_draft',
-        name: '一键草稿',
-        description: '自动标记所有候选数字',
-        price: 100,
-        icon: '📝',
-        type: 'permanent',
-        effect: 'auto_draft'
-    },
-    {
-        id: 'auto_solve',
-        name: '一键答题',
-        description: '自动填写所有唯一候选数的格子',
-        price: 2000,
-        icon: '🤖',
-        type: 'permanent',
-        effect: 'auto_solve'
-    },
-    // 农场经营权
-    {
-        id: 'farm_right',
-        name: '农场经营权',
-        description: '开通数独农场功能，解锁农场经营玩法',
-        price: 500,
-        icon: '🌾',
-        type: 'permanent',
-        effect: 'farm_right'
-    },
-    {
-        id: 'farm_robot',
-        name: '农场机器人',
-        description: '一键给所有作物浇水、施肥，给所有动物喂养、加餐（保持每日限制）',
-        price: 30000,
-        icon: '🤖',
-        type: 'permanent',
-        effect: 'farm_robot',
-        requires: 'farm_right'
-    },
     // 农场道具
     {
         id: 'fertilizer',
@@ -3524,26 +3486,6 @@ const itemConfig = window.itemConfig = [
         requires: 'farm_right'
     },
     // 鱼塘道具
-    {
-        id: 'fishing_rod',
-        name: '钓竿',
-        description: '解锁鱼塘功能，可在鱼塘进行钓鱼',
-        price: 1000,
-        icon: '🎣',
-        type: 'permanent',
-        effect: 'fishing_rod',
-        requires: 'farm_right'
-    },
-    {
-        id: 'boat',
-        name: '船',
-        description: '解锁海洋功能，可在浅海和深海进行钓鱼',
-        price: 2000,
-        icon: '🚢',
-        type: 'permanent',
-        effect: 'boat',
-        requires: 'farm_right'
-    },
     {
         id: 'bait',
         name: '鱼饵',

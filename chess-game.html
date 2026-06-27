@@ -9,14 +9,14 @@
 :root { --cell: 56; }
 * { box-sizing: border-box; margin:0; padding:0; }
 body {
-  font-family: 'KaiTi','STKaiti','楷体',serif;
-  background: linear-gradient(135deg, #1a0800 0%, #3d1a00 50%, #1a0800 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 20%, #f5f7fa 50%, #e8ecf0 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 14px 10px;
-  color: #fff;
+  color: #333;
 }
 
 /* ========== 顶栏 ========== */
@@ -24,25 +24,26 @@ body {
   width: 100%; max-width: 740px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 18px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,200,80,0.25);
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(102,126,234,0.2);
   border-radius: 10px;
   margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-.top-title { font-size:1.5rem; color:#ffd700; letter-spacing:3px; text-shadow:0 0 10px rgba(255,200,0,0.5); }
+.top-title { font-size:1.4rem; color:#667eea; font-weight:600; letter-spacing:3px; }
 .top-right { display:flex; align-items:center; gap:10px; }
 .score-badge {
-  background: linear-gradient(135deg,#8b4513,#c07030);
-  border:2px solid #ffd700; border-radius:16px;
-  padding:5px 14px; font-size:0.9rem; color:#ffd700;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  border:1px solid rgba(102,126,234,0.3); border-radius:16px;
+  padding:5px 14px; font-size:0.85rem; color:#fff; font-weight:600;
 }
 .btn-sm {
   padding:6px 14px; border-radius:6px; border:none; cursor:pointer;
-  font-family:'KaiTi','楷体',serif; font-size:0.82rem; font-weight:bold;
-  background:rgba(255,255,255,0.12); color:#ddd;
+  font-size:0.82rem; font-weight:600;
+  background:#f0f0f0; color:#666; border:1px solid #ddd;
   transition:all 0.2s;
 }
-.btn-sm:hover { background:rgba(255,255,255,0.22); }
+.btn-sm:hover { background:#e8e8e8; }
 
 /* ========== 主体 ========== */
 .main-area {
@@ -55,111 +56,113 @@ body {
   position:relative;
   background:#f0c060;
   border:5px solid #8b4513;
-  border-radius:4px;
-  box-shadow:0 6px 24px rgba(0,0,0,0.55), inset 0 0 16px rgba(0,0,0,0.06);
+  border-radius:6px;
+  box-shadow:0 6px 24px rgba(0,0,0,0.2), inset 0 0 16px rgba(0,0,0,0.05);
   flex-shrink:0;
   user-select:none;
   -webkit-user-select:none;
 }
 
 /* 将军闪烁 */
-@keyframes checkFlash { 0%,100%{box-shadow:0 6px 24px rgba(0,0,0,0.55)} 50%{box-shadow:0 6px 24px rgba(255,50,0,0.85),0 0 36px rgba(255,50,0,0.45)} }
+@keyframes checkFlash { 0%,100%{box-shadow:0 6px 24px rgba(0,0,0,0.2)} 50%{box-shadow:0 6px 24px rgba(255,50,0,0.6),0 0 36px rgba(255,50,0,0.3)} }
 .board-box.in-check { animation:checkFlash 0.45s ease-in-out 3; }
 
 /* 结束遮罩 */
 .overlay {
   display:none; position:absolute; inset:0;
-  background:rgba(0,0,0,0.78); border-radius:4px;
+  background:rgba(0,0,0,0.5); border-radius:6px;
   flex-direction:column; align-items:center; justify-content:center;
   z-index:10;
 }
 .overlay.show { display:flex; }
 .ov-box {
   text-align:center; padding:28px 36px;
-  background:linear-gradient(135deg,rgba(20,8,0,0.96),rgba(50,16,0,0.96));
-  border:2px solid #ffd700; border-radius:14px;
-  box-shadow:0 0 36px rgba(255,200,0,0.3);
+  background:#ffffff;
+  border-radius:16px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.15);
 }
-.ov-title { font-size:1.9rem; color:#ffd700; letter-spacing:3px; margin-bottom:8px; }
-.ov-sub { font-size:0.95rem; color:#ddd; margin-bottom:18px; }
+.ov-title { font-size:1.6rem; color:#667eea; font-weight:600; letter-spacing:2px; margin-bottom:8px; }
+.ov-sub { font-size:0.9rem; color:#666; margin-bottom:18px; }
 .ov-btns { display:flex; gap:10px; justify-content:center; }
 
 /* 侧边栏 */
 .side { flex:1; min-width:150px; display:flex; flex-direction:column; gap:10px; }
 .card {
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,200,80,0.2);
+  background:rgba(255,255,255,0.9);
+  border:1px solid rgba(102,126,234,0.15);
   border-radius:10px; padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
 }
 .card h3 {
-  color:#ffd700; font-size:0.9rem; margin-bottom:8px;
-  border-bottom:1px solid rgba(255,200,80,0.15); padding-bottom:5px;
+  color:#667eea; font-size:0.9rem; font-weight:600; margin-bottom:8px;
+  border-bottom:1px solid rgba(102,126,234,0.15); padding-bottom:5px;
 }
 
 /* 状态 */
-.st-row { font-size:0.88rem; color:#c0b090; line-height:2; }
-.turn-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px; border:2px solid rgba(255,255,255,0.4); vertical-align:middle; }
+.st-row { font-size:0.85rem; color:#555; line-height:2; }
+.turn-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px; border:2px solid rgba(0,0,0,0.2); vertical-align:middle; }
 .turn-dot.red { background:#cc2200; } .turn-dot.black { background:#1a1a1a; }
-.check-warn { color:#ff5555; margin-top:3px; display:none; }
+.check-warn { color:#ef4444; margin-top:3px; display:none; font-weight:600; }
 
 /* 难度 */
 .diff-row { display:flex; gap:5px; }
 .diff-btn {
-  flex:1; padding:6px 4px; border-radius:5px; border:1px solid rgba(255,200,80,0.25);
-  background:rgba(255,255,255,0.04); color:#b0a080; cursor:pointer;
-  font-family:'KaiTi','楷体',serif; font-size:0.74rem; transition:all 0.2s;
+  flex:1; padding:6px 4px; border-radius:5px; border:1px solid rgba(102,126,234,0.2);
+  background:rgba(102,126,234,0.05); color:#666; cursor:pointer;
+  font-size:0.74rem; font-weight:600; transition:all 0.2s;
 }
-.diff-btn.on { background:rgba(255,200,0,0.14); border-color:#ffd700; color:#ffd700; }
-.diff-lock { font-size:0.7rem; color:#806080; margin-top:4px; display:none; }
-.diff-lock a { color:#a060ff; }
+.diff-btn.on { background:rgba(102,126,234,0.15); border-color:#667eea; color:#667eea; }
+.diff-lock { font-size:0.7rem; color:#999; margin-top:4px; display:none; }
+.diff-lock a { color:#667eea; }
 
 /* 按钮 */
 .act-btns { display:flex; flex-direction:column; gap:7px; }
 .act-btns button {
   width:100%; padding:9px; border-radius:7px; border:none; cursor:pointer;
-  font-family:'KaiTi','楷体',serif; font-size:0.85rem; font-weight:bold;
+  font-size:0.85rem; font-weight:600;
   transition:all 0.2s;
 }
-.btn-undo { background:rgba(255,255,255,0.1); color:#ccc; }
-.btn-hint { background:rgba(255,255,255,0.1); color:#ccc; }
-.btn-restart { background:linear-gradient(135deg,#8b1000,#cc2200); color:#fff; }
-.act-btns button:hover { transform:translateY(-2px); }
+.btn-undo { background:#f0f0f0; color:#666; border:1px solid #ddd; }
+.btn-hint { background:#f0f0f0; color:#666; border:1px solid #ddd; }
+.btn-restart { background:linear-gradient(135deg,#f5576c,#f093fb); color:#fff; }
+.act-btns button:hover { transform:translateY(-2px); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
 
 /* 棋谱 */
-.move-log { max-height:190px; overflow-y:auto; font-size:0.78rem; color:#a09070; line-height:1.9; }
+.move-log { max-height:190px; overflow-y:auto; font-size:0.78rem; color:#666; line-height:1.9; }
 .move-log::-webkit-scrollbar { width:3px; }
-.move-log::-webkit-scrollbar-thumb { background:rgba(255,200,80,0.25); border-radius:2px; }
-.mv-red { color:#ff8866; } .mv-black { color:#88bbee; }
+.move-log::-webkit-scrollbar-thumb { background:rgba(102,126,234,0.3); border-radius:2px; }
+.mv-red { color:#cc2200; } .mv-black { color:#333; }
 
 /* Toast */
 .toast {
   position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px);
-  background:rgba(16,8,0,0.95); border:1px solid #ffd700;
-  color:#ffd700; padding:11px 26px; border-radius:28px;
-  font-size:0.9rem; letter-spacing:1px; z-index:1000;
+  background:rgba(102,126,234,0.95); color:#fff;
+  padding:11px 26px; border-radius:28px;
+  font-size:0.9rem; z-index:1000;
   transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
   pointer-events:none;
+  box-shadow:0 4px 12px rgba(102,126,234,0.4);
 }
 .toast.show { transform:translateX(-50%) translateY(0); }
 
 /* 权限弹窗 */
 .lock-modal {
   display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.85); z-index:200;
+  background:rgba(0,0,0,0.5); z-index:200;
   align-items:center; justify-content:center;
 }
 .lock-modal.show { display:flex; }
 .lock-box {
-  background:linear-gradient(135deg,#1a0a30,#2a1050);
-  border:2px solid #8030ff; border-radius:16px;
+  background:#ffffff;
+  border-radius:16px;
   padding:32px 36px; text-align:center; max-width:340px; width:90%;
-  box-shadow:0 0 50px rgba(120,50,200,0.35);
+  box-shadow:0 10px 40px rgba(0,0,0,0.15);
 }
-.lock-box h2 { color:#e0c0ff; font-size:1.3rem; margin-bottom:8px; }
-.lock-box p { color:#9080b0; font-size:0.85rem; margin-bottom:20px; }
+.lock-box h2 { color:#667eea; font-size:1.2rem; font-weight:600; margin-bottom:8px; }
+.lock-box p { color:#666; font-size:0.85rem; margin-bottom:20px; }
 .lock-box button {
   padding:9px 22px; border-radius:7px; border:none; cursor:pointer;
-  font-family:'KaiTi','楷体',serif; font-size:0.9rem; font-weight:bold;
+  font-size:0.9rem; font-weight:600;
   margin:0 6px; transition:all 0.2s;
 }
 
@@ -534,6 +537,9 @@ function drawBoard(){
 }
 
 function drawPiece(r,c,p,sel,capHint){
+  const isAnimating = animPiece && animPiece.from[0]===r && animPiece.from[1]===c;
+  if(isAnimating) return;
+  
   const[x,y]=xy(r,c), rad=CL*0.41, red=p>0;
   ctx.save();ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=6;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
   const g=ctx.createRadialGradient(x-rad*0.25,y-rad*0.25,rad*0.1,x,y,rad);
@@ -545,6 +551,35 @@ function drawPiece(r,c,p,sel,capHint){
   ctx.beginPath();ctx.arc(x,y,rad*0.8,0,Math.PI*2);ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;ctx.stroke();
   ctx.save();ctx.font=`bold ${Math.floor(rad*1.2)}px KaiTi,楷体,serif`;ctx.fillStyle=red?'#cc1100':'#111';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(PC_NAME[p]||'?',x,y+1);ctx.restore();
+}
+
+function drawAnimPiece(){
+  if(!animPiece) return;
+  
+  const p = animPiece.piece;
+  const x = animPiece.curX;
+  const y = animPiece.curY;
+  const rad = CL * 0.41;
+  const red = p > 0;
+  
+  ctx.save();
+  
+  const scale = 1 + Math.sin(animPiece.progress * Math.PI) * 0.15;
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  
+  ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=8;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
+  const g=ctx.createRadialGradient(-rad*0.25,-rad*0.25,rad*0.1,0,0,rad);
+  g.addColorStop(0,'#f8eed8');g.addColorStop(1,'#d4a96a');
+  ctx.beginPath();ctx.arc(0,0,rad,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  
+  ctx.beginPath();ctx.arc(0,0,rad,0,Math.PI*2);ctx.strokeStyle=red?'#8b1000':'#1a1a1a';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,rad*0.8,0,Math.PI*2);ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;ctx.stroke();
+  
+  ctx.font=`bold ${Math.floor(rad*1.2)}px KaiTi,楷体,serif`;ctx.fillStyle=red?'#cc1100':'#111';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(PC_NAME[p]||'?',0,1);
+  
+  ctx.restore();
 }
 
 function drawMoveDot(r,c){
@@ -567,17 +602,19 @@ function render(){
     drawPiece(r,c,p,sel,ch&&!sel&&!!p);
   }
   for(const [vr,vc] of validList) if(board[vr][vc]) drawCapRing(vr,vc);
+  drawAnimPiece();
 }
 
 /* ==================== 游戏状态 ==================== */
 let board, selRC, validList, myTurn, history, brdHistory;
 let diff=0, gameOver=false, aiThinking=false, hintOn=false;
+let animPiece = null;
 
 function initGame(){
   board=newBoard(); selRC=null; validList=[]; myTurn=true; history=[]; brdHistory=[cloneBrd(board)];
-  gameOver=false; aiThinking=false; hintOn=false;
+  gameOver=false; aiThinking=false; hintOn=false; animPiece=null;
   document.getElementById('overlay').classList.remove('show');
-  document.getElementById('moveLog').innerHTML='<span style="color:#584838">游戏开始…</span>';
+  document.getElementById('moveLog').innerHTML='<span style="color:#888">游戏开始…</span>';
   document.getElementById('btnHint').textContent='走棋提示';
   document.getElementById('btnHint').style.background='';
   updateDiffUI(); render(); updateStatusUI();
@@ -613,22 +650,72 @@ function recordMove(fr,fc,tr,tc,p,cap){
 
 function doMove(fr,fc,tr,tc){
   const p=board[fr][fc], cap=board[tr][tc];
+  
+  const startPos = xy(fr,fc);
+  const endPos = xy(tr,tc);
+  
+  animPiece = {
+    piece: p,
+    from: [fr,fc],
+    to: [tr,tc],
+    startX: startPos[0],
+    startY: startPos[1],
+    endX: endPos[0],
+    endY: endPos[1],
+    progress: 0,
+    captured: cap
+  };
+  
   brdHistory.push(cloneBrd(board));
   board[tr][tc]=p; board[fr][fc]=0;
   history.push({fr,fc,tr,tc,p,cap});
   recordMove(fr,fc,tr,tc,p,cap);
   if(cap){ const v=Math.abs(cap); const b=v===5?20:v===4?10:v===6?8:2; if(b) addScore(b); }
   myTurn=!myTurn; selRC=null; validList=[];
-  render(); updateStatusUI();
-  if(!gameOver&&isCheckmate(board,myTurn)){
-    gameOver=true;
-    const win=!myTurn;
-    document.getElementById('ovTitle').textContent=win?'红方胜':'黑方胜';
-    document.getElementById('ovSub').textContent=win?'你赢了！恭喜！':'AI获胜！';
-    document.getElementById('overlay').classList.add('show');
-    if(win){ if(!localStorage.getItem('chess_firstwin')){localStorage.setItem('chess_firstwin','1');addScore(100);toast('🏆 首胜达成！+100 积分！');} }
-    addScore(20);
+  
+  animateMove();
+}
+
+function animateMove(){
+  if(!animPiece) return;
+  
+  const duration = 250;
+  const startTime = performance.now();
+  
+  function animate(currentTime){
+    const elapsed = currentTime - startTime;
+    animPiece.progress = Math.min(elapsed / duration, 1);
+    
+    const ease = 1 - Math.pow(1 - animPiece.progress, 3);
+    
+    animPiece.curX = animPiece.startX + (animPiece.endX - animPiece.startX) * ease;
+    animPiece.curY = animPiece.startY + (animPiece.endY - animPiece.startY) * ease;
+    
+    if(animPiece.progress < 1){
+      render();
+      requestAnimationFrame(animate);
+    } else {
+      animPiece = null;
+      render();
+      updateStatusUI();
+      if(!gameOver&&isCheckmate(board,myTurn)){
+      gameOver=true;
+      recordGamePlayed();
+      const win=!myTurn;
+      document.getElementById('ovTitle').textContent=win?'红方胜':'黑方胜';
+      document.getElementById('ovSub').textContent=win?'你赢了！恭喜！':'AI获胜！';
+      document.getElementById('overlay').classList.add('show');
+      if(win){ if(!localStorage.getItem('chess_firstwin')){localStorage.setItem('chess_firstwin','1');addScore(100);toast('🏆 首胜达成！+100 积分！');} }
+      addScore(20);
+      const dd=getDailyData();
+      if(dd.gamesPlayed>dd.rewardsClaimed){
+        toast(`🎁 对局${dd.gamesPlayed}局完成！可领取${dd.gamesPlayed-dd.rewardsClaimed}个奖励！`);
+      }
+    }
+    }
   }
+  
+  requestAnimationFrame(animate);
 }
 
 function doAI(){
@@ -715,11 +802,31 @@ function updateDiffUI(){
 }
 
 /* ==================== 权限 & 积分 ==================== */
-const SK='chess_store', SCK='chess_score';
+const SK='chess_store', SCK='chess_score', CDK='chess_daily';
 function getOwned(){try{return JSON.parse(localStorage.getItem(SK)||'["chess_basic"]')}catch(e){return['chess_basic']}}
 function isOwned(id){return getOwned().includes(id)}
 function gs(){return parseInt(localStorage.getItem(SCK)||'200')}
 function addScore(v){localStorage.setItem(SCK,gs()+v);document.getElementById('hdrScore').textContent=gs().toLocaleString();}
+
+/* ==================== 每日对局奖励 ==================== */
+function getDailyData(){
+  try{
+    const d=JSON.parse(localStorage.getItem(CDK)||'{}');
+    const today=new Date().toDateString();
+    if(d.date!==today){
+      return {date:today, gamesPlayed:0, rewardsClaimed:0};
+    }
+    return d;
+  }catch(e){
+    return {date:new Date().toDateString(), gamesPlayed:0, rewardsClaimed:0};
+  }
+}
+function saveDailyData(d){localStorage.setItem(CDK,JSON.stringify(d));}
+function recordGamePlayed(){
+  const d=getDailyData();
+  d.gamesPlayed++;
+  saveDailyData(d);
+}
 
 /* Toast */
 let toastTmr;

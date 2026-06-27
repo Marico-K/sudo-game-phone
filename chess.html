@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="chess-game.css">
 <style>
 body {
-  background: linear-gradient(135deg, #1a0800 0%, #3d1a00 50%, #1a0800 100%);
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 20%, #f5f7fa 50%, #e8ecf0 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: 'KaiTi', 'STKaiti', '楷体', serif;
-  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
 .lobby-container {
@@ -25,57 +25,48 @@ body {
 }
 
 .lobby-title {
-  font-size: 3.5rem;
-  color: #ffd700;
-  text-shadow: 0 0 30px rgba(255,200,0,0.7), 0 4px 12px rgba(0,0,0,0.5);
-  letter-spacing: 8px;
+  font-size: 2.5rem;
+  color: #667eea;
+  text-shadow: 0 2px 8px rgba(102,126,234,0.3);
+  letter-spacing: 6px;
   margin-bottom: 8px;
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 20px rgba(255,200,0,0.5), 0 4px 12px rgba(0,0,0,0.5); }
-  to   { text-shadow: 0 0 40px rgba(255,200,0,0.9), 0 4px 12px rgba(0,0,0,0.5); }
+  font-weight: bold;
 }
 
 .lobby-subtitle {
-  color: #c0a070;
-  font-size: 1rem;
-  letter-spacing: 4px;
-  margin-bottom: 50px;
+  color: #764ba2;
+  font-size: 0.95rem;
+  letter-spacing: 3px;
+  margin-bottom: 30px;
 }
 
-/* 棋盘装饰 */
 .chess-deco {
-  font-size: 5rem;
-  margin-bottom: 30px;
-  filter: drop-shadow(0 0 20px rgba(255,200,0,0.4));
+  font-size: 4rem;
+  margin-bottom: 20px;
   animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
   0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-10px); }
+  50%      { transform: translateY(-8px); }
 }
 
-/* 菜单按钮 */
 .lobby-menu {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 30px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .menu-btn {
   width: 100%;
-  padding: 16px 24px;
-  border-radius: 12px;
+  padding: 14px 20px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  font-family: 'KaiTi', '楷体', serif;
-  font-size: 1.2rem;
-  font-weight: bold;
-  letter-spacing: 3px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 2px;
   transition: all 0.25s;
   display: flex;
   align-items: center;
@@ -89,53 +80,55 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
   transform: translateX(-100%);
   transition: transform 0.4s;
 }
 
 .menu-btn:hover::after { transform: translateX(100%); }
 
-.menu-btn:hover { transform: translateY(-3px); }
+.menu-btn:hover { transform: translateY(-2px); }
 
 .btn-play {
-  background: linear-gradient(135deg, #8b1000, #cc2200, #ff4400);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  box-shadow: 0 6px 20px rgba(200,30,0,0.5);
+  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
 }
 
-.btn-play:hover { box-shadow: 0 10px 30px rgba(200,30,0,0.7); }
+.btn-play:hover { box-shadow: 0 6px 20px rgba(102,126,234,0.6); }
 
 .btn-store {
-  background: linear-gradient(135deg, #5010a0, #8030ff);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: #fff;
-  box-shadow: 0 6px 20px rgba(100,30,200,0.5);
+  box-shadow: 0 4px 15px rgba(245,87,108,0.4);
 }
 
-.btn-store:hover { box-shadow: 0 10px 30px rgba(100,30,200,0.7); }
+.btn-store:hover { box-shadow: 0 6px 20px rgba(245,87,108,0.6); }
 
 .btn-back {
-  background: rgba(255,255,255,0.08);
-  color: #c0a070;
-  border: 1px solid rgba(200,160,80,0.3);
+  background: #ffffff;
+  color: #666;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.btn-back:hover { background: rgba(255,255,255,0.14); }
+.btn-back:hover { background: #f8f9fa; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 
-/* 权限状态卡 */
 .perm-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,200,80,0.2);
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(102,126,234,0.2);
   border-radius: 12px;
   padding: 16px 20px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   text-align: left;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .perm-title {
-  color: #ffd700;
+  color: #667eea;
   font-size: 0.9rem;
-  letter-spacing: 2px;
+  font-weight: 600;
+  letter-spacing: 1px;
   margin-bottom: 10px;
 }
 
@@ -144,33 +137,140 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 0.88rem;
-  color: #c0b090;
+  color: #555;
   padding: 4px 0;
 }
 
-.perm-check { color: #00e080; }
-.perm-lock  { color: #ff6060; }
+.perm-check { color: #10b981; }
+.perm-lock  { color: #ef4444; }
 
-/* 积分显示 */
+.reward-card {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(102,126,234,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  text-align: left;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.reward-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #667eea;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.reward-stats {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.reward-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(102,126,234,0.05);
+  transition: all 0.2s;
+}
+
+.reward-item:hover {
+  background: rgba(102,126,234,0.1);
+}
+
+.reward-item.claimed {
+  background: rgba(16,185,129,0.1);
+}
+
+.reward-item.locked {
+  opacity: 0.5;
+}
+
+.reward-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reward-icon {
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,215,0,0.2);
+  border-radius: 50%;
+}
+
+.reward-desc {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.reward-claim-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.reward-claim-btn.claimable {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+}
+
+.reward-claim-btn.claimable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(245,158,11,0.4);
+}
+
+.reward-claim-btn.claimed {
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+}
+
+.reward-claim-btn.locked {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
 .score-show {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,200,0,0.1);
-  border: 1px solid rgba(255,200,0,0.3);
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(102,126,234,0.3);
   border-radius: 20px;
   padding: 8px 20px;
-  color: #ffd700;
+  color: #667eea;
   font-size: 1rem;
-  margin-bottom: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* 锁定遮罩弹窗 */
 .modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.5);
   z-index: 100;
   align-items: center;
   justify-content: center;
@@ -179,19 +279,18 @@ body {
 .modal-overlay.show { display: flex; }
 
 .modal-box {
-  background: linear-gradient(135deg, #1a0a30, #2a1050);
-  border: 2px solid #8030ff;
-  border-radius: 20px;
-  padding: 36px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px 36px;
   text-align: center;
   max-width: 380px;
   width: 90%;
-  box-shadow: 0 0 60px rgba(120,50,200,0.4);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
 }
 
-.modal-icon { font-size: 3.5rem; margin-bottom: 16px; }
-.modal-title { font-size: 1.5rem; color: #e0c0ff; margin-bottom: 10px; letter-spacing: 2px; }
-.modal-desc { font-size: 0.9rem; color: #9080b0; line-height: 1.7; margin-bottom: 24px; }
+.modal-icon { font-size: 3rem; margin-bottom: 14px; }
+.modal-title { font-size: 1.3rem; color: #333; margin-bottom: 10px; font-weight: 600; }
+.modal-desc { font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 22px; }
 
 .modal-buttons { display: flex; gap: 12px; justify-content: center; }
 
@@ -200,26 +299,25 @@ body {
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  font-family: 'KaiTi', '楷体', serif;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 600;
   transition: all 0.2s;
 }
 
 .modal-btn-go {
-  background: linear-gradient(135deg, #5010a0, #8030ff);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
 }
 
-.modal-btn-go:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(100,30,200,0.5); }
+.modal-btn-go:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
 
 .modal-btn-cancel {
-  background: rgba(255,255,255,0.1);
-  color: #a090c0;
-  border: 1px solid rgba(255,255,255,0.2);
+  background: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
 }
 
-.modal-btn-cancel:hover { background: rgba(255,255,255,0.18); }
+.modal-btn-cancel:hover { background: #e8e8e8; }
 </style>
 </head>
 <body>
@@ -236,6 +334,15 @@ body {
   <div class="perm-card">
     <div class="perm-title">🔐 我的游戏权限</div>
     <div id="perm-list"></div>
+  </div>
+
+  <!-- 每日对局奖励 -->
+  <div class="reward-card">
+    <div class="reward-title">
+      <span>🎁 每日对局奖励</span>
+      <span class="reward-stats" id="rewardStats"></span>
+    </div>
+    <div class="reward-list" id="rewardList"></div>
   </div>
 
   <!-- 菜单 -->
@@ -273,6 +380,7 @@ body {
 <script>
 const STORE_KEY  = 'chess_store';
 const SCORE_KEY  = 'chess_score';
+const DAILY_KEY  = 'chess_daily';
 
 function getScore() { return parseInt(localStorage.getItem(SCORE_KEY) || '200'); }
 
@@ -282,6 +390,87 @@ function getOwned() {
 }
 
 function isOwned(id) { return getOwned().includes(id); }
+
+/* ==================== 每日对局奖励 ==================== */
+const REWARDS = [
+  { games: 1, reward: 20, icon: '1️⃣' },
+  { games: 2, reward: 30, icon: '2️⃣' },
+  { games: 3, reward: 40, icon: '3️⃣' },
+  { games: 4, reward: 50, icon: '4️⃣' },
+  { games: 5, reward: 80, icon: '5️⃣' },
+];
+
+function getDailyData(){
+  try{
+    const d=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+    const today=new Date().toDateString();
+    if(d.date!==today){
+      return {date:today, gamesPlayed:0, rewardsClaimed:0};
+    }
+    return d;
+  }catch(e){
+    return {date:new Date().toDateString(), gamesPlayed:0, rewardsClaimed:0};
+  }
+}
+
+function saveDailyData(d){localStorage.setItem(DAILY_KEY,JSON.stringify(d));}
+
+function addChessScore(v){
+  const cur=parseInt(localStorage.getItem(SCORE_KEY)||'200');
+  localStorage.setItem(SCORE_KEY,cur+v);
+  document.getElementById('score-display').textContent=(cur+v).toLocaleString();
+}
+
+function addMainScore(v){
+  if(window.Storage && window.Storage.getPlayerData){
+    const data=Storage.getPlayerData();
+    data.availableScore=(data.availableScore||0)+v;
+    Storage.savePlayerData(data);
+  }
+}
+
+function claimReward(index){
+  const dd=getDailyData();
+  const reward=REWARDS[index];
+  
+  if(index>=dd.rewardsClaimed && dd.gamesPlayed>=reward.games){
+    dd.rewardsClaimed++;
+    saveDailyData(dd);
+    addChessScore(reward.reward);
+    addMainScore(reward.reward);
+    renderRewards();
+    toast(`🎁 领取成功！获得${reward.reward}积分！`);
+  }
+}
+
+function renderRewards(){
+  const dd=getDailyData();
+  const statsEl=document.getElementById('rewardStats');
+  const listEl=document.getElementById('rewardList');
+  
+  statsEl.textContent=`${dd.gamesPlayed}局 / ${dd.rewardsClaimed}/5已领`;
+  
+  listEl.innerHTML=REWARDS.map((r,i)=>{
+    const isClaimed=i<dd.rewardsClaimed;
+    const isClaimable=!isClaimed && dd.gamesPlayed>=r.games;
+    const isLocked=!isClaimed && !isClaimable;
+    
+    return `<div class="reward-item ${isClaimed?'claimed':(isLocked?'locked':'')}">
+      <div class="reward-info">
+        <div class="reward-icon">${isClaimed?'✅':r.icon}</div>
+        <div class="reward-desc">
+          ${isClaimed?'已领取':'对局'+r.games+'局'}
+          <span style="color:#667eea;font-weight:600"> +${r.reward}积分</span>
+        </div>
+      </div>
+      <button class="reward-claim-btn ${isClaimed?'claimed':(isClaimable?'claimable':'locked')}"
+        onclick="${isClaimable?'claimReward('+i+')':''}"
+        ${!isClaimable?'disabled':''}>
+        ${isClaimed?'已领取':(isClaimable?'领取':'未达成')}
+      </button>
+    </div>`;
+  }).join('');
+}
 
 const PERM_INFO = [
   { id: 'chess_basic',     label: '标准对局权限' },
@@ -329,6 +518,7 @@ if (!localStorage.getItem(SCORE_KEY)) {
 }
 
 renderPerms();
+renderRewards();
 document.getElementById('score-display').textContent = getScore().toLocaleString();
 </script>
 </body>

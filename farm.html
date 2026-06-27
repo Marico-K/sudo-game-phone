@@ -589,28 +589,6 @@
             pointer-events: none;
         }
 
-        .celebration-emoji {
-            position: absolute;
-            font-size: 32px;
-            animation: celebrate 1.5s ease-out forwards;
-            opacity: 0;
-        }
-
-        @keyframes celebrate {
-            0% {
-                transform: translate(0, 0) rotate(0deg) scale(0);
-                opacity: 0;
-            }
-            20% {
-                opacity: 1;
-                transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) rotate(calc(var(--tr) * 0.3)) scale(1);
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) rotate(var(--tr)) scale(0.5);
-                opacity: 0;
-            }
-        }
-
         .item-icon.small { font-size: 32px; }
         .item-icon.medium { font-size: 40px; }
         .item-icon.large { font-size: 48px; }
@@ -883,30 +861,6 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
-        .robot-btn {
-            position: fixed;
-            bottom: 70px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 10px 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            font-weight: 600;
-            font-size: 0.9em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 100;
-            border: none;
-            color: white;
-        }
-
-        .robot-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-        }
-
         .empty-hint {
             text-align: center;
             padding: 40px 20px;
@@ -1173,15 +1127,6 @@
                 right: 15px;
             }
 
-            .robot-btn {
-                padding: 6px 12px;
-                font-size: 0.8em;
-                border-radius: 15px;
-                gap: 4px;
-                bottom: 60px;
-                right: 15px;
-            }
-
             .empty-hint {
                 padding: 30px 15px;
             }
@@ -1392,7 +1337,6 @@
     </div>
 
     <button class="back-btn" onclick="goBack()">🏠 返回首页</button>
-    <button class="robot-btn" id="farmRobotBtn" onclick="runFarmRobot()" style="display: none;">🤖 农场机器人</button>
 
     <script src="sudoku.js"></script>
     <script>
@@ -2526,8 +2470,56 @@
             stats.innerHTML = inventoryHtml;
             renderSkillDisplay('fishpondSkill', 'fishing', '🎣', '钓鱼技能');
         }
-
+        
+        // 钓鱼每日限制
+        const FISHING_LIMITS = {
+            pond: 10,
+            ocean: 15
+        };
+        
+        function getFishingDailyData() {
+            try {
+                const data = JSON.parse(localStorage.getItem('fishing_daily') || '{}');
+                const today = new Date().toDateString();
+                if (data.date !== today) {
+                    return { date: today, pondCount: 0, oceanCount: 0 };
+                }
+                return data;
+            } catch(e) {
+                return { date: new Date().toDateString(), pondCount: 0, oceanCount: 0 };
+            }
+        }
+        
+        function saveFishingDailyData(data) {
+            localStorage.setItem('fishing_daily', JSON.stringify(data));
+        }
+        
+        function checkFishingLimit(type) {
+            const daily = getFishingDailyData();
+            const limit = type === 'pond' ? FISHING_LIMITS.pond : FISHING_LIMITS.ocean;
+            const count = type === 'pond' ? daily.pondCount : daily.oceanCount;
+            
+            if (count >= limit) {
+                const placeName = type === 'pond' ? '鱼塘' : '海洋';
+                customAlert('今天的' + placeName + '垂钓次数已用完！\n\n' + placeName + '每天最多垂钓 ' + limit + ' 次，明天再来吧！', 'warning');
+                return false;
+            }
+            return true;
+        }
+        
+        function recordFishing(type) {
+            const daily = getFishingDailyData();
+            if (type === 'pond') {
+                daily.pondCount++;
+            } else {
+                daily.oceanCount++;
+            }
+            saveFishingDailyData(daily);
+        }
+        
         function fish() {
+            if (!checkFishingLimit('pond')) return;
+            
             if (!consumeStamina('fishing')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -2576,6 +2568,7 @@
             }
             
             updateSkillExp('fishing');
+            recordFishing('pond');
             
             const farmData = getFarmData();
             if (!farmData.fishInventory) farmData.fishInventory = {};
@@ -2839,6 +2832,8 @@
         }
 
         function oceanFish(seaType) {
+            if (!checkFishingLimit('ocean')) return;
+            
             if (!consumeStamina('fishing')) {
                 customAlert('体力不足！请食用食物恢复体力。', 'warning');
                 return;
@@ -2890,6 +2885,7 @@
             }
             
             updateSkillExp('fishing');
+            recordFishing('ocean');
             
             const farmData = getFarmData();
             if (!farmData[inventoryKey]) farmData[inventoryKey] = {};
@@ -3320,7 +3316,7 @@
             }
             
             playHarvestCelebration();
-            // customAlert('购买成功！', 'success');
+            customAlert('购买成功！', 'success');
         }
 
         // ==================== 特效 ====================
@@ -3368,19 +3364,17 @@
                 const tx = Math.cos(angle) * distance;
                 const ty = Math.sin(angle) * distance;
                 const tr = Math.random() * 720 - 360;
-                const delay = Math.random() * 0.3;
                 
                 emoji.style.setProperty('--tx', `${tx}px`);
                 emoji.style.setProperty('--ty', `${ty}px`);
                 emoji.style.setProperty('--tr', `${tr}deg`);
-                emoji.style.animationDelay = `${delay}s`;
                 
                 celebration.appendChild(emoji);
             }
             
             document.body.appendChild(celebration);
             celebration.style.display = 'block';
-            setTimeout(() => celebration.remove(), 2000);
+            setTimeout(() => celebration.remove(), 1500);
         }
 
         // ==================== 浇水、施肥、收获 ====================
@@ -3520,162 +3514,6 @@
             
             refreshPage();
             customAlert(`加餐成功！成长值 +${snackGain}`, 'success');
-        }
-
-        function runFarmRobot() {
-            const playerData = Storage.getPlayerData();
-            const items = playerData.items || {};
-            
-            if (!items.farm_robot || items.farm_robot <= 0) {
-                customAlert('您需要先在积分商城购买「农场机器人」道具才能使用此功能！', 'warning');
-                return;
-            }
-
-            const farmData = getFarmData();
-            const today = new Date().toDateString();
-            let actionCount = 0;
-
-            const playerFertilizerCount = items.fertilizer || 0;
-            const playerFeedCount = items.feed || 0;
-            let usedFertilizer = 0;
-            let usedFeed = 0;
-
-            function canWater(plant) {
-                return plant && plant.lastWater !== today;
-            }
-
-            function canFertilize(plant) {
-                return plant && plant.lastFertilize !== today && (playerFertilizerCount - usedFertilizer) > 0;
-            }
-
-            function canFeed(animal) {
-                return animal && animal.lastFeed !== today;
-            }
-
-            function canSnack(animal) {
-                return animal && animal.lastSnack !== today && (playerFeedCount - usedFeed) > 0;
-            }
-
-            // 处理花园作物
-            farmData.garden.forEach((plant, index) => {
-                if (!plant || !plant.type) return;
-                
-                const config = farmConfig.vegetables.find(v => v.id === plant.type);
-                if (!config) return;
-
-                if (canWater(plant)) {
-                    const bonus = getSkillBonus('watering');
-                    const waterGain = Math.floor(config.waterGain * bonus);
-                    plant.growth = Math.min(plant.growth + waterGain, config.maxGrowth);
-                    plant.lastWater = today;
-                    actionCount++;
-                }
-
-                if (canFertilize(plant)) {
-                    const bonus = getSkillBonus('watering');
-                    const fertilizerGain = Math.floor(config.fertilizerGain * bonus);
-                    plant.growth = Math.min(plant.growth + fertilizerGain, config.maxGrowth);
-                    plant.lastFertilize = today;
-                    usedFertilizer++;
-                    actionCount++;
-                }
-            });
-
-            // 处理果园作物
-            farmData.orchard.forEach((plant, index) => {
-                if (!plant || !plant.type) return;
-                
-                const config = farmConfig.fruits.find(f => f.id === plant.type);
-                if (!config) return;
-
-                if (canWater(plant)) {
-                    const bonus = getSkillBonus('watering');
-                    const waterGain = Math.floor(config.waterGain * bonus);
-                    plant.growth = Math.min(plant.growth + waterGain, config.maxGrowth);
-                    plant.lastWater = today;
-                    actionCount++;
-                }
-
-                if (canFertilize(plant)) {
-                    const bonus = getSkillBonus('watering');
-                    const fertilizerGain = Math.floor(config.fertilizerGain * bonus);
-                    plant.growth = Math.min(plant.growth + fertilizerGain, config.maxGrowth);
-                    plant.lastFertilize = today;
-                    usedFertilizer++;
-                    actionCount++;
-                }
-            });
-
-            // 处理动物喂养
-            if (farmData.chicken) {
-                const config = farmConfig.animals.chicken;
-                
-                if (canFeed(farmData.chicken)) {
-                    const bonus = getSkillBonus('feeding');
-                    const feedGain = Math.floor(config.feedGain * bonus);
-                    farmData.chicken.growth = Math.min(farmData.chicken.growth + feedGain, config.maxGrowth);
-                    farmData.chicken.lastFeed = today;
-                    actionCount++;
-                }
-
-                if (canSnack(farmData.chicken)) {
-                    const bonus = getSkillBonus('feeding');
-                    const snackGain = Math.floor(config.snackGain * bonus);
-                    farmData.chicken.growth = Math.min(farmData.chicken.growth + snackGain, config.maxGrowth);
-                    farmData.chicken.lastSnack = today;
-                    usedFeed++;
-                    actionCount++;
-                }
-            }
-
-            if (farmData.cow) {
-                const config = farmConfig.animals.cow;
-                
-                if (canFeed(farmData.cow)) {
-                    const bonus = getSkillBonus('feeding');
-                    const feedGain = Math.floor(config.feedGain * bonus);
-                    farmData.cow.growth = Math.min(farmData.cow.growth + feedGain, config.maxGrowth);
-                    farmData.cow.lastFeed = today;
-                    actionCount++;
-                }
-
-                if (canSnack(farmData.cow)) {
-                    const bonus = getSkillBonus('feeding');
-                    const snackGain = Math.floor(config.snackGain * bonus);
-                    farmData.cow.growth = Math.min(farmData.cow.growth + snackGain, config.maxGrowth);
-                    farmData.cow.lastSnack = today;
-                    usedFeed++;
-                    actionCount++;
-                }
-            }
-
-            // 更新道具数量
-            if (usedFertilizer > 0) {
-                playerData.items.fertilizer = playerFertilizerCount - usedFertilizer;
-            }
-            if (usedFeed > 0) {
-                playerData.items.feed = playerFeedCount - usedFeed;
-            }
-            Storage.savePlayerData(playerData);
-
-            // 保存农场数据
-            saveFarmData(farmData);
-
-            // 更新技能经验
-            updateSkillExp('watering');
-            updateSkillExp('feeding');
-
-            // 刷新页面
-            refreshPage();
-
-            if (actionCount > 0) {
-                let msg = `农场机器人完成了 ${actionCount} 个操作！`;
-                if (usedFertilizer > 0) msg += `\n消耗了 ${usedFertilizer} 个肥料`;
-                if (usedFeed > 0) msg += `\n消耗了 ${usedFeed} 个饲料`;
-                customAlert(msg, 'success');
-            } else {
-                customAlert('所有操作今日已完成！', 'info');
-            }
         }
 
         function harvest(area, index) {
@@ -4119,11 +3957,6 @@
             if (!items['boat'] || items['boat'] <= 0) {
                 const oceanNav = document.getElementById('oceanNav');
                 if (oceanNav) oceanNav.style.display = 'none';
-            }
-            
-            if (items['farm_robot'] && items['farm_robot'] > 0) {
-                const robotBtn = document.getElementById('farmRobotBtn');
-                if (robotBtn) robotBtn.style.display = 'flex';
             }
             
             updateStaminaDisplay();

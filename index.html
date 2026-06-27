@@ -91,7 +91,7 @@
         <div class="modal-content shop-content">
             <div class="modal-header">
                 <h2>🛒 积分商城</h2>
-                <span class="close" onclick="closeModal('shopModal')">&times;</span>
+                <span class="close" onclick="closeModal('shopModal'); location.reload();">&times;</span>
             </div>
             <div class="shop-body">
                 <div class="shop-balance">
@@ -161,6 +161,7 @@
                     <button class="home-btn secondary" onclick="clearProgressAndShowGameType()">🎲 开始新游戏</button>
                     <button class="home-btn secondary" id="farmBtnContinue" onclick="goToFarm()">🌾 数独农场</button>
                     <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
+                    <button class="home-btn secondary" id="chessBtnContinue" onclick="goToChess()" style="display: none;">♟️ 象棋世界</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -194,6 +195,7 @@
                     <button class="home-btn primary" onclick="showGameTypeModal()">🎮 开始挑战</button>
                     <button class="home-btn secondary" id="farmBtnDefault" onclick="goToFarm()">🌾 数独农场</button>
                     <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
+                    <button class="home-btn secondary" id="chessBtnDefault" onclick="goToChess()" style="display: none;">♟️ 象棋世界</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -335,18 +337,18 @@
             if (totalCount === 0) {
                 body.innerHTML = '<div class="backpack-empty"><div class="backpack-empty-icon">🎁</div><div>礼盒是空的</div><div style="font-size: 0.85em; margin-top: 5px;">完成数独游戏可获得礼盒奖励！</div></div>';
             } else {
-                let html = '<div class="backpack-title" style="text-align: center; margin-bottom: 15px; color: #666; font-size: 0.9em;">点击礼盒可前往数独农场打开</div>';
+                let html = '<div class="backpack-title" style="text-align: center; margin-bottom: 15px; color: #666; font-size: 0.9em;">点击礼盒可打开获得碎片</div>';
                 
                 if (giftBoxes.gold > 0) {
-                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%); border-left: 4px solid #FFC107;"><div class="backpack-item-icon">🏆</div><div class="backpack-item-info"><div class="backpack-item-name">黄金礼盒</div><div class="backpack-item-desc">稀有道具概率更高</div></div><div class="backpack-item-count">×' + giftBoxes.gold + '</div></div>';
+                    html += '<div class="backpack-item clickable" onclick="openGiftBox(\'gold\')" style="background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%); border-left: 4px solid #FFC107;"><div class="backpack-item-icon">🏆</div><div class="backpack-item-info"><div class="backpack-item-name">黄金礼盒</div><div class="backpack-item-desc">点击打开获得6个碎片</div></div><div class="backpack-item-count">×' + giftBoxes.gold + '</div></div>';
                 }
                 
                 if (giftBoxes.silver > 0) {
-                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%); border-left: 4px solid #90A4AE;"><div class="backpack-item-icon">🥈</div><div class="backpack-item-info"><div class="backpack-item-name">白银礼盒</div><div class="backpack-item-desc">中等道具概率</div></div><div class="backpack-item-count">×' + giftBoxes.silver + '</div></div>';
+                    html += '<div class="backpack-item clickable" onclick="openGiftBox(\'silver\')" style="background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%); border-left: 4px solid #90A4AE;"><div class="backpack-item-icon">🥈</div><div class="backpack-item-info"><div class="backpack-item-name">白银礼盒</div><div class="backpack-item-desc">点击打开获得3个碎片</div></div><div class="backpack-item-count">×' + giftBoxes.silver + '</div></div>';
                 }
                 
                 if (giftBoxes.bronze > 0) {
-                    html += '<div class="backpack-item" style="background: linear-gradient(135deg, #EFEBE9 0%, #D7CCC8 100%); border-left: 4px solid #A1887F;"><div class="backpack-item-icon">🥉</div><div class="backpack-item-info"><div class="backpack-item-name">青铜礼盒</div><div class="backpack-item-desc">基础道具奖励</div></div><div class="backpack-item-count">×' + giftBoxes.bronze + '</div></div>';
+                    html += '<div class="backpack-item clickable" onclick="openGiftBox(\'bronze\')" style="background: linear-gradient(135deg, #EFEBE9 0%, #D7CCC8 100%); border-left: 4px solid #A1887F;"><div class="backpack-item-icon">🥉</div><div class="backpack-item-info"><div class="backpack-item-name">青铜礼盒</div><div class="backpack-item-desc">点击打开获得1个碎片</div></div><div class="backpack-item-count">×' + giftBoxes.bronze + '</div></div>';
                 }
                 
                 body.innerHTML = html;
@@ -780,33 +782,149 @@
             const itemsGrid = document.getElementById('shopItemsGrid');
             let itemsHtml = '';
             
-            // 碎片合成区域（仅农场机器人显示）
-            const farmRobotFragment = items.robot_fragment || 0;
+            // 碎片合成区域 - 万能碎片
+            const universalFragment = items.universal_fragment || 0;
             const hasFarmRobot = items.farm_robot && items.farm_robot > 0;
+            const hasChessRight = items.chess_right && items.chess_right > 0;
+            const hasFarmRight = items.farm_right && items.farm_right > 0;
+            const hasAutoDraft = items.auto_draft && items.auto_draft > 0;
+            const hasFishingRod = items.fishing_rod && items.fishing_rod > 0;
+            const hasBoat = items.boat && items.boat > 0;
+            const hasAutoSolve = items.auto_solve && items.auto_solve > 0;
+            const playerLevel = playerData.level || 1;
+            
+            const FRAGMENT_TARGETS = {
+                auto_draft: 100,
+                farm_right: 200,
+                fishing_rod: 200,
+                boat: 300,
+                chess_right: 300,
+                farm_robot: 300,
+                auto_solve: 5000
+            };
+            
+            const LEVEL_LIMITS = {
+                fishing_rod: 7,
+                boat: 10
+            };
+            
+            const showCompose = (itemId) => {
+                if (LEVEL_LIMITS[itemId]) {
+                    return playerLevel > LEVEL_LIMITS[itemId];
+                }
+                return true;
+            };
+            
+            const getLevelHint = (itemId) => {
+                if (LEVEL_LIMITS[itemId] && playerLevel <= LEVEL_LIMITS[itemId]) {
+                    return `<div class="fragment-level-hint">需要超过${LEVEL_LIMITS[itemId]}级</div>`;
+                }
+                return '';
+            };
             
             itemsHtml += `
                 <div class="fragment-section">
-                    <div class="fragment-header">
-                        <span class="fragment-icon">🔧</span>
-                        <span class="fragment-title">碎片合成</span>
+                    <div class="fragment-header" onclick="toggleFragmentSection(event)">
+                        <h3><span class="fragment-icon">✨</span> 万能碎片合成</h3>
+                        <div class="header-right">
+                            <span class="fragment-total">拥有: ${universalFragment} 个</span>
+                            <span class="expand-icon" id="fragmentExpandIcon">▼</span>
+                        </div>
                     </div>
-                    <div class="fragment-content">
+                    <div class="fragment-content" id="fragmentContent">
+                        <div class="fragment-item ${hasAutoDraft ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">📝</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">一键草稿</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.auto_draft} 个碎片</div>
+                            </div>
+                            ${hasAutoDraft ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.auto_draft ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'auto_draft\', ' + FRAGMENT_TARGETS.auto_draft + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.auto_draft - universalFragment) + ' 个</button>')
+                            }
+                        </div>
+                        <div class="fragment-item ${hasFarmRight ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">🌾</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">农场经营权</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.farm_right} 个碎片</div>
+                            </div>
+                            ${hasFarmRight ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.farm_right ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'farm_right\', ' + FRAGMENT_TARGETS.farm_right + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.farm_right - universalFragment) + ' 个</button>')
+                            }
+                        </div>
+                        ${showCompose('fishing_rod') || hasFishingRod ? `
+                        <div class="fragment-item ${hasFishingRod ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">🎣</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">钓竿</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.fishing_rod} 个碎片</div>
+                            </div>
+                            ${hasFishingRod ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.fishing_rod ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'fishing_rod\', ' + FRAGMENT_TARGETS.fishing_rod + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.fishing_rod - universalFragment) + ' 个</button>')
+                            }
+                        </div>
+                        ` : ''}
+                        ${showCompose('boat') || hasBoat ? `
+                        <div class="fragment-item ${hasBoat ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">🚢</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">船</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.boat} 个碎片</div>
+                            </div>
+                            ${hasBoat ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.boat ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'boat\', ' + FRAGMENT_TARGETS.boat + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.boat - universalFragment) + ' 个</button>')
+                            }
+                        </div>
+                        ` : ''}
+                        <div class="fragment-item ${hasChessRight ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">♟️</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">象棋世界</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.chess_right} 个碎片</div>
+                            </div>
+                            ${hasChessRight ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.chess_right ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'chess_right\', ' + FRAGMENT_TARGETS.chess_right + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.chess_right - universalFragment) + ' 个</button>')
+                            }
+                        </div>
                         <div class="fragment-item ${hasFarmRobot ? 'completed' : ''}">
                             <div class="fragment-icon-lg">🤖</div>
                             <div class="fragment-info">
-                                <div class="fragment-name">农场机器人碎片</div>
-                                <div class="fragment-progress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${(farmRobotFragment / 500) * 100}%"></div>
-                                    </div>
-                                    <div class="progress-text">${farmRobotFragment} / 500</div>
-                                </div>
+                                <div class="fragment-name">农场机器人</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.farm_robot} 个碎片</div>
                             </div>
                             ${hasFarmRobot ? 
                                 '<div class="fragment-badge acquired">已拥有</div>' : 
-                                (farmRobotFragment >= 500 ? 
-                                    '<button class="fragment-btn compose-btn" onclick="composeFarmRobot()">合成</button>' : 
-                                    '<button class="fragment-btn disabled" disabled>还差 ' + (500 - farmRobotFragment) + ' 个</button>')
+                                (universalFragment >= FRAGMENT_TARGETS.farm_robot ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'farm_robot\', ' + FRAGMENT_TARGETS.farm_robot + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.farm_robot - universalFragment) + ' 个</button>')
+                            }
+                        </div>
+                        <div class="fragment-item ${hasAutoSolve ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">💡</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">一键答题</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.auto_solve} 个碎片</div>
+                            </div>
+                            ${hasAutoSolve ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.auto_solve ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'auto_solve\', ' + FRAGMENT_TARGETS.auto_solve + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.auto_solve - universalFragment) + ' 个</button>')
                             }
                         </div>
                     </div>
@@ -817,28 +935,28 @@
                 // 检查是否需要特定道具
                 if (item.requires) {
                     const hasRequiredItem = items[item.requires] > 0;
-                    // 如果需要特定道具但未拥有，跳过显示
                     if (!hasRequiredItem) {
                         return;
                     }
                 }
                 
+                // 检查等级限制
+                const playerLevel = playerData.level || 1;
+                const meetsLevelReq = !item.minLevel || playerLevel >= item.minLevel;
+                
                 const owned = items[item.id] > 0;
                 const canAfford = (playerData.availableScore || 0) >= item.price;
                 
-                // 检查动物类道具是否已在农场中（小鸡、小牛只能购买一次）
                 const farmData = getFarmData();
                 const isAnimalPurchased = (item.id === 'chicken_baby' && farmData.chicken) || 
                                          (item.id === 'cow_baby' && farmData.cow);
                 const isPurchased = owned || isAnimalPurchased;
                 
-                // 消耗品可以重复购买，永久道具只能购买一次
-                const canPurchase = item.type === 'consumable' ? canAfford : (!isPurchased && canAfford);
+                const canPurchase = meetsLevelReq && (item.type === 'consumable' ? canAfford : (!isPurchased && canAfford));
                 const typeLabel = item.type === 'permanent' ? '永久道具' : '消耗品';
                 const typeClass = item.type === 'permanent' ? 'permanent' : 'consumable';
                 const ownedCount = items[item.id] || 0;
                 
-                // 计算最大可购买数量（消耗品）
                 const maxBuyCount = item.type === 'consumable' ? Math.floor((playerData.availableScore || 0) / item.price) : 1;
                 
                 itemsHtml += `
@@ -848,7 +966,8 @@
                         <div class="shop-item-name">${item.name}</div>
                         <div class="shop-item-description">${item.description}</div>
                         <div class="shop-item-price">💰 ${item.price}</div>
-                        ${!canPurchase && !isPurchased ? '<div class="shop-item-locked">积分不足</div>' : ''}
+                        ${item.minLevel && !meetsLevelReq ? `<div class="shop-item-locked">需要等级 ${item.minLevel}</div>` : ''}
+                        ${!canPurchase && !isPurchased && meetsLevelReq ? '<div class="shop-item-locked">积分不足</div>' : ''}
                         ${item.type === 'permanent' && isPurchased ? '<div class="shop-item-locked">已购买</div>' : ''}
                         ${item.type === 'consumable' ? '<div class="shop-item-batch-hint">点击批量购买</div>' : ''}
                     </div>
@@ -859,31 +978,90 @@
             document.getElementById('shopModal').style.display = 'block';
         }
         
-        // 合成农场机器人
-        function composeFarmRobot() {
+        // 合成道具（万能碎片）
+        const ITEM_NAMES = {
+            auto_draft: '一键草稿',
+            farm_right: '农场经营权',
+            fishing_rod: '钓竿',
+            boat: '船',
+            chess_right: '象棋世界',
+            farm_robot: '农场机器人',
+            auto_solve: '一键答题'
+        };
+        
+        function composeItem(itemId, cost) {
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             
-            if ((items.robot_fragment || 0) < 500) {
-                customAlert('碎片不足！需要 500 个碎片才能合成。', 'warning');
+            if ((items.universal_fragment || 0) < cost) {
+                customAlert('万能碎片不足！需要 ' + cost + ' 个碎片才能合成。', 'warning');
                 return;
             }
             
-            if (items.farm_robot && items.farm_robot > 0) {
-                customAlert('您已经拥有农场机器人了！', 'info');
+            if (items[itemId] && items[itemId] > 0) {
+                customAlert('您已经拥有' + ITEM_NAMES[itemId] + '了！', 'info');
                 return;
             }
             
-            // 扣除碎片，添加农场机器人
-            items.robot_fragment = 0;
-            items.farm_robot = 1;
+            items.universal_fragment = (items.universal_fragment || 0) - cost;
+            items[itemId] = 1;
             playerData.items = items;
             Storage.savePlayerData(playerData);
             
-            customAlert('🎉 恭喜合成农场机器人！\n\n农场机器人已添加到您的背包中。', 'success');
+            customAlert('🎉 恭喜合成' + ITEM_NAMES[itemId] + '！', 'success');
             
-            // 关闭弹窗并刷新
-            closeModal('shopModal');
+            if (itemId === 'chess_right') {
+                checkChessButton();
+            }
+            
+            showShopModal();
+        }
+        
+        // 切换碎片合成区域展开/收缩
+        function toggleFragmentSection(event) {
+            event.stopPropagation();
+            const content = document.getElementById('fragmentContent');
+            const header = content.previousElementSibling;
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                header.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                header.classList.add('expanded');
+            }
+        }
+        
+        // 打开礼盒 - 万能碎片
+        function openGiftBox(type) {
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            
+            if (giftBoxes[type] <= 0) {
+                return;
+            }
+            
+            const fragmentCounts = {
+                bronze: 1,
+                silver: 3,
+                gold: 6
+            };
+            
+            const count = fragmentCounts[type];
+            const items = playerData.items || {};
+            
+            items.universal_fragment = (items.universal_fragment || 0) + count;
+            
+            giftBoxes[type]--;
+            playerData.giftBoxes = giftBoxes;
+            playerData.items = items;
+            Storage.savePlayerData(playerData);
+            
+            const boxNames = { bronze: '青铜礼盒', silver: '白银礼盒', gold: '黄金礼盒' };
+            customAlert('✨ 打开' + boxNames[type] + '获得 ' + count + ' 个万能碎片！', 'success');
+            
+            updateBackpackBadge();
+            showBackpackModal();
         }
         
         // 显示购买弹窗（支持批量购买）
@@ -1047,11 +1225,18 @@
             if (item.id === 'farm_right') {
                 unlockFarmIfNeeded();
 
-                // 更新首页农场按钮显示（两个区域都有农场按钮）
                 const farmBtnContinue = document.getElementById('farmBtnContinue');
                 const farmBtnDefault = document.getElementById('farmBtnDefault');
                 if (farmBtnContinue) farmBtnContinue.style.display = 'block';
                 if (farmBtnDefault) farmBtnDefault.style.display = 'block';
+            }
+
+            // 如果购买的是象棋世界，显示象棋按钮
+            if (item.id === 'chess_right') {
+                const chessBtnContinue = document.getElementById('chessBtnContinue');
+                const chessBtnDefault = document.getElementById('chessBtnDefault');
+                if (chessBtnContinue) chessBtnContinue.style.display = 'block';
+                if (chessBtnDefault) chessBtnDefault.style.display = 'block';
             }
 
             // 保存购买记录
@@ -1219,6 +1404,17 @@
             window.location.href = 'math-world.html';
         }
         
+        // 跳转象棋世界页面
+        function goToChess() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            if (!items['chess_right'] || items['chess_right'] <= 0) {
+                customAlert('您还没有开通象棋世界！\n\n请先在积分商城购买「象棋世界」来开通。', 'warning');
+                return;
+            }
+            window.location.href = 'chess.html';
+        }
+        
         // 点击弹窗外部关闭
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
@@ -1381,12 +1577,18 @@
             const playerData = Storage.getPlayerData();
             const items = playerData.items || {};
             const hasFarmRight = items['farm_right'] && items['farm_right'] > 0;
+            const hasChessRight = items['chess_right'] && items['chess_right'] > 0;
             
-            // 两个区域都有农场按钮，需要同时控制
             const farmBtnContinue = document.getElementById('farmBtnContinue');
             const farmBtnDefault = document.getElementById('farmBtnDefault');
             if (farmBtnContinue) farmBtnContinue.style.display = hasFarmRight ? 'block' : 'none';
             if (farmBtnDefault) farmBtnDefault.style.display = hasFarmRight ? 'block' : 'none';
+            
+            // 检查象棋权限，控制象棋按钮显示
+            const chessBtnContinue = document.getElementById('chessBtnContinue');
+            const chessBtnDefault = document.getElementById('chessBtnDefault');
+            if (chessBtnContinue) chessBtnContinue.style.display = hasChessRight ? 'block' : 'none';
+            if (chessBtnDefault) chessBtnDefault.style.display = hasChessRight ? 'block' : 'none';
             
             // 检查URL参数，如果从农场跳转过来则自动打开商城
             const urlParams = new URLSearchParams(window.location.search);
