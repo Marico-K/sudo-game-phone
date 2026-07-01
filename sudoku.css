@@ -3724,6 +3724,12 @@ header p {
     max-width: 12px;
     min-width: 7px;
     flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.candidate-num.highlighted-candidate {
+    border: 1px solid #2ecc71;
+    box-shadow: 0 0 0 1px rgba(46, 204, 113, 0.25);
 }
 
 /* 4宫格候选数字体大小 */

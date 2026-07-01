@@ -125,6 +125,8 @@ body {
 .btn-undo { background:#f0f0f0; color:#666; border:1px solid #ddd; }
 .btn-hint { background:#f0f0f0; color:#666; border:1px solid #ddd; }
 .btn-restart { background:linear-gradient(135deg,#f5576c,#f093fb); color:#fff; }
+.theme-btn { background:#f0f0f0; color:#666; border:1px solid #ddd; font-size:0.78rem; }
+.theme-btn.on { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; font-weight:600; border-color:transparent; }
 .act-btns button:hover { transform:translateY(-2px); box-shadow:0 2px 8px rgba(0,0,0,0.1); }
 
 /* 棋谱 */
@@ -244,6 +246,15 @@ body {
         <button class="diff-btn"    id="dHard"  onclick="setDiff(2)">大师</button>
       </div>
       <div class="diff-lock" id="diffLock">🔒 进阶/大师需<a href="chess-store.html">高级权限</a></div>
+    </div>
+
+    <div class="card">
+      <h3>棋盘主题</h3>
+      <div class="act-btns" id="themeBtns">
+        <button class="theme-btn on" data-theme="default" onclick="setBoardTheme('default')">默认棋盘</button>
+        <button class="theme-btn" data-theme="red"    onclick="setBoardTheme('red')"    style="display:none">红木棋盘</button>
+        <button class="theme-btn" data-theme="jade"   onclick="setBoardTheme('jade')"   style="display:none">翡翠棋盘</button>
+      </div>
     </div>
 
     <div class="card">
@@ -415,35 +426,259 @@ function isCheckmate(brd, myRed){
 }
 
 /* ==================== AI ==================== */
-function aiMove(brd, lvl){
-  let best=null, bestSc=-Infinity;
-  const all=[];
-  for(let r=0;r<10;r++) for(let c=0;c<9;c++){
-    if(brd[r][c]>=0) continue; // AI执黑
-    for(const [tr,tc] of validMoves(brd,r,c)) all.push([r,c,tr,tc]);
-  }
-  if(!all.length) return null;
 
-  // 难度: 0=尽量随机有吃子倾向, 1=贪心, 2=贪心+延迟
-  for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}
+// 棋子位置加分（从棋子所属方视角，行0=己方底线，行9=对方底线）
+const PST = {
+  // 车 — 开阔地带、攻击位置最佳
+  5: [
+    [4, 6, 6, 8, 8, 6, 6, 4],
+    [6, 8, 8,10,10, 8, 8, 6],
+    [4, 6, 8,10,10, 8, 6, 4],
+    [4, 6, 8,12,12, 8, 6, 4],
+    [4, 6,10,14,14,10, 6, 4],
+    [4, 6,10,14,14,10, 6, 4],
+    [4, 6, 8,10,10, 8, 6, 4],
+    [4, 6, 6, 8, 8, 6, 6, 4],
+    [2, 4, 4, 6, 6, 4, 4, 2],
+    [0, 2, 2, 4, 4, 2, 2, 0],
+  ],
+  // 马 — 中心活跃，忌边角
+  4: [
+    [0, 0, 2, 4, 4, 2, 0, 0],
+    [0, 2, 4, 6, 6, 4, 2, 0],
+    [2, 4, 8,10,10, 8, 4, 2],
+    [4, 6,10,14,14,10, 6, 4],
+    [4, 8,12,16,16,12, 8, 4],
+    [4, 8,12,16,16,12, 8, 4],
+    [2, 6,10,14,14,10, 6, 2],
+    [2, 4, 8,10,10, 8, 4, 2],
+    [0, 2, 4, 6, 6, 4, 2, 0],
+    [0, 0, 2, 2, 2, 2, 0, 0],
+  ],
+  // 炮 — 中盘控制，有炮架时威力大
+  6: [
+    [2, 2, 4, 6, 6, 4, 2, 2],
+    [2, 4, 6, 8, 8, 6, 4, 2],
+    [4, 6, 8,12,12, 8, 6, 4],
+    [2, 6, 8,12,12, 8, 6, 2],
+    [2, 4, 6,10,10, 6, 4, 2],
+    [2, 4, 6,10,10, 6, 4, 2],
+    [2, 4, 6, 8, 8, 6, 4, 2],
+    [2, 4, 6, 6, 6, 6, 4, 2],
+    [2, 4, 4, 4, 4, 4, 4, 2],
+    [2, 2, 4, 4, 4, 4, 2, 2],
+  ],
+  // 兵/卒 — 过河后威力大增
+  7: [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [2, 4, 6,10,10, 6, 4, 2],
+    [4, 8,12,18,18,12, 8, 4],
+    [6,12,20,30,30,20,12, 6],
+    [10,16,26,40,40,26,16,10],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ],
+};
 
-  for(const [r,c,tr,tc] of all){
-    const nb=cloneBrd(brd);
-    nb[tr][tc]=nb[r][c]; nb[r][c]=0;
-    let sc=0;
-    // 子力评分
-    for(let rr=0;rr<10;rr++) for(let cc=0;cc<9;cc++){
-      const p=nb[rr][cc]; if(!p) continue;
-      sc += isR(p) ? -(PC_VAL[Math.abs(p)]||0) : (PC_VAL[Math.abs(p)]||0);
+// 局面评估：正值 = 黑方（AI）优势，负值 = 红方优势
+function evalPosition(brd) {
+  let sc = 0;
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      const p = brd[r][c];
+      if (!p) continue;
+      const absP = Math.abs(p), baseVal = PC_VAL[absP] || 0;
+
+      // 位置加分（己方视角）
+      let pos = 0;
+      const tbl = PST[absP];
+      if (tbl && absP !== 1) {
+        pos = isR(p) ? (tbl[9 - r] ? tbl[9 - r][c] : 0) : (tbl[r] ? tbl[r][c] : 0);
+      }
+
+      const pieceScore = baseVal + pos;
+      if (isR(p)) {
+        sc -= pieceScore; // 红方棋子降低黑方评估值
+      } else {
+        sc += pieceScore; // 黑方棋子提高黑方评估值
+      }
     }
-    // 吃子额外加分
-    const cap = brd[tr][tc];
-    if(cap) sc += (PC_VAL[Math.abs(cap)]||0)*2;
-    // 将军加分
-    if(inCheck(nb,true)) sc += 50;
-    // 随机扰动（入门难度更大扰动）
-    if(lvl===0) sc += Math.floor(Math.random()*40);
-    if(sc>bestSc){bestSc=sc; best=[r,c,tr,tc];}
+  }
+  return sc;
+}
+
+// 静态搜索：只考虑吃子走法，消除地平线效应
+function quiesce(brd, alpha, beta, isBlack, depth) {
+  if(hintSearch.start && Date.now()>hintSearch.deadline) return evalPosition(brd);
+  const standPat = evalPosition(brd);
+  if (depth <= 0) return standPat;
+
+  if (isBlack) {
+    if (standPat >= beta) return beta;
+    if (standPat > alpha) alpha = standPat;
+  } else {
+    if (standPat <= alpha) return alpha;
+    if (standPat < beta) beta = standPat;
+  }
+
+  // 收集所有吃子走法
+  const caps = [];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      const p = brd[r][c];
+      if (!p) continue;
+      if (isBlack && p >= 0) continue;
+      if (!isBlack && p < 0) continue;
+
+      for (const [tr, tc] of rawMoves(brd, r, c)) {
+        const target = brd[tr][tc];
+        if (target === 0) continue;              // 非吃子跳过
+        if (sameColor(p, target)) continue;      // 不能吃己方
+        // 检查是否会导致己方被将
+        if (wouldCheck(brd, r, c, tr, tc)) continue;
+        caps.push([r, c, tr, tc, Math.abs(target)]);
+      }
+    }
+  }
+
+  // MVV-LVA 排序: 先吃高价值子, 用小代价子吃
+  caps.sort((a, b) => (b[4] * 10 - Math.abs(brd[b[0]][b[1]])) - (a[4] * 10 - Math.abs(brd[a[0]][a[1]])));
+
+  for (const [r, c, tr, tc] of caps) {
+    const nb = cloneBrd(brd);
+    nb[tr][tc] = nb[r][c];
+    nb[r][c] = 0;
+
+    const v = quiesce(nb, alpha, beta, !isBlack, depth - 1);
+
+    if (isBlack) {
+      if (v >= beta) return beta;
+      if (v > alpha) alpha = v;
+    } else {
+      if (v <= alpha) return alpha;
+      if (v < beta) beta = v;
+    }
+  }
+
+  return isBlack ? alpha : beta;
+}
+
+// 提示专用超时控制（不影响对战AI）
+const hintSearch={start:0,deadline:0};
+
+function search(brd, depth, alpha, beta, isBlack) {
+  if(hintSearch.start && Date.now()>hintSearch.deadline) return evalPosition(brd);
+  if (depth <= 0) return quiesce(brd, alpha, beta, isBlack, 3);
+
+  // 生成所有合法走法
+  const moves = [];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      const p = brd[r][c];
+      if (!p) continue;
+      if (isBlack && p >= 0) continue;
+      if (!isBlack && p < 0) continue;
+
+      for (const [tr, tc] of validMoves(brd, r, c)) {
+        moves.push([r, c, tr, tc, Math.abs(brd[tr][tc] || 0)]);
+      }
+    }
+  }
+
+  if (moves.length === 0) {
+    // 无子可走 = 被将死
+    return isBlack ? -99999 + (3 - depth) : 99999 - (3 - depth);
+  }
+
+  // 走法排序: 吃子优先 (MVV), 将军其次
+  moves.sort((a, b) => b[4] - a[4]);
+
+  if (isBlack) {
+    let bestVal = -Infinity;
+    for (const [r, c, tr, tc] of moves) {
+      const nb = cloneBrd(brd);
+      nb[tr][tc] = nb[r][c];
+      nb[r][c] = 0;
+
+      const v = search(nb, depth - 1, alpha, beta, false);
+      if (v > bestVal) bestVal = v;
+      if (v > alpha) alpha = v;
+      if (alpha >= beta) break;  // β 剪枝
+    }
+    return bestVal;
+  } else {
+    let bestVal = Infinity;
+    for (const [r, c, tr, tc] of moves) {
+      const nb = cloneBrd(brd);
+      nb[tr][tc] = nb[r][c];
+      nb[r][c] = 0;
+
+      const v = search(nb, depth - 1, alpha, beta, true);
+      if (v < bestVal) bestVal = v;
+      if (v < beta) beta = v;
+      if (alpha >= beta) break;  // α 剪枝
+    }
+    return bestVal;
+  }
+}
+
+// 收集黑方所有走法（排好序）
+function gatherBlackMoves(brd) {
+  const moves = [];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (brd[r][c] >= 0) continue;
+      for (const [tr, tc] of validMoves(brd, r, c)) {
+        moves.push([r, c, tr, tc, Math.abs(brd[tr][tc] || 0)]);
+      }
+    }
+  }
+  moves.sort((a, b) => b[4] - a[4]);  // MVV 排序
+  return moves;
+}
+
+function aiMove(brd, lvl) {
+  const moves = gatherBlackMoves(brd);
+  if (!moves.length) return null;
+
+  if (lvl === 0) {
+    // 入门：1层搜索 + 评估函数，小幅随机扰动
+    let best = moves[0], bestSc = -Infinity;
+    for (const [r, c, tr, tc] of moves) {
+      const nb = cloneBrd(brd);
+      nb[tr][tc] = nb[r][c];
+      nb[r][c] = 0;
+      let sc = evalPosition(nb) + Math.random() * 15;
+      if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
+    }
+    return best;
+  }
+
+  if (lvl === 1) {
+    // 进阶：深度2搜索 + 静态搜索
+    let best = moves[0], bestSc = -Infinity;
+    for (const [r, c, tr, tc] of moves) {
+      const nb = cloneBrd(brd);
+      nb[tr][tc] = nb[r][c];
+      nb[r][c] = 0;
+      const sc = search(nb, 1, -Infinity, Infinity, false);
+      if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
+    }
+    return best;
+  }
+
+  // 大师：深度3搜索 + 更深静态搜索 + α-β 剪枝
+  let best = moves[0], bestSc = -Infinity, alpha = -Infinity;
+  for (const [r, c, tr, tc] of moves) {
+    const nb = cloneBrd(brd);
+    nb[tr][tc] = nb[r][c];
+    nb[r][c] = 0;
+    const sc = search(nb, 2, alpha, Infinity, false);
+    if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
+    if (sc > alpha) alpha = sc;
   }
   return best;
 }
@@ -485,11 +720,26 @@ function cellHit(px,py){
 }
 
 let theme = {bg:'#f0c060',ln:'#8b4513'};
-function applyTheme(){
+let selectedTheme='default';
+function getAvailableThemes(){
   const o=getOwned();
-  if(o.includes('chess_theme_jade')) theme={bg:'#c8e8c0',ln:'#2d6030'};
-  else if(o.includes('chess_theme_red')) theme={bg:'#8b2200',ln:'#ffd090'};
-  else theme={bg:'#f0c060',ln:'#8b4513'};
+  const themes=[{id:'default',name:'默认棋盘',bg:'#f0c060',ln:'#8b4513'}];
+  if(o.includes('chess_theme_red')) themes.push({id:'red',name:'红木棋盘',bg:'#8b2200',ln:'#ffd090'});
+  if(o.includes('chess_theme_jade')) themes.push({id:'jade',name:'翡翠棋盘',bg:'#c8e8c0',ln:'#2d6030'});
+  return themes;
+}
+function applyTheme(){
+  const themes=getAvailableThemes();
+  const t=themes.find(t=>t.id===selectedTheme)||themes[0];
+  theme={bg:t.bg,ln:t.ln};
+}
+function setBoardTheme(id){selectedTheme=id;drawBoard();renderThemeBtns();}
+function renderThemeBtns(){
+  const themes=getAvailableThemes();
+  document.querySelectorAll('.theme-btn').forEach(b=>{
+    const tid=b.dataset.theme;
+    b.className='theme-btn'+(tid===selectedTheme?' on':'');
+  });
 }
 
 function drawBoard(){
@@ -591,6 +841,13 @@ function drawCapRing(r,c){
   const[x,y]=xy(r,c);ctx.beginPath();ctx.arc(x,y,CL*0.43,0,Math.PI*2);
   ctx.strokeStyle='rgba(0,210,80,0.75)';ctx.lineWidth=3;ctx.stroke();
 }
+function drawHintTarget(r,c){
+  const[x,y]=xy(r,c);
+  ctx.beginPath();ctx.arc(x,y,CL*0.48,0,Math.PI*2);
+  ctx.strokeStyle='rgba(231,76,60,0.9)';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(x,y,CL*0.24,0,Math.PI*2);
+  ctx.fillStyle='rgba(231,76,60,0.55)';ctx.fill();
+}
 
 function render(){
   drawBoard();
@@ -602,17 +859,60 @@ function render(){
     drawPiece(r,c,p,sel,ch&&!sel&&!!p);
   }
   for(const [vr,vc] of validList) if(board[vr][vc]) drawCapRing(vr,vc);
+  if(hintTarget) drawHintTarget(hintTarget[0],hintTarget[1]);
   drawAnimPiece();
 }
 
 /* ==================== 游戏状态 ==================== */
 let board, selRC, validList, myTurn, history, brdHistory;
 let diff=0, gameOver=false, aiThinking=false, hintOn=false;
-let animPiece = null;
+let animPiece = null, hintTarget = null;
+
+/* ==================== 自动存档 ==================== */
+const AUTOSAVE_KEY='chess_autosave';
+function saveGame(){
+  try{
+    if(!board||!history||!brdHistory){console.warn('[autoSave] skip: state not ready');return;}
+    const data={
+      board:board.map(r=>[...r]),
+      myTurn,diff,gameOver,selectedTheme,
+      history:history.map(h=>{const o={};for(const k in h)if(h[k]!==undefined)o[k]=h[k];return o;}),
+      brdHistory:brdHistory.map(r=>r.map(c=>[...c])),
+      moveLogHTML:document.getElementById('moveLog').innerHTML
+    };
+    localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(data));
+    console.log('[autoSave] saved, myTurn='+myTurn+' historyLen='+history.length);
+  }catch(e){console.error('[autoSave] error:',e);}
+}
+function restoreGame(){
+  try{
+    const raw=localStorage.getItem(AUTOSAVE_KEY);
+    console.log('[autoRestore] raw exists:',!!raw);
+    if(!raw){console.log('[autoRestore] no saved data');return false;}
+    const s=JSON.parse(raw);
+    console.log('[autoRestore] parsed: gameOver='+s.gameOver+' myTurn='+s.myTurn+' historyLen='+(s.history||[]).length);
+    if(s.gameOver){console.log('[autoRestore] saved game was over, clearing');clearAutosave();return false;}
+    if(!s.board||!s.history||!s.brdHistory){console.log('[autoRestore] incomplete data');clearAutosave();return false;}
+    board=s.board;myTurn=s.myTurn;diff=s.diff||0;
+    selectedTheme=s.selectedTheme||'default';
+    history=s.history;brdHistory=s.brdHistory;
+    gameOver=false;aiThinking=false;hintOn=false;animPiece=null;
+    selRC=null;validList=[];
+    resizeBoard();
+    document.getElementById('moveLog').innerHTML=s.moveLogHTML||'<span style="color:#888">游戏开始…</span>';
+    document.getElementById('overlay').classList.remove('show');
+    updateDiffUI();render();updateStatusUI();updateSelHint();
+    renderThemeBtns();
+    toast('📂 已恢复未完成的棋局');
+    console.log('[autoRestore] success');
+    return true;
+  }catch(e){console.error('[autoRestore] error:',e);return false;}
+}
+function clearAutosave(){localStorage.removeItem(AUTOSAVE_KEY);}
 
 function initGame(){
   board=newBoard(); selRC=null; validList=[]; myTurn=true; history=[]; brdHistory=[cloneBrd(board)];
-  gameOver=false; aiThinking=false; hintOn=false; animPiece=null;
+  gameOver=false; aiThinking=false; hintOn=false; animPiece=null; hintTarget=null;
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('moveLog').innerHTML='<span style="color:#888">游戏开始…</span>';
   document.getElementById('btnHint').textContent='走棋提示';
@@ -620,7 +920,7 @@ function initGame(){
   updateDiffUI(); render(); updateStatusUI();
 }
 
-function restartGame(){ initGame(); }
+function restartGame(){ clearAutosave(); initGame(); renderThemeBtns(); }
 
 function updateStatusUI(){
   const dot=document.getElementById('turnDot'), txt=document.getElementById('turnText');
@@ -666,8 +966,8 @@ function doMove(fr,fc,tr,tc){
     captured: cap
   };
   
-  brdHistory.push(cloneBrd(board));
   board[tr][tc]=p; board[fr][fc]=0;
+  brdHistory.push(cloneBrd(board));
   history.push({fr,fc,tr,tc,p,cap});
   recordMove(fr,fc,tr,tc,p,cap);
   if(cap){ const v=Math.abs(cap); const b=v===5?20:v===4?10:v===6?8:2; if(b) addScore(b); }
@@ -711,6 +1011,9 @@ function animateMove(){
       if(dd.gamesPlayed>dd.rewardsClaimed){
         toast(`🎁 对局${dd.gamesPlayed}局完成！可领取${dd.gamesPlayed-dd.rewardsClaimed}个奖励！`);
       }
+      clearAutosave();
+    }else{
+      saveGame();
     }
     }
   }
@@ -738,13 +1041,15 @@ cv.addEventListener('click', e=>{
 
   if(selRC){ // 已选中→尝试走棋
     if(validList.some(([vr,vc])=>vr===r&&vc===c)){
-      const[fr,fc]=selRC; doMove(fr,fc,r,c); setTimeout(doAI,80); return;
+      const[fr,fc]=selRC;
+      if(hintOn) resetHint();
+      doMove(fr,fc,r,c); setTimeout(doAI,80); return;
     }
-    if(board[r][c]>0){ selRC=[r,c]; validList=validMoves(board,r,c); updateSelHint(); render(); return; }
-    selRC=null; validList=[]; updateSelHint(); render(); return;
+    if(board[r][c]>0){ selRC=[r,c]; validList=validMoves(board,r,c); hintTarget=null; updateSelHint(); render(); return; }
+    selRC=null; validList=[]; hintTarget=null; updateSelHint(); render(); return;
   }
   // 选中红子
-  if(board[r][c]>0){ selRC=[r,c]; validList=validMoves(board,r,c); updateSelHint(); render(); }
+  if(board[r][c]>0){ selRC=[r,c]; validList=validMoves(board,r,c); hintTarget=null; updateSelHint(); render(); }
 });
 
 function updateSelHint(){
@@ -756,12 +1061,15 @@ function undoMove(){
   if(history.length<2||aiThinking){toast('无法悔棋'); return;}
   history.pop();brdHistory.pop();history.pop();brdHistory.pop();
   board=cloneBrd(brdHistory[brdHistory.length-1]);
-  myTurn=true; selRC=null; validList=[]; gameOver=false;
+  myTurn=true; selRC=null; validList=[]; gameOver=false; hintOn=false; hintTarget=null;
+  document.getElementById('btnHint').textContent='走棋提示';
+  document.getElementById('btnHint').style.background='';
   document.getElementById('overlay').classList.remove('show');
   const ml=document.getElementById('moveLog');
   if(ml.lastChild) ml.removeChild(ml.lastChild);
   if(ml.lastChild) ml.removeChild(ml.lastChild);
   render(); updateStatusUI(); updateSelHint();
+  saveGame();
   toast('悔棋成功');
 }
 
@@ -775,19 +1083,78 @@ function toggleHint(){
   else{ selRC=null; validList=[]; render(); updateSelHint(); }
 }
 
-function showBestHint(){
-  let best=null, bestSc=-Infinity;
-  for(let r=0;r<10;r++) for(let c=0;c<9;c++){
-    if(board[r][c]<=0) continue;
-    for(const [tr,tc] of validMoves(board,r,c)){
-      const cap=board[tr][tc]; const sc=cap?Math.abs(cap)*10:0;
-      if(sc>bestSc){bestSc=sc;best={r,c,tr,tc};}
-    }
-  }
-  if(best){ selRC=[best.r,best.c]; validList=[[best.tr,best.tc]]; render(); updateSelHint();
-    toast(`建议：${PC_NAME[board[best.r][best.c]]}走此位`); }
+function resetHint(){
+  hintOn=false; hintTarget=null;
+  const btn=document.getElementById('btnHint');
+  btn.textContent='走棋提示';
+  btn.style.background='';
 }
 
+function aiMoveForRed(brd,maxMs){
+  const start=Date.now();
+  hintSearch.start=start;
+  hintSearch.deadline=start+maxMs;
+  try{
+    const moves=[];
+    for(let r=0;r<10;r++) for(let c=0;c<9;c++){
+      if(brd[r][c]<=0) continue;
+      for(const [tr,tc] of validMoves(brd,r,c)){
+        moves.push([r,c,tr,tc,Math.abs(brd[tr][tc]||0)]);
+      }
+    }
+    if(!moves.length) return null;
+    moves.sort((a,b)=>b[4]-a[4]); // 吃子优先，增强剪枝效率
+
+    let best=moves[0];
+    // 迭代加深：至少完成2层（3层总深度），时间允许继续加深到4层
+    for(let depth=1; depth<=4; depth++){
+      if(depth>2 && Date.now()-start>maxMs*0.85) break;
+      let bestSc=Infinity,beta=Infinity,currentBest=moves[0],completed=true;
+      for(const [fr,fc,tr,tc] of moves){
+        if(Date.now()>hintSearch.deadline){ completed=false; break; }
+        const nb=cloneBrd(brd);
+        nb[tr][tc]=nb[fr][fc]; nb[fr][fc]=0;
+        const sc=search(nb,depth,-Infinity,beta,true);
+        if(sc<bestSc){ bestSc=sc; currentBest=[fr,fc,tr,tc]; }
+        if(sc<beta) beta=sc;
+      }
+      if(completed){
+        best=currentBest;
+        // 将最佳走法移到队首，下一轮迭代剪枝更快
+        const idx=moves.findIndex(m=>m[0]===best[0]&&m[1]===best[1]&&m[2]===best[2]&&m[3]===best[3]);
+        if(idx>0){ const [mv]=moves.splice(idx,1); moves.unshift(mv); }
+      }else break;
+    }
+    return best;
+  }finally{
+    hintSearch.start=0;
+    hintSearch.deadline=0;
+  }
+}
+
+function showBestHint(){
+  const mv=aiMoveForRed(board,2500);
+  if(!mv){ resetHint(); toast('当前无可用提示'); return; }
+  const[fr,fc,tr,tc]=mv;
+  selRC=[fr,fc];
+  validList=[[tr,tc]];      // 只显示推荐目标（不铺满绿点）
+  hintTarget=[tr,tc];        // 红圈醒目标记
+
+  const pieceName=PC_NAME[board[fr][fc]];
+  const fromCol=COL_NM[8-fc];
+  const toCol=COL_NM[8-tc];
+  let stepText;
+  if(tr===fr) stepText='平'+toCol;
+  else if(tc===fc) stepText=(tr<fr?'进':'退')+Math.abs(tr-fr);
+  else stepText=(tr<fr?'进':'退')+toCol;
+  const advice=`${pieceName}（红）${fromCol}${stepText}`;
+
+  document.getElementById('selHint').innerHTML=
+    '<span style="color:#b71c1c;font-weight:700">大师认为：</span>'+
+    '<span style="color:#1a5276;font-weight:600">'+advice+'</span>';
+  toast('大师建议：'+advice);
+  updateDiffUI(); render();
+}
 function setDiff(lvl){
   if(lvl>0&&!isOwned('chess_pro')){toast('🔒 进阶/大师需高级对战权限'); return;}
   diff=lvl; updateDiffUI(); toast(['入门难度','进阶难度','大师难度'][lvl]+' 已设置');
@@ -847,7 +1214,10 @@ window.addEventListener('DOMContentLoaded', function(){
     document.getElementById('lockModal').classList.add('show');
     return;
   }
-  resizeBoard(); initGame();
+  resizeBoard();
+  if(!restoreGame()){
+    initGame(); renderThemeBtns();
+  }
 });
 
 /* 窗口大小变化时自动适配 */

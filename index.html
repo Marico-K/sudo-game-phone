@@ -162,6 +162,7 @@
                     <button class="home-btn secondary" id="farmBtnContinue" onclick="goToFarm()">🌾 数独农场</button>
                     <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
                     <button class="home-btn secondary" id="chessBtnContinue" onclick="goToChess()" style="display: none;">♟️ 象棋世界</button>
+                    <button class="home-btn secondary" id="intlChessBtnContinue" onclick="goToIntlChess()" style="display: none;">♔ 国际象棋</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -196,6 +197,7 @@
                     <button class="home-btn secondary" id="farmBtnDefault" onclick="goToFarm()">🌾 数独农场</button>
                     <button class="home-btn secondary" onclick="goToMathWorld()">🧮 计算天地</button>
                     <button class="home-btn secondary" id="chessBtnDefault" onclick="goToChess()" style="display: none;">♟️ 象棋世界</button>
+                    <button class="home-btn secondary" id="intlChessBtnDefault" onclick="goToIntlChess()" style="display: none;">♔ 国际象棋</button>
                     <button class="home-btn shop-btn" onclick="showShopModal()">🛒 积分商城</button>
                     <button class="home-btn secondary" onclick="showRecords()">📊 我的记录</button>
                     <button class="home-btn secondary" onclick="window.location.href='advanced-techniques.html'">📚 进阶技巧</button>
@@ -786,6 +788,7 @@
             const universalFragment = items.universal_fragment || 0;
             const hasFarmRobot = items.farm_robot && items.farm_robot > 0;
             const hasChessRight = items.chess_right && items.chess_right > 0;
+            const hasIntlChessRight = items.intl_chess_right && items.intl_chess_right > 0;
             const hasFarmRight = items.farm_right && items.farm_right > 0;
             const hasAutoDraft = items.auto_draft && items.auto_draft > 0;
             const hasFishingRod = items.fishing_rod && items.fishing_rod > 0;
@@ -799,6 +802,7 @@
                 fishing_rod: 200,
                 boat: 300,
                 chess_right: 300,
+                intl_chess_right: 300,
                 farm_robot: 300,
                 auto_solve: 5000
             };
@@ -901,6 +905,19 @@
                                     '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.chess_right - universalFragment) + ' 个</button>')
                             }
                         </div>
+                        <div class="fragment-item ${hasIntlChessRight ? 'completed' : ''}">
+                            <div class="fragment-icon-lg">♔</div>
+                            <div class="fragment-info">
+                                <div class="fragment-name">国际象棋</div>
+                                <div class="fragment-cost">需要 ${FRAGMENT_TARGETS.intl_chess_right} 个碎片</div>
+                            </div>
+                            ${hasIntlChessRight ? 
+                                '<div class="fragment-badge acquired">已拥有</div>' : 
+                                (universalFragment >= FRAGMENT_TARGETS.intl_chess_right ? 
+                                    '<button class="fragment-btn compose-btn" onclick="composeItem(\'intl_chess_right\', ' + FRAGMENT_TARGETS.intl_chess_right + ')">合成</button>' : 
+                                    '<button class="fragment-btn disabled" disabled>还差 ' + (FRAGMENT_TARGETS.intl_chess_right - universalFragment) + ' 个</button>')
+                            }
+                        </div>
                         <div class="fragment-item ${hasFarmRobot ? 'completed' : ''}">
                             <div class="fragment-icon-lg">🤖</div>
                             <div class="fragment-info">
@@ -985,6 +1002,7 @@
             fishing_rod: '钓竿',
             boat: '船',
             chess_right: '象棋世界',
+            intl_chess_right: '国际象棋',
             farm_robot: '农场机器人',
             auto_solve: '一键答题'
         };
@@ -1010,8 +1028,30 @@
             
             customAlert('🎉 恭喜合成' + ITEM_NAMES[itemId] + '！', 'success');
             
+            // 棋类权限同步到对应 store
+            const chessKeys = ['chess_right','chess_pro','chess_hint'];
+            if(chessKeys.includes(itemId)){
+              const chessStore = JSON.parse(localStorage.getItem('chess_store')||'[]');
+              if(!chessStore.includes(itemId)){chessStore.push(itemId);}
+              localStorage.setItem('chess_store',JSON.stringify(chessStore));
+            }
+            if(itemId === 'intl_chess_right'){
+              const intlStore = JSON.parse(localStorage.getItem('intl_chess_store')||'[]');
+              if(!intlStore.includes('intl_chess_right')){intlStore.push('intl_chess_right');}
+              localStorage.setItem('intl_chess_store',JSON.stringify(intlStore));
+            }
+            
             if (itemId === 'chess_right') {
-                checkChessButton();
+                const cbc = document.getElementById('chessBtnContinue');
+                const cbd = document.getElementById('chessBtnDefault');
+                if(cbc) cbc.style.display = 'block';
+                if(cbd) cbd.style.display = 'block';
+            }
+            if (itemId === 'intl_chess_right') {
+                const icbc = document.getElementById('intlChessBtnContinue');
+                const icbd = document.getElementById('intlChessBtnDefault');
+                if(icbc) icbc.style.display = 'block';
+                if(icbd) icbd.style.display = 'block';
             }
             
             showShopModal();
@@ -1239,6 +1279,14 @@
                 if (chessBtnDefault) chessBtnDefault.style.display = 'block';
             }
 
+            // 如果购买的是国际象棋，显示国际象棋按钮
+            if (item.id === 'intl_chess_right') {
+                const intlChessBtnContinue = document.getElementById('intlChessBtnContinue');
+                const intlChessBtnDefault = document.getElementById('intlChessBtnDefault');
+                if (intlChessBtnContinue) intlChessBtnContinue.style.display = 'block';
+                if (intlChessBtnDefault) intlChessBtnDefault.style.display = 'block';
+            }
+
             // 保存购买记录
             Storage.saveScoreRecord({
                 type: 'purchase',
@@ -1415,6 +1463,17 @@
             window.location.href = 'chess.html';
         }
         
+        // 跳转国际象棋页面
+        function goToIntlChess() {
+            const playerData = Storage.getPlayerData();
+            const items = playerData.items || {};
+            if (!items['intl_chess_right'] || items['intl_chess_right'] <= 0) {
+                customAlert('您还没有开通国际象棋！\n\n请先在积分商城用万能碎片合成「国际象棋」来开通。', 'warning');
+                return;
+            }
+            window.location.href = 'intl-chess.html';
+        }
+        
         // 点击弹窗外部关闭
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
@@ -1578,6 +1637,7 @@
             const items = playerData.items || {};
             const hasFarmRight = items['farm_right'] && items['farm_right'] > 0;
             const hasChessRight = items['chess_right'] && items['chess_right'] > 0;
+            const hasIntlChessRight = items['intl_chess_right'] && items['intl_chess_right'] > 0;
             
             const farmBtnContinue = document.getElementById('farmBtnContinue');
             const farmBtnDefault = document.getElementById('farmBtnDefault');
@@ -1589,6 +1649,12 @@
             const chessBtnDefault = document.getElementById('chessBtnDefault');
             if (chessBtnContinue) chessBtnContinue.style.display = hasChessRight ? 'block' : 'none';
             if (chessBtnDefault) chessBtnDefault.style.display = hasChessRight ? 'block' : 'none';
+            
+            // 检查国际象棋权限，控制国际象棋按钮显示
+            const intlChessBtnContinue = document.getElementById('intlChessBtnContinue');
+            const intlChessBtnDefault = document.getElementById('intlChessBtnDefault');
+            if (intlChessBtnContinue) intlChessBtnContinue.style.display = hasIntlChessRight ? 'block' : 'none';
+            if (intlChessBtnDefault) intlChessBtnDefault.style.display = hasIntlChessRight ? 'block' : 'none';
             
             // 检查URL参数，如果从农场跳转过来则自动打开商城
             const urlParams = new URLSearchParams(window.location.search);

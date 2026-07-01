@@ -3,31 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>积分商城 - 中国象棋</title>
+<title>积分商城 - 国际象棋</title>
 <link rel="stylesheet" href="chess-game.css">
 <style>
-body { background: linear-gradient(135deg, #0a0a2e 0%, #1a0050 50%, #0a0a2e 100%); }
+body { background: linear-gradient(135deg, #0d1b2a 0%, #1b2838 50%, #0d1b2a 100%); }
 </style>
 </head>
 <body class="store-body">
 
 <div class="store-container">
-  <!-- 顶部标题 -->
   <div class="store-header">
     <h1>🏪 积分商城</h1>
-    <p>使用积分解锁游戏权限，享受棋局乐趣</p>
+    <p>使用积分解锁国际象棋权限，享受对弈乐趣</p>
   </div>
 
-  <!-- 用户积分栏 -->
   <div class="user-score-bar">
     <div>
       <div class="user-score-label">我的积分</div>
       <div class="user-score-value">🪙 <span id="user-score">0</span></div>
     </div>
-    <div class="earn-hint">每日签到 / 完成挑战可获得积分</div>
+    <div class="earn-hint">每日签到 / 完成对局可获得积分</div>
   </div>
 
-  <!-- 赚积分区域 -->
   <div class="earn-section">
     <h2>🎯 赚取积分</h2>
     <div class="earn-grid">
@@ -58,73 +55,70 @@ body { background: linear-gradient(135deg, #0a0a2e 0%, #1a0050 50%, #0a0a2e 100%
     </div>
   </div>
 
-  <!-- 商品列表 -->
   <div class="products-grid" id="products-grid"></div>
 
-  <!-- 返回 -->
   <div class="back-bar">
-    <button class="btn btn-gray" onclick="location.href='chess.html'">返回游戏大厅</button>
+    <button class="btn btn-gray" onclick="location.href='intl-chess.html'">返回游戏大厅</button>
     <button class="btn btn-gray" onclick="location.href='index.html'">返回首页</button>
   </div>
 </div>
 
-<!-- Toast 提示 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ====== 数据层 ======
-const STORE_KEY = 'chess_store';
-const SCORE_KEY = 'chess_score';
-const CHECKIN_KEY = 'chess_checkin_date';
-const LUCKY_KEY = 'chess_lucky_date';
-const DAILY_KEY = 'chess_daily';
-const FIRSTWIN_KEY = 'chess_firstwin';
-const FIRSTWIN_STORE_KEY = 'chess_firstwin_store_claimed';
+// ====== 独立存储 key（与象棋商城完全隔离） ======
+const STORE_KEY = 'intl_chess_store';
+const SCORE_KEY = 'intl_chess_score';
+const CHECKIN_KEY = 'intl_chess_checkin_date';
+const LUCKY_KEY = 'intl_chess_lucky_date';
+const DAILY_KEY = 'intl_chess_daily';
+const FIRSTWIN_KEY = 'intl_chess_firstwin';
+const FIRSTWIN_STORE_KEY = 'intl_chess_firstwin_store_claimed';
 
 const PRODUCTS = [
   {
-    id: 'chess_basic',
-    icon: '♟️',
+    id: 'intl_chess_right',
+    icon: '👑',
     name: '标准对局权限',
-    desc: '解锁人机对战模式，支持基础象棋规则，含悔棋功能',
+    desc: '解锁人机对战，支持完整国际象棋规则，含悔棋功能',
     price: 0,
     featured: false,
     freeLabel: '免费'
   },
   {
-    id: 'chess_pro',
+    id: 'intl_chess_pro',
     icon: '🏆',
     name: '高级对战权限',
-    desc: '解锁高级AI难度（三档），含棋谱分析与复盘功能',
+    desc: '解锁进阶 / 大师难度 AI，挑战国际象棋大师级对手',
     price: 200,
     featured: true,
   },
   {
-    id: 'chess_theme_red',
-    icon: '🔴',
-    name: '经典红木棋盘',
-    desc: '深红色木质棋盘主题皮肤，豪华视觉效果',
+    id: 'intl_chess_classic',
+    icon: '🟫',
+    name: '经典木纹棋盘',
+    desc: '深色木质棋盘主题，传统国际象棋视觉效果',
     price: 150,
   },
   {
-    id: 'chess_theme_jade',
-    icon: '🟢',
-    name: '翡翠棋盘主题',
-    desc: '清雅翡翠绿色棋盘，配套玉石棋子皮肤',
+    id: 'intl_chess_marble',
+    icon: '🟪',
+    name: '大理石棋盘主题',
+    desc: '优雅大理石纹理棋盘，高端对弈体验',
     price: 150,
   },
   {
-    id: 'chess_hint',
+    id: 'intl_chess_hint',
     icon: '💡',
     name: '走棋提示功能',
-    desc: '开局建议与关键棋步智能提示，帮助新手快速入门',
+    desc: '开局策略建议与关键棋步智能提示',
     price: 100,
   },
   {
-    id: 'chess_history',
-    icon: '📜',
-    name: '棋谱收藏册',
-    desc: '保存并回放历史棋局，收藏精彩对战记录',
+    id: 'intl_chess_opening',
+    icon: '📖',
+    name: '开局库手册',
+    desc: '收录经典开局棋谱（意大利/西西里/后翼弃兵等）',
     price: 120,
   }
 ];
@@ -134,8 +128,8 @@ function setScore(v) { localStorage.setItem(SCORE_KEY, v); }
 function addScore(v) { setScore(getScore() + v); renderScore(); }
 
 function getOwned() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '["chess_basic"]'); }
-  catch(e) { return ['chess_basic']; }
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '["intl_chess_right"]'); }
+  catch(e) { return ['intl_chess_right']; }
 }
 
 function setOwned(arr) { localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
@@ -246,12 +240,10 @@ function doPlayReward() {
 }
 
 function doFirstWin() {
-  // 必须真实赢过一局
   if (localStorage.getItem(FIRSTWIN_KEY) !== '1') {
     showToast('需要在人机对战中获胜后才能领取！');
     return;
   }
-  // 防止商城重复领取
   if (localStorage.getItem(FIRSTWIN_STORE_KEY) === '1') {
     showToast('首胜奖励已在商城领取过了！');
     return;
@@ -279,7 +271,6 @@ function updateEarnButtons() {
   const today = todayStr();
   const dd = getDailyData();
 
-  // 签到按钮
   const checkinBtn = document.getElementById('btn-checkin');
   if (localStorage.getItem(CHECKIN_KEY) === today) {
     checkinBtn.className = 'btn-earn done';
@@ -287,7 +278,6 @@ function updateEarnButtons() {
     checkinBtn.disabled = true;
   }
 
-  // 幸运签按钮
   const luckyBtn = document.getElementById('btn-lucky');
   if (localStorage.getItem(LUCKY_KEY) === today) {
     luckyBtn.className = 'btn-earn done';
@@ -295,7 +285,6 @@ function updateEarnButtons() {
     luckyBtn.disabled = true;
   }
 
-  // 对局奖励按钮 — 基于真实对局数
   const playBtn = document.querySelector('.earn-item:nth-child(2) .btn-earn');
   if (playBtn) {
     if (dd.rewardsClaimed >= 5) {
@@ -313,7 +302,6 @@ function updateEarnButtons() {
     }
   }
 
-  // 首胜按钮 — 需要真实赢过且未在商城领过
   const firstwinBtn = document.getElementById('btn-firstwin');
   const hasWon = localStorage.getItem(FIRSTWIN_KEY) === '1';
   const storeClaimed = localStorage.getItem(FIRSTWIN_STORE_KEY) === '1';
@@ -347,10 +335,9 @@ renderScore();
 renderProducts();
 updateEarnButtons();
 
-// 确保标准对局权限默认解锁
 const owned = getOwned();
-if (!owned.includes('chess_basic')) {
-  owned.push('chess_basic');
+if (!owned.includes('intl_chess_right')) {
+  owned.push('intl_chess_right');
   setOwned(owned);
   renderProducts();
 }

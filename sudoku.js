@@ -9838,7 +9838,8 @@ function createCandidatesElement(values, row, col) {
         if (values.includes(n)) {
             // 只有当数字在同行/列/宫中唯一时才显示彩色背景
             if (isCandidateUnique(row, col, n)) {
-                candidateEl.className = `candidate-num c${n}`;
+                // candidateEl.className = `candidate-num c${n}`;
+                candidateEl.className = `candidate-num candidate-normal`;
             } else {
                 candidateEl.className = 'candidate-num candidate-normal';
             }
@@ -9974,6 +9975,23 @@ function initCellsCache() {
         cellsCache = Array.from(document.querySelectorAll('.cell'));
     }
     return cellsCache;
+}
+
+function clearHighlightedCandidates() {
+    document.querySelectorAll('.candidate-num.highlighted-candidate').forEach(candidate => {
+        candidate.classList.remove('highlighted-candidate');
+    });
+}
+
+function highlightCandidateNumber(num) {
+    clearHighlightedCandidates();
+    if (!num || typeof num !== 'number') return;
+
+    document.querySelectorAll('.candidate-num').forEach(candidate => {
+        if (parseInt(candidate.textContent, 10) === num) {
+            candidate.classList.add('highlighted-candidate');
+        }
+    });
 }
 
 function handleDoubleClick(e, row, col, cell) {
@@ -10378,6 +10396,7 @@ function selectCell(row, col, cell) {
     cells.forEach(c => {
         c.classList.remove('highlighted-row', 'highlighted-col', 'highlighted-box', 'highlighted-num');
     });
+    clearHighlightedCandidates();
 
     // 应用行、列、宫高亮（无论是否有确定值）
     cells.forEach((c, idx) => {
@@ -10411,6 +10430,7 @@ function selectCell(row, col, cell) {
                 c.classList.add('highlighted-num');
             }
         });
+        highlightCandidateNumber(clickedValue);
     }
 
     cell.classList.add('selected');
@@ -10714,17 +10734,22 @@ function placeNumber(num) {
         updateCellDisplay(index);
     }
 
-    // 如果填入的是确定值，高亮所有相同数字的格子（与选中有数字格子的效果一致）
-    if (inputMode === 'exact' && num !== 0) {
+    // 确定模式下同步刷新相同数字和候选数高亮
+    if (inputMode === 'exact') {
         const cells = initCellsCache();
         // 先清除之前的高亮
         cells.forEach(c => c.classList.remove('highlighted-num'));
-        // 高亮所有相同数字的格子
-        cells.forEach((c, idx) => {
-            if (currentBoard[idx] === num) {
-                c.classList.add('highlighted-num');
-            }
-        });
+        clearHighlightedCandidates();
+
+        if (num !== 0) {
+            // 高亮所有相同数字的格子
+            cells.forEach((c, idx) => {
+                if (currentBoard[idx] === num) {
+                    c.classList.add('highlighted-num');
+                }
+            });
+            highlightCandidateNumber(num);
+        }
     }
     
     // 清除提示高亮样式
