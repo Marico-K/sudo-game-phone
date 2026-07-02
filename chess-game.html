@@ -124,6 +124,8 @@ body {
 }
 .btn-undo { background:#f0f0f0; color:#666; border:1px solid #ddd; }
 .btn-hint { background:#f0f0f0; color:#666; border:1px solid #ddd; }
+.btn-auto { background:#f0f0f0; color:#666; border:1px solid #ddd; }
+.btn-auto.on { background:linear-gradient(135deg,#2ecc71,#27ae60); color:#fff; border-color:transparent; }
 .btn-restart { background:linear-gradient(135deg,#f5576c,#f093fb); color:#fff; }
 .theme-btn { background:#f0f0f0; color:#666; border:1px solid #ddd; font-size:0.78rem; }
 .theme-btn.on { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; font-weight:600; border-color:transparent; }
@@ -262,9 +264,10 @@ body {
       <div class="act-btns">
         <button class="btn-undo" id="btnUndo" onclick="undoMove()">悔棋</button>
         <button class="btn-hint" id="btnHint" onclick="toggleHint()">走棋提示</button>
+        <button class="btn-auto" id="btnAutoPlay" onclick="toggleAutoPlay()">AI托管：关</button>
         <button class="btn-restart" onclick="restartGame()">重新开局</button>
       </div>
-    </div>
+
 
     <div class="card">
       <h3>棋谱</h3>
@@ -569,6 +572,135 @@ function quiesce(brd, alpha, beta, isBlack, depth) {
 // 提示专用超时控制（不影响对战AI）
 const hintSearch={start:0,deadline:0};
 
+function makeMove(brd,r,c,tr,tc){
+  const nb = cloneBrd(brd);
+  nb[tr][tc] = nb[r][c];
+  nb[r][c] = 0;
+  return nb;
+}
+
+function boardKey(brd){
+  return brd.map(row=>row.join(',')).join('|');
+}
+
+function rootRepetitionPenalty(brd,move,nb,isBlack){
+  const [r,c,tr,tc]=move;
+  if(!Array.isArray(brdHistory)||!Array.isArray(history)) return 0;
+  if(!hasLegalMove(nb,!isBlack)) return 0; // 将杀优先，不因重复检测误伤
+
+  const key=boardKey(nb);
+  const recent=brdHistory.slice(Math.max(0,brdHistory.length-12),Math.max(0,brdHistory.length-1));
+  let penalty=0;
+  for(const old of recent){
+    if(boardKey(old)===key) penalty+=12000;
+  }
+
+  const last=history[history.length-1];
+  if(last&&last.fr===tr&&last.fc===tc&&last.tr===r&&last.tc===c&&!brd[tr][tc]){
+    penalty+=8000;
+  }
+
+  const target=brd[tr][tc];
+  const givesCheck=inCheck(nb,isBlack);
+  if(givesCheck&&!target){
+    let recentQuietChecks=0;
+    let prevSameSide=null;
+    for(let i=history.length-1;i>=0&&i>=history.length-10;i--){
+      const h=history[i];
+      const sameSide=isBlack ? h.p<0 : h.p>0;
+      if(!sameSide) continue;
+      if(!prevSameSide) prevSameSide=h;
+      const after=brdHistory[i+1];
+      if(after&&!h.cap&&inCheck(after,isBlack)) recentQuietChecks++;
+    }
+
+    if(recentQuietChecks>=1) penalty+=25000;
+    if(recentQuietChecks>=2) penalty+=80000;
+    if(prevSameSide&&prevSameSide.fr===tr&&prevSameSide.fc===tc&&prevSameSide.tr===r&&prevSameSide.tc===c){
+      penalty+=60000;
+    }
+    if(penalty>0) penalty+=50000;
+  }
+  return penalty;
+}
+
+function applyRootPenalty(score,brd,move,nb,isBlack){
+  const penalty=rootRepetitionPenalty(brd,move,nb,isBlack)+captureRiskPenalty(brd,move,nb,isBlack);
+  return isBlack ? score-penalty : score+penalty;
+}
+
+function leastLegalAttackerValue(brd,row,col,byBlack){
+  let best=Infinity;
+  for(let r=0;r<10;r++) for(let c=0;c<9;c++){
+    const p=brd[r][c];
+    if(!p) continue;
+    if(byBlack && p>=0) continue;
+    if(!byBlack && p<0) continue;
+    if(validMoves(brd,r,c).some(([tr,tc])=>tr===row&&tc===col)){
+      best=Math.min(best,PC_VAL[Math.abs(p)]||0);
+    }
+  }
+  return best===Infinity ? 0 : best;
+}
+
+function captureRiskPenalty(brd,move,nb,isBlack){
+  const [r,c,tr,tc]=move;
+  const capturedVal=PC_VAL[Math.abs(brd[tr][tc]||0)]||0;
+  if(!capturedVal) return 0;
+  if(!hasLegalMove(nb,!isBlack)) return 0; // 将杀不考虑反吃风险
+
+  const moverVal=PC_VAL[Math.abs(brd[r][c])]||0;
+  const recaptureVal=leastLegalAttackerValue(nb,tr,tc,!isBlack);
+  if(!recaptureVal) return 0;
+
+  const badTrade=Math.max(0,moverVal-capturedVal);
+  if(!badTrade) return 0;
+  const cheapRecapture=Math.max(0,moverVal-recaptureVal);
+  return badTrade*80+cheapRecapture*20;
+}
+
+function hasLegalMove(brd,isBlack){
+  for(let r=0;r<10;r++) for(let c=0;c<9;c++){
+    const p=brd[r][c];
+    if(!p) continue;
+    if(isBlack && p>=0) continue;
+    if(!isBlack && p<0) continue;
+    if(validMoves(brd,r,c).length>0) return true;
+  }
+  return false;
+}
+
+function isSquareAttacked(brd,row,col,byBlack){
+  for(let r=0;r<10;r++) for(let c=0;c<9;c++){
+    const p=brd[r][c];
+    if(!p) continue;
+    if(byBlack && p>=0) continue;
+    if(!byBlack && p<0) continue;
+    if(rawMoves(brd,r,c).some(([tr,tc])=>tr===row&&tc===col)) return true;
+  }
+  return false;
+}
+
+function moveOrderScore(brd,move,isBlack){
+  const [r,c,tr,tc]=move;
+  const piece=Math.abs(brd[r][c]);
+  const target=Math.abs(brd[tr][tc]||0);
+  const nb=makeMove(brd,r,c,tr,tc);
+  let score=(PC_VAL[target]||0)*16-(PC_VAL[piece]||0);
+
+  if(inCheck(nb,isBlack)) score+=520;
+  if(!hasLegalMove(nb,!isBlack)) score+=100000;
+  if(isSquareAttacked(nb,tr,tc,!isBlack)) score-=(PC_VAL[piece]||0)*2;
+
+  // 红兵/黑卒过河后主动性更高，提示时避免无意义横走。
+  if(piece===7){
+    score+=isBlack ? tr*4 : (9-tr)*4;
+    if(target===0 && c!==tc) score-=8;
+  }
+  if(piece===5 && target===0) score+=6; // 车占开阔线通常更有价值
+  return score;
+}
+
 function search(brd, depth, alpha, beta, isBlack) {
   if(hintSearch.start && Date.now()>hintSearch.deadline) return evalPosition(brd);
   if (depth <= 0) return quiesce(brd, alpha, beta, isBlack, 3);
@@ -593,8 +725,8 @@ function search(brd, depth, alpha, beta, isBlack) {
     return isBlack ? -99999 + (3 - depth) : 99999 - (3 - depth);
   }
 
-  // 走法排序: 吃子优先 (MVV), 将军其次
-  moves.sort((a, b) => b[4] - a[4]);
+  // 走法排序：将杀/将军/高价值吃子优先，提升同样时间内的搜索质量
+  moves.sort((a,b)=>moveOrderScore(brd,b,isBlack)-moveOrderScore(brd,a,isBlack));
 
   if (isBlack) {
     let bestVal = -Infinity;
@@ -648,10 +780,8 @@ function aiMove(brd, lvl) {
     // 入门：1层搜索 + 评估函数，小幅随机扰动
     let best = moves[0], bestSc = -Infinity;
     for (const [r, c, tr, tc] of moves) {
-      const nb = cloneBrd(brd);
-      nb[tr][tc] = nb[r][c];
-      nb[r][c] = 0;
-      let sc = evalPosition(nb) + Math.random() * 15;
+      const nb = makeMove(brd,r,c,tr,tc);
+      let sc = applyRootPenalty(evalPosition(nb),brd,[r,c,tr,tc],nb,true) + Math.random() * 15;
       if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
     }
     return best;
@@ -661,10 +791,8 @@ function aiMove(brd, lvl) {
     // 进阶：深度2搜索 + 静态搜索
     let best = moves[0], bestSc = -Infinity;
     for (const [r, c, tr, tc] of moves) {
-      const nb = cloneBrd(brd);
-      nb[tr][tc] = nb[r][c];
-      nb[r][c] = 0;
-      const sc = search(nb, 1, -Infinity, Infinity, false);
+      const nb = makeMove(brd,r,c,tr,tc);
+      const sc = applyRootPenalty(search(nb, 1, -Infinity, Infinity, false),brd,[r,c,tr,tc],nb,true);
       if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
     }
     return best;
@@ -673,10 +801,8 @@ function aiMove(brd, lvl) {
   // 大师：深度3搜索 + 更深静态搜索 + α-β 剪枝
   let best = moves[0], bestSc = -Infinity, alpha = -Infinity;
   for (const [r, c, tr, tc] of moves) {
-    const nb = cloneBrd(brd);
-    nb[tr][tc] = nb[r][c];
-    nb[r][c] = 0;
-    const sc = search(nb, 2, alpha, Infinity, false);
+    const nb = makeMove(brd,r,c,tr,tc);
+    const sc = applyRootPenalty(search(nb, 2, alpha, Infinity, false),brd,[r,c,tr,tc],nb,true);
     if (sc > bestSc) { bestSc = sc; best = [r, c, tr, tc]; }
     if (sc > alpha) alpha = sc;
   }
@@ -865,7 +991,7 @@ function render(){
 
 /* ==================== 游戏状态 ==================== */
 let board, selRC, validList, myTurn, history, brdHistory;
-let diff=0, gameOver=false, aiThinking=false, hintOn=false;
+let diff=0, gameOver=false, aiThinking=false, hintOn=false, autoPlay=false;
 let animPiece = null, hintTarget = null;
 
 /* ==================== 自动存档 ==================== */
@@ -875,7 +1001,7 @@ function saveGame(){
     if(!board||!history||!brdHistory){console.warn('[autoSave] skip: state not ready');return;}
     const data={
       board:board.map(r=>[...r]),
-      myTurn,diff,gameOver,selectedTheme,
+      myTurn,diff,gameOver,selectedTheme,autoPlay,
       history:history.map(h=>{const o={};for(const k in h)if(h[k]!==undefined)o[k]=h[k];return o;}),
       brdHistory:brdHistory.map(r=>r.map(c=>[...c])),
       moveLogHTML:document.getElementById('moveLog').innerHTML
@@ -896,14 +1022,15 @@ function restoreGame(){
     board=s.board;myTurn=s.myTurn;diff=s.diff||0;
     selectedTheme=s.selectedTheme||'default';
     history=s.history;brdHistory=s.brdHistory;
-    gameOver=false;aiThinking=false;hintOn=false;animPiece=null;
+    gameOver=false;aiThinking=false;hintOn=false;autoPlay=!!s.autoPlay;animPiece=null;
     selRC=null;validList=[];
     resizeBoard();
     document.getElementById('moveLog').innerHTML=s.moveLogHTML||'<span style="color:#888">游戏开始…</span>';
     document.getElementById('overlay').classList.remove('show');
-    updateDiffUI();render();updateStatusUI();updateSelHint();
+    updateDiffUI();updateAutoPlayUI();render();updateStatusUI();updateSelHint();
     renderThemeBtns();
     toast('📂 已恢复未完成的棋局');
+    if(autoPlay&&myTurn&&!gameOver) setTimeout(doAutoPlay,200);
     console.log('[autoRestore] success');
     return true;
   }catch(e){console.error('[autoRestore] error:',e);return false;}
@@ -912,20 +1039,25 @@ function clearAutosave(){localStorage.removeItem(AUTOSAVE_KEY);}
 
 function initGame(){
   board=newBoard(); selRC=null; validList=[]; myTurn=true; history=[]; brdHistory=[cloneBrd(board)];
-  gameOver=false; aiThinking=false; hintOn=false; animPiece=null; hintTarget=null;
+  gameOver=false; aiThinking=false; hintOn=false; autoPlay=false; animPiece=null; hintTarget=null;
   document.getElementById('overlay').classList.remove('show');
   document.getElementById('moveLog').innerHTML='<span style="color:#888">游戏开始…</span>';
   document.getElementById('btnHint').textContent='走棋提示';
   document.getElementById('btnHint').style.background='';
-  updateDiffUI(); render(); updateStatusUI();
+  updateDiffUI(); updateAutoPlayUI(); render(); updateStatusUI();
 }
 
-function restartGame(){ clearAutosave(); initGame(); renderThemeBtns(); }
+function restartGame(){
+  if(!confirm('确定要重新开局吗？当前棋局进度将会丢失。')) return;
+  clearAutosave();
+  initGame();
+  renderThemeBtns();
+}
 
 function updateStatusUI(){
   const dot=document.getElementById('turnDot'), txt=document.getElementById('turnText');
   dot.className='turn-dot '+(myTurn?'red':'black');
-  txt.textContent=myTurn?'红方（你）':'黑方（AI）';
+  txt.textContent=myTurn?(autoPlay?'红方（AI托管）':'红方（你）'):'黑方（AI）';
   const ck=inCheck(board,myTurn);
   document.getElementById('checkWarn').style.display=ck?'block':'none';
   if(ck){document.getElementById('boardBox').classList.add('in-check');
@@ -1027,13 +1159,18 @@ function doAI(){
   setTimeout(()=>{
     const mv=aiMove(board,diff);
     if(mv){ const[r,c,tr,tc]=mv; doMove(r,c,tr,tc); }
-    aiThinking=false; document.getElementById('selHint').textContent='点击棋子选中';
+    aiThinking=false;
+    document.getElementById('selHint').textContent=autoPlay?'AI托管已开启':'点击棋子选中';
+    if(autoPlay&&!gameOver) setTimeout(doAutoPlay,420);
   },diff===0?350:diff===1?650:1100);
 }
 
 /* ==================== 交互 ==================== */
+
+/* ==================== 交互 ==================== */
 cv.addEventListener('click', e=>{
   if(gameOver||aiThinking||!myTurn) return;
+  if(autoPlay){ toast('AI托管中，关闭托管后可手动走棋'); return; }
   const rct=cv.getBoundingClientRect();
   const sx=cv.width/rct.width, sy=cv.height/rct.height;
   const cell=cellHit((e.clientX-rct.left)*sx,(e.clientY-rct.top)*sy);
@@ -1061,9 +1198,10 @@ function undoMove(){
   if(history.length<2||aiThinking){toast('无法悔棋'); return;}
   history.pop();brdHistory.pop();history.pop();brdHistory.pop();
   board=cloneBrd(brdHistory[brdHistory.length-1]);
-  myTurn=true; selRC=null; validList=[]; gameOver=false; hintOn=false; hintTarget=null;
+  myTurn=true; selRC=null; validList=[]; gameOver=false; hintOn=false; autoPlay=false; hintTarget=null;
   document.getElementById('btnHint').textContent='走棋提示';
   document.getElementById('btnHint').style.background='';
+  updateAutoPlayUI();
   document.getElementById('overlay').classList.remove('show');
   const ml=document.getElementById('moveLog');
   if(ml.lastChild) ml.removeChild(ml.lastChild);
@@ -1090,7 +1228,49 @@ function resetHint(){
   btn.style.background='';
 }
 
-function aiMoveForRed(brd,maxMs){
+function updateAutoPlayUI(){
+  const btn=document.getElementById('btnAutoPlay');
+  if(!btn) return;
+  btn.textContent=autoPlay?'AI托管：开（大师）':'AI托管：关';
+  btn.classList.toggle('on',autoPlay);
+}
+
+function toggleAutoPlay(){
+  if(gameOver) return;
+  autoPlay=!autoPlay;
+  if(autoPlay){
+    if(hintOn) resetHint();
+    selRC=null; validList=[]; hintTarget=null;
+    toast('AI托管已开启：红方使用大师级搜索');
+  }else{
+    toast('AI托管已关闭');
+  }
+  updateAutoPlayUI();
+  updateStatusUI();
+  updateSelHint();
+  render();
+  saveGame();
+  if(autoPlay&&myTurn&&!aiThinking) setTimeout(doAutoPlay,80);
+}
+
+function doAutoPlay(){
+  if(!autoPlay||gameOver||!myTurn||aiThinking) return;
+  aiThinking=true;
+  selRC=null; validList=[]; hintTarget=null;
+  updateAutoPlayUI();
+  document.getElementById('selHint').textContent='AI托管思考中（大师级）…';
+  setTimeout(()=>{
+    const mv=aiMoveForRedMinimax(board);
+    aiThinking=false;
+    if(!autoPlay||gameOver||!myTurn) { updateStatusUI(); updateSelHint(); return; }
+    if(!mv){ toast('AI托管暂无可走棋步'); updateStatusUI(); updateSelHint(); return; }
+    const[fr,fc,tr,tc]=mv;
+    doMove(fr,fc,tr,tc);
+    setTimeout(doAI,80);
+  },500);
+}
+
+function aiMoveForRed(brd,maxMs,maxDepth=4){
   const start=Date.now();
   hintSearch.start=start;
   hintSearch.deadline=start+maxMs;
@@ -1103,18 +1283,17 @@ function aiMoveForRed(brd,maxMs){
       }
     }
     if(!moves.length) return null;
-    moves.sort((a,b)=>b[4]-a[4]); // 吃子优先，增强剪枝效率
+    moves.sort((a,b)=>moveOrderScore(brd,b,false)-moveOrderScore(brd,a,false));
 
     let best=moves[0];
-    // 迭代加深：至少完成2层（3层总深度），时间允许继续加深到4层
-    for(let depth=1; depth<=4; depth++){
+    // 迭代加深：托管可传入更高深度，提示默认保持较快响应
+    for(let depth=1; depth<=maxDepth; depth++){
       if(depth>2 && Date.now()-start>maxMs*0.85) break;
       let bestSc=Infinity,beta=Infinity,currentBest=moves[0],completed=true;
       for(const [fr,fc,tr,tc] of moves){
         if(Date.now()>hintSearch.deadline){ completed=false; break; }
-        const nb=cloneBrd(brd);
-        nb[tr][tc]=nb[fr][fc]; nb[fr][fc]=0;
-        const sc=search(nb,depth,-Infinity,beta,true);
+        const nb=makeMove(brd,fr,fc,tr,tc);
+        const sc=applyRootPenalty(search(nb,depth,-Infinity,beta,true),brd,[fr,fc,tr,tc],nb,false);
         if(sc<bestSc){ bestSc=sc; currentBest=[fr,fc,tr,tc]; }
         if(sc<beta) beta=sc;
       }
@@ -1132,8 +1311,353 @@ function aiMoveForRed(brd,maxMs){
   }
 }
 
+const AI_DEPTH=4;
+const AI_INF=1000000000;
+const AI_CACHE=new Map();
+const AI_ROOT_LIMIT=24;
+const AI_BRANCH_LIMIT={1:10,2:14,3:18,4:24};
+const AI_BASE_VAL={1:100000,2:220,3:220,4:450,5:1000,6:500,7:120};
+
+function toBoard90(brd){
+  const out=new Array(90);
+  for(let r=0;r<10;r++) for(let c=0;c<9;c++) out[r*9+c]=brd[r][c];
+  return out;
+}
+
+function aiIdx(r,c){ return r*9+c; }
+function aiRow(i){ return Math.floor(i/9); }
+function aiCol(i){ return i%9; }
+function aiInside(r,c){ return r>=0&&r<10&&c>=0&&c<9; }
+function aiSideOf(p){ return p>0?'red':(p<0?'black':null); }
+function aiSameSide(a,b){ return a&&b&&((a>0&&b>0)||(a<0&&b<0)); }
+
+function aiMakeMove(board,move){
+  const next=board.slice();
+  next[move.to]=next[move.from];
+  next[move.from]=0;
+  return next;
+}
+
+function aiBoardKey(board,depth,isMax){
+  return depth+'|'+(isMax?'1':'0')+'|'+board.join(',');
+}
+
+function aiRawMoves(board,from){
+  const p=board[from];
+  if(!p) return [];
+  const abs=Math.abs(p), red=p>0, r=aiRow(from), c=aiCol(from), moves=[];
+  const push=(tr,tc)=>{
+    if(!aiInside(tr,tc)) return;
+    const to=aiIdx(tr,tc);
+    if(!aiSameSide(p,board[to])) moves.push({from,to,capture:board[to]});
+  };
+
+  if(abs===1){
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=r+dr,nc=c+dc;
+      if(!aiInside(nr,nc)||nc<3||nc>5) continue;
+      if(red&&(nr<7||nr>9)) continue;
+      if(!red&&(nr<0||nr>2)) continue;
+      push(nr,nc);
+    }
+  }else if(abs===2){
+    for(const [dr,dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
+      const nr=r+dr,nc=c+dc;
+      if(!aiInside(nr,nc)||nc<3||nc>5) continue;
+      if(red&&(nr<7||nr>9)) continue;
+      if(!red&&(nr<0||nr>2)) continue;
+      push(nr,nc);
+    }
+  }else if(abs===3){
+    for(const [dr,dc] of [[-2,-2],[-2,2],[2,-2],[2,2]]){
+      const nr=r+dr,nc=c+dc;
+      if(!aiInside(nr,nc)) continue;
+      if(red&&nr<5) continue;
+      if(!red&&nr>4) continue;
+      if(board[aiIdx(r+dr/2,c+dc/2)]!==0) continue;
+      push(nr,nc);
+    }
+  }else if(abs===4){
+    const dirs=[[-2,-1,-1,0],[-2,1,-1,0],[2,-1,1,0],[2,1,1,0],[-1,-2,0,-1],[1,-2,0,-1],[-1,2,0,1],[1,2,0,1]];
+    for(const [dr,dc,lr,lc] of dirs){
+      const nr=r+dr,nc=c+dc;
+      if(!aiInside(nr,nc)) continue;
+      if(board[aiIdx(r+lr,c+lc)]!==0) continue;
+      push(nr,nc);
+    }
+  }else if(abs===5){
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      let nr=r+dr,nc=c+dc;
+      while(aiInside(nr,nc)){
+        const to=aiIdx(nr,nc);
+        if(board[to]){ push(nr,nc); break; }
+        moves.push({from,to,capture:0});
+        nr+=dr; nc+=dc;
+      }
+    }
+  }else if(abs===6){
+    for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      let nr=r+dr,nc=c+dc,screen=false;
+      while(aiInside(nr,nc)){
+        const to=aiIdx(nr,nc), target=board[to];
+        if(!screen){
+          if(!target) moves.push({from,to,capture:0});
+          else screen=true;
+        }else if(target){
+          push(nr,nc);
+          break;
+        }
+        nr+=dr; nc+=dc;
+      }
+    }
+  }else if(abs===7){
+    const fwd=red?-1:1;
+    push(r+fwd,c);
+    if(red?r<=4:r>=5){ push(r,c-1); push(r,c+1); }
+  }
+  return moves;
+}
+
+function aiIsInCheck(board,side){
+  const king=side==='red'?PC.RJ:PC.BJ;
+  const enemyRed=side==='black';
+  const kingIndex=board.indexOf(king);
+  if(kingIndex<0) return true;
+
+  const kr=aiRow(kingIndex), kc=aiCol(kingIndex);
+  for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+    let nr=kr+dr,nc=kc+dc,screen=false;
+    while(aiInside(nr,nc)){
+      const p=board[aiIdx(nr,nc)];
+      if(p){
+        if(!screen){
+          if(aiSideOf(p)!==side&&(Math.abs(p)===5||Math.abs(p)===1)) return true;
+          screen=true;
+        }else{
+          if(aiSideOf(p)!==side&&Math.abs(p)===6) return true;
+          break;
+        }
+      }
+      nr+=dr; nc+=dc;
+    }
+  }
+
+  const horseChecks=[[-2,-1,-1,0],[-2,1,-1,0],[2,-1,1,0],[2,1,1,0],[-1,-2,0,-1],[1,-2,0,-1],[-1,2,0,1],[1,2,0,1]];
+  for(const [dr,dc,lr,lc] of horseChecks){
+    const nr=kr+dr,nc=kc+dc,legR=kr+lr,legC=kc+lc;
+    if(aiInside(nr,nc)&&aiInside(legR,legC)&&board[aiIdx(legR,legC)]===0){
+      const p=board[aiIdx(nr,nc)];
+      if(p&&aiSideOf(p)!==side&&Math.abs(p)===4) return true;
+    }
+  }
+
+  const pawnChecks=enemyRed?[[1,0],[0,-1],[0,1]]:[[-1,0],[0,-1],[0,1]];
+  for(const [dr,dc] of pawnChecks){
+    const nr=kr+dr,nc=kc+dc;
+    if(!aiInside(nr,nc)) continue;
+    const p=board[aiIdx(nr,nc)];
+    if(p&&aiSideOf(p)!==side&&Math.abs(p)===7) return true;
+  }
+  return false;
+}
+
+function getAllMoves(board,side){
+  const moves=[];
+  for(let i=0;i<90;i++){
+    const p=board[i];
+    if(!p||aiSideOf(p)!==side) continue;
+    for(const move of aiRawMoves(board,i)){
+      const next=aiMakeMove(board,move);
+      if(!aiIsInCheck(next,side)) moves.push(move);
+    }
+  }
+  moves.sort((a,b)=>aiMoveScore(board,b,side)-aiMoveScore(board,a,side));
+  return moves;
+}
+
+function aiMoveScore(board,move,side){
+  const piece=Math.abs(board[move.from]);
+  const target=Math.abs(move.capture||0);
+  const next=aiMakeMove(board,move);
+  const enemy=side==='red'?'black':'red';
+  let score=(AI_BASE_VAL[target]||0)*12-(AI_BASE_VAL[piece]||0);
+  if(target) score+=300;
+  if(aiIsInCheck(next,enemy)) score+=500;
+  if(piece===5&&[3,5].includes(aiCol(move.to))) score+=80; // 车占肋道
+  if(piece===6&&aiCol(move.to)===4) score+=70; // 中炮
+  if(piece===4&&[4,5].includes(aiRow(move.to))&&[2,6].includes(aiCol(move.to))) score+=70; // 马跳河口
+  return score;
+}
+
+function getAllMovesNoSort(board,side){
+  const moves=[];
+  for(let i=0;i<90;i++){
+    const p=board[i];
+    if(!p||aiSideOf(p)!==side) continue;
+    for(const move of aiRawMoves(board,i)){
+      const next=aiMakeMove(board,move);
+      if(!aiIsInCheck(next,side)) moves.push(move);
+    }
+  }
+  return moves;
+}
+
+function aiIsSquareAttacked(board,square,bySide){
+  for(let i=0;i<90;i++){
+    const p=board[i];
+    if(!p||aiSideOf(p)!==bySide) continue;
+    if(aiRawMoves(board,i).some(m=>m.to===square)) return true;
+  }
+  return false;
+}
+
+function evaluateBoard(board){
+  let score=0, redGuard=0, blackGuard=0;
+  for(let i=0;i<90;i++){
+    const p=board[i];
+    if(!p) continue;
+    const abs=Math.abs(p), r=aiRow(i), c=aiCol(i), sign=p>0?1:-1;
+    let v=AI_BASE_VAL[abs]||0;
+
+    if(abs===5){
+      if(c===3||c===5) v+=80;
+      if(c===4) v+=40;
+    }else if(abs===4){
+      if((r===4||r===5)&&(c===2||c===6)) v+=90;
+      if(c===0||c===8) v-=45;
+    }else if(abs===6){
+      if(c===4) v+=90;
+      v+=aiCannonScreenCount(board,i)*15;
+    }else if(abs===7){
+      const crossed=p>0?r<=4:r>=5;
+      if(crossed) v+=120+(p>0?(4-r):(r-5))*25;
+      if(c===4) v+=35;
+    }else if(abs===1){
+      if(c!==4) v-=80;
+    }
+
+    score+=sign*v;
+
+    if(abs===2||abs===3){
+      if(p>0) redGuard++;
+      else blackGuard++;
+    }
+  }
+
+  if(aiIsInCheck(board,'red')) score-=900;
+  if(aiIsInCheck(board,'black')) score+=900;
+  score+=(redGuard-blackGuard)*45;
+  if(redGuard<=1) score-=180;
+  if(blackGuard<=1) score+=180;
+  return score;
+}
+
+function aiCannonScreenCount(board,idx){
+  let n=0, r=aiRow(idx), c=aiCol(idx);
+  for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+    let nr=r+dr,nc=c+dc;
+    while(aiInside(nr,nc)){
+      if(board[aiIdx(nr,nc)]){ n++; break; }
+      nr+=dr; nc+=dc;
+    }
+  }
+  return n;
+}
+
+function minimax(board,depth,alpha,beta,isMax){
+  const key=aiBoardKey(board,depth,isMax);
+  if(AI_CACHE.has(key)) return AI_CACHE.get(key);
+  if(depth===0){
+    const val=evaluateBoard(board);
+    AI_CACHE.set(key,val);
+    return val;
+  }
+
+  const side=isMax?'red':'black';
+  const moves=getAllMoves(board,side);
+  if(!moves.length){
+    const val=aiIsInCheck(board,side) ? (isMax?-9000000-depth:9000000+depth) : 0;
+    AI_CACHE.set(key,val);
+    return val;
+  }
+
+  const searchMoves=moves.slice(0,AI_BRANCH_LIMIT[depth]||moves.length);
+  let best=isMax?-AI_INF:AI_INF;
+  for(const move of searchMoves){
+    const val=minimax(aiMakeMove(board,move),depth-1,alpha,beta,!isMax);
+    if(isMax){
+      if(val>best) best=val;
+      if(val>alpha) alpha=val;
+    }else{
+      if(val<best) best=val;
+      if(val<beta) beta=val;
+    }
+    if(alpha>=beta) break;
+  }
+  AI_CACHE.set(key,best);
+  return best;
+}
+
+function aiLeastAttackerValue(board,square,bySide){
+  let best=AI_INF;
+  for(let i=0;i<90;i++){
+    const p=board[i];
+    if(!p||aiSideOf(p)!==bySide) continue;
+    for(const move of aiRawMoves(board,i)){
+      if(move.to!==square) continue;
+      const next=aiMakeMove(board,move);
+      if(!aiIsInCheck(next,bySide)) best=Math.min(best,AI_BASE_VAL[Math.abs(p)]||0);
+      break;
+    }
+  }
+  return best===AI_INF?0:best;
+}
+
+function aiRootMovePenalty(board,move,side){
+  const next=aiMakeMove(board,move);
+  const enemy=side==='red'?'black':'red';
+  const moverVal=AI_BASE_VAL[Math.abs(board[move.from])]||0;
+  const capturedVal=AI_BASE_VAL[Math.abs(move.capture||0)]||0;
+  const attackerVal=aiLeastAttackerValue(next,move.to,enemy);
+  let penalty=0;
+
+  if(attackerVal){
+    const tradeLoss=moverVal-capturedVal;
+    if(tradeLoss>0) penalty+=tradeLoss*3;
+    if(attackerVal<moverVal) penalty+=(moverVal-attackerVal);
+  }
+
+  if(Array.isArray(brdHistory)){
+    const nextKey=boardKey([
+      next.slice(0,9),next.slice(9,18),next.slice(18,27),next.slice(27,36),next.slice(36,45),
+      next.slice(45,54),next.slice(54,63),next.slice(63,72),next.slice(72,81),next.slice(81,90)
+    ]);
+    const recent=brdHistory.slice(Math.max(0,brdHistory.length-10));
+    for(const old of recent) if(boardKey(old)===nextKey) penalty+=30000;
+  }
+
+  return penalty;
+}
+
+function aiMoveForRedMinimax(brd){
+  const flat=toBoard90(brd);
+  AI_CACHE.clear();
+  const moves=getAllMoves(flat,'red');
+  if(!moves.length) return null;
+  const rootMoves=moves.slice(0,AI_ROOT_LIMIT);
+  let best=rootMoves[0], bestScore=-AI_INF;
+  for(const move of rootMoves){
+    const score=minimax(aiMakeMove(flat,move),AI_DEPTH-1,-AI_INF,AI_INF,false)-aiRootMovePenalty(flat,move,'red');
+    if(score>bestScore){
+      bestScore=score;
+      best=move;
+    }
+  }
+  return [aiRow(best.from),aiCol(best.from),aiRow(best.to),aiCol(best.to)];
+}
+
 function showBestHint(){
-  const mv=aiMoveForRed(board,2500);
+  const mv=aiMoveForRedMinimax(board);
   if(!mv){ resetHint(); toast('当前无可用提示'); return; }
   const[fr,fc,tr,tc]=mv;
   selRC=[fr,fc];
