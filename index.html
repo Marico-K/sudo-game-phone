@@ -341,6 +341,8 @@
             } else {
                 let html = '<div class="backpack-title" style="text-align: center; margin-bottom: 15px; color: #666; font-size: 0.9em;">点击礼盒可打开获得碎片</div>';
                 
+                html += '<div style="text-align: center; margin-bottom: 12px;"><button onclick="openAllGiftBoxes()" style="padding: 8px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.85em; font-weight: bold; box-shadow: 0 3px 10px rgba(102,126,234,0.4);">🎁 一键开启全部礼盒</button></div>';
+                
                 if (giftBoxes.gold > 0) {
                     html += '<div class="backpack-item clickable" onclick="openGiftBox(\'gold\')" style="background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%); border-left: 4px solid #FFC107;"><div class="backpack-item-icon">🏆</div><div class="backpack-item-info"><div class="backpack-item-name">黄金礼盒</div><div class="backpack-item-desc">点击打开获得6个碎片</div></div><div class="backpack-item-count">×' + giftBoxes.gold + '</div></div>';
                 }
@@ -1099,6 +1101,53 @@
             
             const boxNames = { bronze: '青铜礼盒', silver: '白银礼盒', gold: '黄金礼盒' };
             customAlert('✨ 打开' + boxNames[type] + '获得 ' + count + ' 个万能碎片！', 'success');
+            
+            updateBackpackBadge();
+            showBackpackModal();
+        }
+        
+        // 一键开启所有礼盒
+        function openAllGiftBoxes() {
+            const playerData = Storage.getPlayerData();
+            const giftBoxes = playerData.giftBoxes || { bronze: 0, silver: 0, gold: 0 };
+            const fragmentCounts = { bronze: 1, silver: 3, gold: 6 };
+            const boxNames = { bronze: '青铜礼盒', silver: '白银礼盒', gold: '黄金礼盒' };
+            
+            const totalCount = (giftBoxes.bronze || 0) + (giftBoxes.silver || 0) + (giftBoxes.gold || 0);
+            if (totalCount === 0) {
+                return;
+            }
+            
+            let totalFragments = 0;
+            let details = [];
+            
+            if (giftBoxes.gold > 0) {
+                const gained = giftBoxes.gold * fragmentCounts.gold;
+                totalFragments += gained;
+                details.push(`黄金礼盒 ×${giftBoxes.gold} → ${gained} 碎片`);
+                giftBoxes.gold = 0;
+            }
+            if (giftBoxes.silver > 0) {
+                const gained = giftBoxes.silver * fragmentCounts.silver;
+                totalFragments += gained;
+                details.push(`白银礼盒 ×${giftBoxes.silver} → ${gained} 碎片`);
+                giftBoxes.silver = 0;
+            }
+            if (giftBoxes.bronze > 0) {
+                const gained = giftBoxes.bronze * fragmentCounts.bronze;
+                totalFragments += gained;
+                details.push(`青铜礼盒 ×${giftBoxes.bronze} → ${gained} 碎片`);
+                giftBoxes.bronze = 0;
+            }
+            
+            const items = playerData.items || {};
+            items.universal_fragment = (items.universal_fragment || 0) + totalFragments;
+            playerData.giftBoxes = giftBoxes;
+            playerData.items = items;
+            Storage.savePlayerData(playerData);
+            
+            const detailText = details.join('\n');
+            customAlert(`✨ 批量开启 ${totalCount} 个礼盒！\n\n${detailText}\n\n共获得 ${totalFragments} 个万能碎片！`, 'success');
             
             updateBackpackBadge();
             showBackpackModal();
